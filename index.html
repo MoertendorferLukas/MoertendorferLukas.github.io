@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lukas Mörtendorfer</title>
 <meta name="description" content="Lukas Mörtendorfer, 19, Informatik-Schüler in der 5. Klasse der HTL Leonding und Softwareentwickler.">
-<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@700&family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
 <!--
   ✏️ ANPASSEN: Auskommentierte TODO-Blöcke (Praktikum, Diplomarbeit) ausfüllen und einkommentieren.
   Stil: Konstruktivismus – Blau / Weiß, Navy als "Druckfarbe".
@@ -211,6 +211,22 @@
   #spwipe .st b{font-weight:400;display:block;transform:rotate(-3deg) scale(1.35);opacity:0;transition:opacity .25s ease .6s,transform .45s cubic-bezier(.2,1.4,.3,1) .6s}
   #spwipe.go .st b{opacity:1;transform:rotate(-3deg) scale(1)}
   #spwipe .st i{font-style:normal;color:#e3202c}
+  /* ---------- Übergang in Dino-Weitwurf: Papa-Rex schnappt zu (Endbild = Startbild von dinoWeitwurf.html?ankunft) ---------- */
+  #jwipe{position:fixed;inset:0;z-index:100;pointer-events:none;overflow:hidden;visibility:hidden}
+  #jwipe.go{visibility:visible;pointer-events:auto;animation:jShake .32s linear .4s}
+  #jwipe .jm{position:absolute;left:0;right:0;top:calc(50% - 5vmin);height:10vmin;background:#3b0f14;opacity:0;transition:opacity .05s linear .38s}
+  #jwipe .jt,#jwipe .jb{position:absolute;left:-2vmin;right:-2vmin;height:calc(50% - 4vmin);background:#3f9a4c radial-gradient(circle,rgba(255,255,255,.055) 0 2.6vmin,transparent 2.8vmin) 0 0/21vmin 17vmin;transition:transform .42s cubic-bezier(.6,0,.9,.45)}
+  #jwipe .jt{top:0;box-shadow:inset 0 -1.6vmin 0 #2f7a3a;transform:translateY(calc(-100% - 10vmin))}
+  #jwipe .jb{bottom:0;box-shadow:inset 0 1.6vmin 0 #2f7a3a;transform:translateY(calc(100% + 10vmin))}
+  #jwipe .jt::after,#jwipe .jb::after{content:"";position:absolute;left:0;right:0;height:9vmin;background-repeat:repeat-x;background-size:12vmin 9vmin}
+  #jwipe .jt::after{top:100%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 45'%3E%3Cpath d='M9 0Q30 60 51 0Z' fill='%23fffbea' stroke='%23cbbd94' stroke-width='2'/%3E%3C/svg%3E")}
+  #jwipe .jb::after{bottom:100%;background-position:6vmin 0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 45'%3E%3Cpath d='M9 45Q30 -15 51 45Z' fill='%23f3ead0' stroke='%23cbbd94' stroke-width='2'/%3E%3C/svg%3E")}
+  #jwipe.go .jt,#jwipe.go .jb{transform:none}
+  #jwipe.go .jm{opacity:1}
+  #jwipe .jx{position:absolute;inset:0;display:grid;place-items:center;font-family:Fredoka,var(--disp);font-weight:700;font-size:min(12vw,120px);color:#fff;text-shadow:0 .07em 0 #2f7a3a,0 .14em 0 rgba(0,0,0,.35);letter-spacing:.02em}
+  #jwipe .jx b{display:block;transform:rotate(-4deg) scale(1.5);opacity:0;transition:opacity .2s ease .55s,transform .45s cubic-bezier(.2,1.5,.3,1) .55s}
+  #jwipe.go .jx b{opacity:1;transform:rotate(-4deg) scale(1)}
+  @keyframes jShake{20%{transform:translate(-1.2vmin,.8vmin)}40%{transform:translate(1vmin,-.6vmin)}60%{transform:translate(-.6vmin,.4vmin)}80%{transform:translate(.3vmin,0)}}
   #wipe.go .wt span{opacity:1;transform:none}
   #wipe.go .wt span:nth-child(1){transition-delay:.42s}
   #wipe.go .wt span:nth-child(2){transition-delay:.5s}
@@ -364,6 +380,13 @@
         <div class="chips"><span>Three.js</span><span>WebGL</span><span>JavaScript</span></div>
         <div class="actions"><a class="btn" href="spiderDinoGame.html">Spielen →</a></div>
       </article>
+      <article class="proj rv">
+        <div class="top"><span class="emoji">🥚</span><span>Browserspiel · 2026</span></div>
+        <h3>Dino-Weitwurf</h3>
+        <p>Papa-Rex schleudert sein Baby so weit wie möglich. Pilze, Geysire und Flugsaurier helfen, Fresspflanzen nicht. Mit dem Geld gibt es Upgrades für den nächsten Wurf.</p>
+        <div class="chips"><span>JavaScript</span><span>Canvas</span><span>WebAudio</span></div>
+        <div class="actions"><a class="btn" href="dinoWeitwurf.html">Spielen →</a></div>
+      </article>
       <!-- TODO Diplomarbeit ausfüllen, dann Kommentar entfernen:
       <article class="proj rv">
         <div class="top"><span class="emoji">🎓</span><span>Diplomarbeit</span></div>
@@ -395,13 +418,14 @@
 <section class="game" id="spiel" style="padding-top:20px">
   <div class="wrap">
     <header class="sh rv"><h2><b>06</b>Kurze Pause?</h2></header>
-    <p class="lead rv">Spring über die Kakteen. Manchmal liegt ein Boot im Wasser, über das du einfach drüberlaufen kannst. <b>Oder du springst rein …</b> Und wenn ein Spinnenfaden von der Decke hängt: hochspringen und nochmal drücken.</p>
+    <p class="lead rv">Spring über die Kakteen. Manchmal liegt ein Boot im Wasser, über das du einfach drüberlaufen kannst. <b>Oder du springst rein …</b> Und wenn ein Spinnenfaden von der Decke hängt: hochspringen und nochmal drücken. Schaut ein riesiges Maul aus dem Boden? <b>Dann trau dich und spring nicht.</b></p>
     <div class="stage rv"><canvas id="dg" aria-label="Dino-Spiel: Springen mit Leertaste oder Tippen"></canvas></div>
     <div class="controls">
       <span><kbd>Leertaste</kbd><kbd>↑</kbd> oder tippen = springen</span>
       <span>Länger drücken = höher</span>
       <span><kbd>↓</kbd> = schneller landen</span>
       <span>Am Faden in der Luft nochmal drücken = festhalten</span>
+      <span>Maul nicht überspringen = gefressen werden</span>
     </div>
   </div>
 </section>
@@ -409,6 +433,7 @@
 <footer><div class="wrap"><span>© 2026 · <b>Lukas Mörtendorfer</b></span><span class="mono">built with ☕ &amp; 🦖</span></div></footer>
 
 <div id="spwipe" aria-hidden="true"><div class="sbg"></div><svg viewBox="-100 -100 200 200" preserveAspectRatio="xMidYMid slice"></svg><div class="st"><b>SPIDER<i>-</i>REX</b></div></div>
+<div id="jwipe" aria-hidden="true"><div class="jm"></div><div class="jt"></div><div class="jb"></div><div class="jx"><b>DINO-WEITWURF</b></div></div>
 <div id="wipe" aria-hidden="true"><div class="wr"></div><div class="wb"></div><div class="wt"><span>DINO</span><span>GOES</span><span>FISHING</span></div></div>
 
 <script>
@@ -464,7 +489,7 @@ function resize(){
   W=Math.round(cv.parentElement.clientWidth);H=W<560?240:280;GY=H-46;
   const dpr=Math.min(2,window.devicePixelRatio||1);
   cv.width=W*dpr;cv.height=H*dpr;cv.style.height=H+'px';cx.setTransform(dpr,0,0,dpr,0,0);
-  if(dino&&st!=='board'&&st!=='web')dino.x=dinoX();
+  if(dino&&st!=='board'&&st!=='web'&&st!=='chomp')dino.x=dinoX();
 }
 const dinoX=()=>W<560?30:70;
 
@@ -490,11 +515,11 @@ const rand=(a,b)=>a+Math.random()*(b-a);
 const hash=n=>{const s=Math.sin(n*127.1+311.7)*43758.5453;return s-Math.floor(s);};
 
 let st='ready', speed=380, dist=0, obs=[], gapNeed=0, dino=null, t=0, deadT=0, holding=false;
-let obsCount=0, boatSeen=false, board=null, web=null, parts=[], score=0, lastMile=0, inView=false;
+let obsCount=0, boatSeen=false, mawSeen=false, board=null, web=null, chomp=null, parts=[], score=0, lastMile=0, inView=false;
 let hi=0;try{hi=+localStorage.getItem('dino-runner-hi')||0;}catch(e){}
 
 function reset(){
-  speed=380;dist=0;obs=[];gapNeed=W*0.5;obsCount=0;boatSeen=false;board=null;web=null;parts=[];score=0;lastMile=0;
+  speed=380;dist=0;obs=[];gapNeed=W*0.5;obsCount=0;boatSeen=false;mawSeen=false;board=null;web=null;chomp=null;parts=[];score=0;lastMile=0;
   dino={x:dinoX(),y:0,vy:0,fast:false,leg:0};
 }
 reset();
@@ -534,7 +559,7 @@ const CACTI=[
   [{dx:0,w:20,h:50}],
   [{dx:0,w:14,h:34},{dx:18,w:14,h:28}],
   [{dx:0,w:14,h:32},{dx:17,w:20,h:48},{dx:40,w:14,h:30}]];
-const ow=o=>o.k==='boat'?o.w:o.k==='web'?24:o.st.reduce((m,s)=>Math.max(m,s.dx+s.w),0);
+const ow=o=>o.k==='boat'?o.w:o.k==='web'?24:o.k==='maw'?MAW_W:o.st.reduce((m,s)=>Math.max(m,s.dx+s.w),0);
 function spawn(){
   obsCount++;
   // Boot: ab dem 3. Hindernis zufällig, spätestens beim 5. garantiert
@@ -544,6 +569,10 @@ function spawn(){
   // Spinnenfaden: ab dem 4. Hindernis ab und zu
   if(obsCount>=4&&Math.random()<0.13){
     obs.push({k:'web',x:W+20,ph:rand(0,6)});gapNeed=speed*0.45+rand(200,380);return;
+  }
+  // Maul von Papa-Rex: ab dem 4. Hindernis ab und zu, spätestens beim 9. einmal
+  if(obsCount>=4&&(Math.random()<0.13||(!mawSeen&&obsCount>=9))){
+    mawSeen=true;obs.push({k:'maw',x:W+20,ph:rand(0,6)});gapNeed=speed*0.55+rand(260,460);return;
   }
   const pool=speed>540?4:speed>440?3:2;
   obs.push({k:'cac',x:W+20,st:CACTI[Math.floor(Math.random()*pool)]});
@@ -566,6 +595,16 @@ function hitCactus(){
   return false;
 }
 
+// Maul: Gelenk (Kieferwinkel) liegt MAW_HX rechts von o.x, Schnauze zeigt nach links zum Dino
+const MAW_HX=66, MAW_W=98, MAW_L=70;
+function hitMaw(){
+  const d=dino,x1=d.x+8,x2=d.x+DW-10,bot=GY-d.y;
+  for(const o of obs){if(o.k!=='maw')continue;const h=o.x+MAW_HX;
+    if(x2>h-54&&x1<h-22&&bot>GY-34)return o;
+    if(x2>h-22&&x1<h+26&&bot>GY-28)return o;}
+  return null;
+}
+
 // ---------- Steuerung ----------
 function jump(){if(dino.y===0&&dino.vy===0){dino.vy=780;beep(420,0.12,'square',0.035,760);}}
 function press(){
@@ -575,12 +614,12 @@ function press(){
 }
 const JUMP_KEYS=['Space','ArrowUp','KeyW'];
 addEventListener('keydown',e=>{
-  if(!inView||st==='board'||st==='web')return;
+  if(!inView||st==='board'||st==='web'||st==='chomp')return;
   if(JUMP_KEYS.includes(e.code)){e.preventDefault();holding=true;if(!e.repeat)press();}
   else if((e.code==='ArrowDown'||e.code==='KeyS')&&st==='run'){e.preventDefault();if(dino.y>0)dino.fast=true;}
 });
 addEventListener('keyup',e=>{if(JUMP_KEYS.includes(e.code))holding=false;});
-cv.addEventListener('pointerdown',e=>{e.preventDefault();if(st==='board'||st==='web')return;holding=true;press();});
+cv.addEventListener('pointerdown',e=>{e.preventDefault();if(st==='board'||st==='web'||st==='chomp')return;holding=true;press();});
 addEventListener('pointerup',()=>holding=false);
 addEventListener('pointercancel',()=>holding=false);
 cv.addEventListener('contextmenu',e=>e.preventDefault());
@@ -655,6 +694,31 @@ function updateWeb(dt){
     w.classList.add('go');beep(220,0.5,'triangle',0.05,880);
     setTimeout(()=>{location.href='spiderDinoGame.html?ankunft=1';},1500);}
 }
+// ---------- Nicht übers Maul springen = Papa-Rex schnappt zu = Dino-Weitwurf ----------
+function startChomp(o){
+  st='chomp';holding=false;
+  chomp={o,t:0,dx0:dino.x-(o.x+MAW_HX),dy0:-DH-dino.y,wiped:false,snapped:false,gulp:false};
+  beep(120,0.18,'sawtooth',0.05,300);
+}
+function snap(){
+  const C=chomp,h=C.o.x+MAW_HX,y=GY-mawLift(C.t);
+  C.snapped=true;crunch();beep(70,0.25,'square',0.06,40);
+  for(let i=0;i<16;i++)parts.push({x:h-rand(10,90),y:y+rand(-10,10),vx:rand(-260,120),vy:rand(-420,-120),life:rand(.4,.8),c:Math.random()<.4?PAPER2:INK,s:rand(3,7)});
+}
+const ease=k=>k<=0?0:k>=1?1:1-Math.pow(1-k,3);
+const mawLift=ct=>58*ease(ct/0.12)+10*ease((ct-0.3)/0.3);           // Kopf springt aus dem Boden
+const mawScale=ct=>1+0.45*ease(ct/0.14);
+// Kieferwinkel: lauernd leicht kauend, beim Zuschnappen erst weit auf, dann zu
+const mawOpen=(o,ct)=>chomp&&chomp.o===o?(ct<0.12?0.42+0.3*ease(ct/0.12):Math.max(0,0.72*(1-(ct-0.12)/0.06))):0.38+Math.sin(t*4+o.ph)*0.06;
+function updateChomp(dt){
+  const C=chomp;C.t+=dt;
+  speed*=Math.exp(-14*dt);const dx=speed*dt;dist+=dx;
+  for(const q of obs)q.x-=dx;
+  if(!C.snapped&&C.t>=0.17)snap();
+  if(C.snapped&&C.t>0.38&&!C.gulp){C.gulp=true;beep(320,0.2,'sine',0.07,110);}
+  if(!C.wiped&&C.t>0.5){C.wiped=true;document.getElementById('jwipe').classList.add('go');
+    setTimeout(()=>{location.href='dinoWeitwurf.html?ankunft=1';},1250);}
+}
 // Netz fürs Übergangsbild (dasselbe Netz steht in spiderDinoGame.html)
 {
   const N=12,R=[9,18,29,42,57,75,96,120,148],svg=document.querySelector('#spwipe svg');
@@ -669,7 +733,7 @@ function updateWeb(dt){
   try{document.fonts&&document.fonts.load('40px Bangers');}catch(e){}
 }
 // Zurück-Taste: Seite aus dem Cache sauber zurücksetzen
-addEventListener('pageshow',e=>{if(e.persisted){document.getElementById('wipe').classList.remove('go');document.getElementById('spwipe').classList.remove('go');st='ready';reset();}});
+addEventListener('pageshow',e=>{if(e.persisted){document.getElementById('wipe').classList.remove('go');document.getElementById('spwipe').classList.remove('go');document.getElementById('jwipe').classList.remove('go');st='ready';reset();}});
 
 // ---------- Update ----------
 function update(dt){
@@ -678,6 +742,7 @@ function update(dt){
   parts=parts.filter(p=>p.life>0);
   if(st==='board'){updateBoard(dt);return;}
   if(st==='web'){updateWeb(dt);return;}
+  if(st==='chomp'){if(chomp)updateChomp(dt);return;}
   if(st!=='run'||!inView)return;
   speed=Math.min(820,speed+9*dt);
   const dx=speed*dt;dist+=dx;
@@ -699,6 +764,7 @@ function update(dt){
     }else d.y=ny;
   }
   d.leg+=dt*speed/28;
+  const m=hitMaw();if(m){startChomp(m);return;}
   if(hitCactus()){st='dead';deadT=t;beep(200,0.35,'sawtooth',0.05,60);
     if(score>hi){hi=score;try{localStorage.setItem('dino-runner-hi',hi);}catch(e){}}}
 }
@@ -726,6 +792,52 @@ function drawCactus(o){
     cx.fillStyle=RED;cx.beginPath();cx.moveTo(x,top);cx.lineTo(x+s.w/2,top-8);cx.lineTo(x+s.w,top);cx.fill();
     cx.fillStyle=PAPER;cx.fillRect(x+s.w/2-1,top+6,2,s.h-12);
   }
+}
+// Maul von Papa-Rex: Oberkiefer klappt um das Gelenk, Unterkiefer + Hals stecken im Boden
+function drawMaw(o){
+  const C=chomp&&chomp.o===o?chomp:null,ct=C?C.t:0;
+  const h=o.x+MAW_HX,lift=C?mawLift(ct):0,s=C?mawScale(ct):1,a=mawOpen(o,ct);
+  const tilt=C?-0.22*ease((ct-0.24)/0.2)+Math.sin(ct*38)*0.035*ease((ct-0.17)/0.05)*(1-ease((ct-0.3)/0.2)):0;
+  const L=MAW_L,T=20;
+  cx.save();cx.beginPath();cx.rect(-50,-200,W+100,GY+200);cx.clip();       // alles unter der Erde bleibt versteckt
+  // Hals in den Boden
+  cx.fillStyle=INK;cx.fillRect(h-4*s,GY-lift+6,34*s,lift+10);
+  cx.translate(h,GY-lift);cx.rotate(tilt);
+  // Rachen (nur sichtbar, wenn offen)
+  if(a>0.02){cx.fillStyle=RED;cx.beginPath();cx.moveTo(4*s,0);cx.lineTo(-L*s*Math.cos(a),-L*s*Math.sin(a));cx.lineTo(-L*s,0);cx.closePath();cx.fill();}
+  // gefangener Dino (zwischen den Kiefern, Hinterteil schaut vorne raus und zappelt)
+  if(C){
+    const k=ease(ct/0.12),tx=-L*s-24+ease((ct-0.32)/0.2)*68;
+    const dx=C.dx0+(tx-C.dx0)*k,dy=C.snapped?-DH/2:C.dy0+(-DH-C.dy0)*k;
+    drawDino(dx+(C.snapped?Math.sin(ct*45)*2:0),dy,Math.floor(ct*16)%2?'a':'b',false);
+  }
+  cx.scale(s,s);
+  // Unterkiefer mit Zähnen nach oben
+  cx.fillStyle=PAPER;for(let i=0;i<6;i++){const x=-L+8+i*10;cx.beginPath();cx.moveTo(x,1);cx.lineTo(x+4,-7);cx.lineTo(x+8,1);cx.fill();}
+  cx.fillStyle=INK;cx.beginPath();cx.roundRect(-L-2,0,L+10,18,[8,0,0,10]);cx.fill();
+  // Schädel mit Auge
+  cx.beginPath();cx.roundRect(-6,-34,36,40,[16,14,0,0]);cx.fill();
+  cx.fillStyle=PAPER;cx.beginPath();cx.arc(10,-20,6.5,0,7);cx.fill();
+  cx.fillStyle=INK;cx.beginPath();cx.arc(C?10:7.5,-20,3.2,0,7);cx.fill();
+  cx.strokeStyle=RED;cx.lineWidth=3;cx.beginPath();cx.moveTo(1,C?-26:-30);cx.lineTo(18,-28);cx.stroke();
+  // Oberkiefer (klappt), Zähne nach unten
+  cx.rotate(a);
+  cx.fillStyle=PAPER;for(let i=0;i<6;i++){const x=-L+5+i*10;cx.beginPath();cx.moveTo(x,-1);cx.lineTo(x+4,8);cx.lineTo(x+8,-1);cx.fill();}
+  cx.fillStyle=INK;cx.beginPath();cx.roundRect(-L,-T,L+12,T+1,[11,6,0,4]);cx.fill();
+  cx.fillStyle=PAPER;cx.fillRect(-L+8,-T+6,4,3);                           // Nasenloch
+  cx.restore();
+}
+function drawMawLabel(o){
+  if(st!=='run'&&st!=='ready')return;
+  const h=o.x+MAW_HX;if(h<dino.x+DW)return;
+  const bx=h-24,by=GY-84+Math.sin(t*5)*4;
+  cx.font='800 13px "JetBrains Mono", monospace';cx.textAlign='center';
+  const txt='LASS DICH FRESSEN!',tw=cx.measureText(txt).width;
+  cx.save();cx.translate(bx,by);cx.rotate(-0.05);
+  cx.fillStyle=INK;cx.fillRect(-tw/2-7,-18,tw+14,24);
+  cx.fillStyle=PAPER;cx.fillText(txt,0,0);
+  cx.fillStyle=RED;cx.beginPath();cx.moveTo(-7,6);cx.lineTo(7,6);cx.lineTo(0,16);cx.fill();
+  cx.restore();
 }
 // Spinnenfaden: weißer Faden mit dunkler Kontur, kleine Spinne am Ende
 function threadPath(x0,x1,y1){cx.beginPath();cx.moveTo(x0,-4);cx.quadraticCurveTo(x0,y1*0.55,x1,y1);}
@@ -838,7 +950,7 @@ function draw(){
     cx.fillRect(px,GY+9+hash(n+7)*24,2+hash(n+3)*7,2);}
 
   const bob=st==='board'?Math.sin(t*6)*2:0;
-  for(const o of obs){if(o.k==='cac')drawCactus(o);else if(o.k==='web')drawRope(o);else drawBoat(o,o===board?.b?bob:0);}
+  for(const o of obs){if(o.k==='cac')drawCactus(o);else if(o.k==='web')drawRope(o);else if(o.k==='maw'){if(!chomp||chomp.o!==o)drawMaw(o);}else drawBoat(o,o===board?.b?bob:0);}
 
   // Dino
   const d=dino,frame=st==='ready'?'a':(d.y>0||st==='board')?'air':(Math.floor(d.leg)%2?'a':'b');
@@ -848,14 +960,15 @@ function draw(){
     cx.save();cx.translate(d.x+DW/2,hy);cx.rotate(S.ang*S.k);drawDino(-DW/2,0,'air',false);cx.restore();
     const sy=hy-8-Math.max(0,S.t-0.05)*520;                 // Spinne flitzt den Faden hoch
     if(sy>-20)drawSpider(S.o.x+(S.sx-S.o.x)*Math.max(0,sy)/Math.max(1,hy),sy,0.5);
-  }else drawDino(d.x,GY-DH-d.y+(st==='board'?bob:0),frame,st==='dead');
+  }else if(st==='chomp')drawMaw(chomp.o);                       // Dino steckt im Maul
+  else drawDino(d.x,GY-DH-d.y+(st==='board'?bob:0),frame,st==='dead');
   if(st==='board'){ // Angel in der Hand
     const hx=d.x+DW-6,hy=GY-DH-d.y+bob+38;
     cx.strokeStyle=INK;cx.lineWidth=3;cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(hx+26,hy-34);cx.stroke();
     cx.lineWidth=1;cx.beginPath();cx.moveTo(hx+26,hy-34);cx.lineTo(hx+34,GY+20);cx.stroke();
   }
   for(const o of boats)drawLabel(o);
-  for(const o of obs)if(o.k==='web')drawRopeLabel(o);
+  for(const o of obs)if(o.k==='web')drawRopeLabel(o);else if(o.k==='maw')drawMawLabel(o);
 
   for(const p of parts){const z=p.s||4;cx.fillStyle=p.c;cx.fillRect(p.x-z/2,p.y-z/2,z,z);}
   cx.restore();
