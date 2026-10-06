@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lukas Mörtendorfer</title>
+<meta name="description" content="Lukas Mörtendorfer, 19, Informatik-Schüler in der 5. Klasse der HTL Leonding und Softwareentwickler.">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<!--
+  ✏️ ANPASSEN: Stellen in [ECKIGEN KLAMMERN] (Schule, Ort, E-Mail, Links …) mit deinen echten Infos ersetzen.
+  Stil: Konstruktivismus – Blau / Weiß, Navy als "Druckfarbe".
+-->
+<style>
+  :root{--paper:#f4f2ec;--white:#fff;--ink:#0a1633;--blue:#1740d8;--blue2:#0b2a8f;--sky:#9db6ff;--muted:#4a5577;
+        --disp:"Big Shoulders Display",Impact,"Arial Narrow",sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;overflow-x:hidden}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:17px;line-height:1.65;overflow-x:hidden}
+  /* Papierkorn */
+  body::before{content:"";position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.07;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  a{color:inherit}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+  .mono{font-family:var(--mono)}
+  .acc{color:var(--blue)}
+  .muted{color:var(--muted)}
+
+  /* ---------- Navigation ---------- */
+  nav{position:fixed;top:0;left:0;right:0;z-index:20;background:var(--paper);border-bottom:4px solid var(--ink)}
+  nav .wrap{display:flex;align-items:center;height:62px;gap:16px}
+  nav .logo{display:grid;place-items:center;height:44px;padding:0 12px;background:var(--blue);color:#fff;font-family:var(--disp);font-weight:900;font-size:26px;letter-spacing:.04em;text-decoration:none;transform:rotate(-4deg);box-shadow:4px 4px 0 var(--ink)}
+  nav ul{display:flex;list-style:none;margin:0 0 0 auto;padding:0;gap:2px}
+  nav li a{display:block;padding:6px 12px;text-decoration:none;font-family:var(--disp);font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:.04em;transition:background .15s,color .15s}
+  nav li a b{font-family:var(--mono);font-size:12px;color:var(--blue);margin-right:5px;vertical-align:2px}
+  nav li a:hover{background:var(--blue);color:#fff}
+  nav li a:hover b{color:#fff}
+  @media (max-width:760px){nav li a span{display:none}nav li a{padding:6px 7px}nav li a b{margin:0;font-size:13px}}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;min-height:100vh;min-height:100svh;display:flex;align-items:center;padding:120px 0 90px;overflow:hidden}
+  .deco{position:absolute;pointer-events:none}
+  .d-circle{width:min(60vw,640px);aspect-ratio:1;border-radius:50%;background:var(--blue);right:-7vw;top:50%;transform:translateY(-50%)}
+  .d-ring{width:min(22vw,220px);aspect-ratio:1;border-radius:50%;border:14px solid var(--ink);right:38vw;top:14%}
+  .d-wedge{width:min(30vw,340px);height:min(13vw,150px);background:var(--ink);right:min(33vw,400px);top:54%;clip-path:polygon(0 0,100% 50%,0 100%);transform:rotate(-14deg)}
+  .d-band{left:-10%;width:120%;height:58px;bottom:7%;background:var(--ink);transform:rotate(-7deg)}
+  .d-line{left:-10%;width:120%;height:4px;background:var(--ink);top:24%;transform:rotate(18deg)}
+  .d-line.b{top:auto;bottom:22%;height:2px;transform:rotate(-24deg)}
+  .d-vert{top:50%;transform:translate(-50%,-50%) rotate(-90deg) translateY(50%);font-family:var(--mono);font-size:12px;letter-spacing:.35em;text-transform:uppercase;white-space:nowrap;color:var(--blue);left:22px}
+  .hero .grid{position:relative;z-index:1;display:grid;grid-template-columns:1.15fr 1fr;gap:48px;align-items:center}
+  .hello{display:inline-block;margin:0 0 22px;padding:6px 12px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:14px;transform:rotate(-2deg)}
+  .hero h1{margin:0;font-family:var(--disp);font-weight:900;text-transform:uppercase;line-height:.84;font-size:clamp(70px,11vw,156px);letter-spacing:.005em}
+  .hero h1 .n1{display:block}
+  .hero h1 .n2{display:inline-block;margin-top:.14em;padding:.06em .14em .02em;font-size:.5em;background:var(--blue);color:#fff;transform:rotate(-4deg);transform-origin:left bottom;box-shadow:8px 8px 0 var(--ink)}
+  .hero .sub{margin:34px 0 0;font-size:clamp(17px,1.8vw,19px);max-width:500px;background:var(--paper);padding:2px 0}
+  .hero .sub b{font-weight:700;box-shadow:inset 0 -.38em 0 var(--sky)}
+  .cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px 8px;font-family:var(--disp);font-weight:800;font-size:20px;text-transform:uppercase;letter-spacing:.04em;text-decoration:none;color:var(--ink);background:var(--white);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);transition:transform .12s,box-shadow .12s}
+  .btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink)}
+  .btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+  .btn.primary{background:var(--blue);color:#fff}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}
+  .badges span{font-family:var(--mono);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:4px 10px;background:var(--white);border:2px solid var(--ink)}
+  .badges span::before{content:"";display:inline-block;width:8px;height:8px;background:var(--blue);margin-right:7px;vertical-align:1px}
+
+  .term{background:var(--ink);color:#e9eeff;border:4px solid var(--ink);box-shadow:14px 14px 0 var(--white),14px 14px 0 4px var(--ink);transform:rotate(1.5deg);overflow:hidden;font-family:var(--mono);font-size:14px;line-height:1.7}
+  .term .bar{display:flex;align-items:center;gap:7px;padding:9px 14px;background:var(--blue)}
+  .term .bar i{width:11px;height:11px;background:#fff}
+  .term .bar i:nth-child(2){background:var(--sky)}.term .bar i:nth-child(3){background:var(--ink)}
+  .term .bar span{margin-left:auto;color:#fff;font-size:12px;letter-spacing:.08em}
+  .term pre{margin:0;padding:18px 18px 22px;min-height:300px;white-space:pre-wrap;word-break:break-word;font:inherit}
+  .term .p{color:#7d9dff;font-weight:700}.term .k{color:var(--sky)}.term .s{color:#fff;font-weight:700}.term .c{color:#7c88a8}
+  .cursor{display:inline-block;width:8px;height:1.1em;background:#7d9dff;vertical-align:-3px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  @media (max-width:860px){
+    .hero .grid{grid-template-columns:1fr;gap:56px}
+    .term pre{min-height:0}
+    .d-circle{width:110vw;top:auto;bottom:-30vw;right:-40vw;transform:none}
+    .d-ring{right:-30px;top:90px;width:120px;border-width:10px}
+    .d-wedge{display:none}.d-vert{display:none}
+    .d-band{bottom:auto;top:52%;height:34px}
+  }
+
+  /* ---------- Laufband ---------- */
+  .tickwrap{position:relative;z-index:2;overflow:hidden;padding:26px 0;margin:-50px 0 0}
+  .ticker{width:110%;margin-left:-5%;background:var(--blue);color:#fff;border-block:4px solid var(--ink);transform:rotate(-2deg);overflow:hidden}
+  .tk{display:flex;width:max-content;animation:tick 38s linear infinite}
+  .tk span{padding:10px 0;font-family:var(--disp);font-weight:900;font-size:30px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+  .tk span i{font-style:normal;color:var(--ink);margin:0 18px}
+  @keyframes tick{to{transform:translateX(-50%)}}
+
+  /* ---------- Sections ---------- */
+  section{position:relative;padding:100px 0;scroll-margin-top:60px}
+  .sh{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px 20px;margin:0 0 48px}
+  .sh h2{margin:0;display:flex;align-items:center;gap:18px;font-family:var(--disp);font-weight:900;text-transform:uppercase;font-size:clamp(46px,7vw,86px);line-height:.85;letter-spacing:.01em}
+  .sh h2 b{flex:none;display:inline-grid;place-items:center;width:1.1em;height:1.1em;padding-top:.04em;background:var(--blue);color:#fff;font-size:.56em;transform:rotate(-8deg);box-shadow:5px 5px 0 var(--ink)}
+  .sh::after{content:"";flex:1;min-width:60px;height:16px;margin-bottom:6px;background:repeating-linear-gradient(-45deg,var(--ink) 0 5px,transparent 5px 12px)}
+
+  /* Über mich */
+  .about{display:grid;grid-template-columns:1.3fr 1fr;gap:56px;align-items:start}
+  .about p{margin:0 0 16px}
+  .about p b{font-weight:700}
+  .about .txt p:first-child::first-letter{float:left;margin:6px 12px 0 0;padding:4px 12px 0;font-family:var(--disp);font-weight:900;font-size:76px;line-height:.9;background:var(--blue);color:#fff}
+  .about .quote{margin-top:28px;padding:16px 20px;border-left:10px solid var(--blue);background:var(--white);font-family:var(--disp);font-weight:800;font-size:26px;line-height:1.1;text-transform:uppercase}
+  .facts{position:relative;margin:0;background:var(--white);border:4px solid var(--ink);box-shadow:12px 12px 0 var(--blue);transform:rotate(1.2deg)}
+  .facts::before{content:"Datenblatt / Nº 01";display:block;padding:8px 18px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase}
+  .facts div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:12px 18px;border-bottom:2px solid var(--ink)}
+  .facts div:last-child{border-bottom:0}
+  .facts dt{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .facts dd{margin:0;text-align:right;font-weight:600}
+  .facts dd.acc{background:var(--blue);color:#fff;padding:1px 8px}
+  @media (max-width:820px){.about{grid-template-columns:1fr;gap:40px}.facts{transform:none}}
+
+  /* Skills */
+  .skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:24px}
+  .skill{background:var(--white);border:3px solid var(--ink);box-shadow:8px 8px 0 var(--ink);padding:22px;transition:transform .15s,box-shadow .15s}
+  .skill:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 var(--blue)}
+  .skill .ic{width:46px;height:46px;display:grid;place-items:center;background:var(--blue);color:#fff;font-family:var(--mono);font-weight:800;font-size:15px;margin-bottom:14px;transform:rotate(-6deg)}
+  .skill h3{margin:0 0 4px;font-family:var(--disp);font-weight:900;font-size:30px;line-height:1;text-transform:uppercase;letter-spacing:.02em}
+  .skill p{margin:0 0 14px;color:var(--muted);font-size:15px}
+  .skill:nth-child(3n+2){background:var(--blue);color:#fff}
+  .skill:nth-child(3n+2):hover{box-shadow:11px 11px 0 var(--ink)}
+  .skill:nth-child(3n+2) p{color:#dbe4ff}
+  .skill:nth-child(3n+2) .ic{background:#fff;color:var(--blue)}
+  .skill:nth-child(3n+2) .chips span{border-color:#fff;background:transparent}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chips span{font-family:var(--mono);font-size:12px;font-weight:700;padding:2px 8px;border:2px solid var(--ink);background:var(--paper)}
+  .langs{margin-top:44px;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px 40px}
+  .lang .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .lang .row span:first-child{font-family:var(--disp);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.03em}
+  .lang .row span:last-child{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--blue)}
+  .meter{height:18px;border:3px solid var(--ink);background:var(--white)}
+  .meter i{display:block;height:100%;width:0;background:repeating-linear-gradient(-45deg,var(--blue) 0 8px,#2f5cff 8px 16px);border-right:3px solid var(--ink);transition:width 1.1s cubic-bezier(.2,.7,.2,1)}
+
+  /* Werdegang */
+  .tl{list-style:none;margin:0;padding:0 0 0 36px;border-left:6px solid var(--ink)}
+  .tl li{position:relative;padding:0 0 36px}
+  .tl li:last-child{padding-bottom:0}
+  .tl li::before{content:"";position:absolute;left:-50px;top:4px;width:18px;height:18px;background:var(--blue);border:3px solid var(--ink);transform:rotate(45deg)}
+  .tl .when{display:inline-block;padding:2px 9px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:12px;letter-spacing:.06em}
+  .tl h3{margin:8px 0 4px;font-family:var(--disp);font-weight:900;font-size:30px;line-height:1;text-transform:uppercase;letter-spacing:.02em}
+  .tl p{margin:0;color:var(--muted);max-width:680px}
+
+  /* Projekte */
+  .projects{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:26px}
+  .proj{position:relative;overflow:hidden;background:var(--white);border:4px solid var(--ink);box-shadow:10px 10px 0 var(--ink);padding:24px;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+  .proj:hover{transform:translate(-3px,-3px);box-shadow:13px 13px 0 var(--blue)}
+  .proj > *{position:relative}
+  .proj .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+  .proj .emoji{font-size:30px;line-height:1}
+  .proj h3{margin:0 0 8px;font-family:var(--disp);font-weight:900;font-size:36px;line-height:1;text-transform:uppercase}
+  .proj p{margin:0 0 16px;color:var(--muted);font-size:15px}
+  .proj .chips{margin-bottom:20px}
+  .proj .actions{margin-top:auto;display:flex;gap:12px;flex-wrap:wrap}
+  .proj .actions .btn{padding:7px 14px 5px;font-size:17px}
+  .proj.feat{background:var(--blue);color:#fff}
+  .proj.feat:hover{box-shadow:13px 13px 0 var(--ink)}
+  .proj.feat::before{content:"";position:absolute;width:200px;height:200px;right:-70px;top:-70px;border-radius:50%;border:26px solid rgba(255,255,255,.18)}
+  .proj.feat p{color:#dbe4ff}
+  .proj.feat .chips span{background:transparent;border-color:#fff}
+  .proj.feat .btn.primary{background:#fff;color:var(--blue)}
+
+  /* Kontakt */
+  .contact .box{position:relative;overflow:hidden;background:var(--blue);color:#fff;border:4px solid var(--ink);box-shadow:14px 14px 0 var(--ink);padding:clamp(28px,6vw,64px)}
+  .contact .box::before{content:"";position:absolute;width:420px;height:420px;right:-120px;bottom:-200px;border-radius:50%;background:#fff;opacity:.95}
+  .contact .box::after{content:"";position:absolute;left:-10%;width:130%;height:26px;bottom:110px;background:var(--ink);transform:rotate(-9deg)}
+  .contact .box > *{position:relative;z-index:1}
+  .contact h3{margin:0 0 14px;font-family:var(--disp);font-weight:900;text-transform:uppercase;font-size:clamp(48px,9vw,112px);line-height:.85;max-width:760px}
+  .contact h3 span{color:var(--ink);background:#fff;padding:0 .1em;display:inline-block;transform:rotate(-3deg)}
+  .contact p{margin:0 0 28px;max-width:520px;color:#e3eaff}
+  .contact .cta{margin:0}
+  .contact .btn.primary{background:var(--ink);color:#fff;box-shadow:5px 5px 0 #fff}
+
+  /* Spiel */
+  .game p.lead{margin:-20px 0 28px;max-width:680px}
+  .game p.lead b{color:var(--blue)}
+  .stage{position:relative;overflow:hidden;background:var(--white);border:4px solid var(--ink);box-shadow:12px 12px 0 var(--blue)}
+  .stage canvas{display:block;width:100%;touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .controls{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:24px;font-size:14px;color:var(--muted)}
+  kbd{display:inline-block;background:var(--white);border:2px solid var(--ink);border-bottom-width:4px;color:var(--ink);font-family:var(--mono);font-size:12px;font-weight:700;padding:1px 7px;margin-right:4px}
+
+  footer{margin-top:80px;padding:28px 0;background:var(--ink);color:#c5cde6;border-top:12px solid var(--blue);font-size:14px}
+  footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  footer b{color:#fff}
+
+  /* Einblenden beim Scrollen */
+  .rv{opacity:0;transform:translateX(-28px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+  .rv.in{opacity:1;transform:none}
+  .facts.rv.in{transform:rotate(1.2deg)}
+  @media (max-width:820px){.facts.rv.in{transform:none}}
+
+  /* ---------- Übergang ins Angelspiel (Endbild = Startbild in dinoGoesFishing.html) ---------- */
+  #wipe{position:fixed;inset:0;z-index:100;pointer-events:none;overflow:hidden;visibility:hidden}
+  #wipe.go{visibility:visible;pointer-events:auto}
+  #wipe .wr{position:absolute;top:0;bottom:0;left:-20%;width:140%;background:#0a1633;transform:translateX(-120%) skewX(-12deg);transition:transform .6s cubic-bezier(.7,0,.2,1)}
+  #wipe .wb{position:absolute;left:-20%;width:140%;height:16vh;top:62%;background:#1740d8;transform:translateX(120%) rotate(-14deg);transition:transform .55s cubic-bezier(.7,0,.2,1) .22s}
+  #wipe .wt{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding-left:8vw;font-family:"JetBrains Mono",monospace;font-weight:800;color:#fff;font-size:min(13vw,19vh);line-height:.95;letter-spacing:-.04em;text-shadow:0 .05em 0 #0a1633}
+  #wipe .wt span{display:block;opacity:0;transform:translateY(50px);transition:opacity .3s,transform .35s cubic-bezier(.2,.8,.2,1)}
+  #wipe .wt span:last-child::after{content:"_"}
+  #wipe.go .wr{transform:translateX(0) skewX(-12deg)}
+  #wipe.go .wb{transform:translateX(0) rotate(-14deg)}
+
+  /* ---------- Übergang ins Spider-Rex-Spiel (Endbild = Startbild von spiderDinoGame.html?ankunft) ---------- */
+  #spwipe{position:fixed;inset:0;z-index:100;pointer-events:none;overflow:hidden;visibility:hidden;--ox:50%;--oy:0%}
+  #spwipe.go{visibility:visible;pointer-events:auto}
+  #spwipe .sbg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,#5c121d,#0a0e28 68%,#04060f);clip-path:circle(0 at var(--ox) var(--oy));transition:clip-path .75s cubic-bezier(.7,0,.2,1)}
+  #spwipe.go .sbg{clip-path:circle(160vmax at var(--ox) var(--oy))}
+  #spwipe svg{position:absolute;inset:0;width:100%;height:100%}
+  #spwipe svg path{fill:none;stroke:#fff;stroke-width:.45;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.32;transition:stroke-dashoffset .6s cubic-bezier(.3,.7,.2,1)}
+  #spwipe.go svg path{stroke-dashoffset:0}
+  #spwipe .st{position:absolute;inset:0;display:grid;place-items:center;font-family:Bangers,var(--disp);font-size:min(14vw,150px);letter-spacing:6px;line-height:.9;color:#fff;text-shadow:6px 6px 0 #1b3fae,12px 12px 0 #000}
+  #spwipe .st b{font-weight:400;display:block;transform:rotate(-3deg) scale(1.35);opacity:0;transition:opacity .25s ease .6s,transform .45s cubic-bezier(.2,1.4,.3,1) .6s}
+  #spwipe.go .st b{opacity:1;transform:rotate(-3deg) scale(1)}
+  #spwipe .st i{font-style:normal;color:#e3202c}
+  #wipe.go .wt span{opacity:1;transform:none}
+  #wipe.go .wt span:nth-child(1){transition-delay:.42s}
+  #wipe.go .wt span:nth-child(2){transition-delay:.5s}
+  #wipe.go .wt span:nth-child(3){transition-delay:.58s}
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .rv{opacity:1;transform:none;transition:none}
+    .cursor,.tk{animation:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#top">LM</a>
+    <ul>
+      <li><a href="#ueber"><b>01</b><span>Über mich</span></a></li>
+      <li><a href="#skills"><b>02</b><span>Skills</span></a></li>
+      <li><a href="#werdegang"><b>03</b><span>Werdegang</span></a></li>
+      <li><a href="#projekte"><b>04</b><span>Projekte</span></a></li>
+      <li><a href="#kontakt"><b>05</b><span>Kontakt</span></a></li>
+      <li><a href="#spiel"><b>06</b><span>Spiel</span></a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero" id="top">
+  <div class="deco d-circle" aria-hidden="true"></div>
+  <div class="deco d-ring" aria-hidden="true"></div>
+  <div class="deco d-line" aria-hidden="true"></div>
+  <div class="deco d-line b" aria-hidden="true"></div>
+  <div class="deco d-band" aria-hidden="true"></div>
+  <div class="deco d-wedge" aria-hidden="true"></div>
+  <div class="deco d-vert" aria-hidden="true">Portfolio · Nº 01 · 2026</div>
+  <div class="wrap grid">
+    <div>
+      <p class="hello">// Hallo Welt, ich bin</p>
+      <h1><span class="n1">Lukas</span><span class="n2">Mörtendorfer</span></h1>
+      <p class="sub"><b>19 Jahre</b>, Schüler der <b>5. Klasse an der HTL Leonding</b> (Informatik) und leidenschaftlicher Entwickler. Ich programmiere Software, Websites und kleine Spiele, am liebsten solche, die man gern benutzt.</p>
+      <div class="cta">
+        <a class="btn primary" href="#projekte">Projekte ansehen →</a>
+        <a class="btn" href="#kontakt">Kontakt</a>
+      </div>
+      <div class="badges"><span>Java</span><span>C#</span><span>Python</span><span>JavaScript</span><span>SQL</span></div>
+    </div>
+    <div class="term" aria-label="Terminal mit Infos über Lukas">
+      <div class="bar"><i></i><i></i><i></i><span>lukas@htl: ~</span></div>
+      <pre id="term"></pre>
+    </div>
+  </div>
+</header>
+
+<div class="tickwrap" aria-hidden="true"><div class="ticker"><div class="tk">
+  <span>Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i>Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i></span>
+  <span>Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i>Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i></span>
+</div></div></div>
+
+<!-- ================= 01 ÜBER MICH ================= -->
+<section id="ueber">
+  <div class="wrap">
+    <header class="sh rv"><h2><b>01</b>Über mich</h2></header>
+    <div class="about">
+      <div class="txt rv">
+        <p>Servus! Ich bin <b>Lukas</b>, 19 Jahre alt, und gehe in die <b>5. Klasse der HTL Leonding</b>, Abteilung Informatik. Dort lerne ich alles von objektorientierter Programmierung über Datenbanken und Netzwerktechnik bis hin zu Projektmanagement.</p>
+        <p>Am meisten Spaß macht mir, Ideen in funktionierenden Code zu verwandeln, egal ob es eine Webanwendung, ein Tool für den Alltag oder ein kleines Browserspiel wie der <b>Dinoangler</b> ist. Ich mag sauberen Code, durchdachte Oberflächen und das Gefühl, wenn nach langem Debuggen endlich alles läuft.</p>
+        <p>Neben der Schule bringe ich mir laufend neue Technologien bei und arbeite an eigenen Projekten.</p>
+        <div class="quote">Ideen rein.<br>Funktionierender Code raus.</div>
+      </div>
+      <dl class="facts rv">
+        <div><dt>Name</dt><dd>Lukas Mörtendorfer</dd></div>
+        <div><dt>Alter</dt><dd>19</dd></div>
+        <div><dt>Ausbildung</dt><dd>HTL · Informatik</dd></div>
+        <div><dt>Schule</dt><dd>HTL Leonding · 5. Klasse</dd></div>
+        <div><dt>Sprachen</dt><dd>Deutsch, Englisch</dd></div>
+        <div><dt>Status</dt><dd class="acc">Offen für Praktika &amp; Projekte</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 SKILLS ================= -->
+<section id="skills" style="padding-top:20px">
+  <div class="wrap">
+    <header class="sh rv"><h2><b>02</b>Was ich kann</h2></header>
+    <div class="skills">
+      <article class="skill rv"><div class="ic">{ }</div><h3>Programmierung</h3><p>Objektorientiert, sauber strukturiert, mit Tests.</p>
+        <div class="chips"><span>Java</span><span>C#</span><span>Python</span><span>C</span><span>OOP</span><span>Algorithmen</span></div></article>
+      <article class="skill rv"><div class="ic">&lt;/&gt;</div><h3>Webentwicklung</h3><p>Von der statischen Seite bis zur Web-App.</p>
+        <div class="chips"><span>HTML</span><span>CSS</span><span>JavaScript</span><span>TypeScript</span><span>Node.js</span><span>REST</span></div></article>
+      <article class="skill rv"><div class="ic">DB</div><h3>Datenbanken</h3><p>Daten modellieren, abfragen und anbinden.</p>
+        <div class="chips"><span>SQL</span><span>MySQL</span><span>PostgreSQL</span><span>ER-Modell</span><span>JDBC</span></div></article>
+      <article class="skill rv"><div class="ic">$_</div><h3>Tools &amp; Systeme</h3><p>Werkzeuge, die jeden Tag im Einsatz sind.</p>
+        <div class="chips"><span>Git</span><span>GitHub</span><span>Linux</span><span>Docker</span><span>IntelliJ</span><span>VS Code</span></div></article>
+      <article class="skill rv"><div class="ic">⇄</div><h3>Netzwerke</h3><p>Grundlagen aus dem HTL-Unterricht.</p>
+        <div class="chips"><span>TCP/IP</span><span>Subnetting</span><span>Routing</span><span>Cisco</span></div></article>
+      <article class="skill rv"><div class="ic">✓</div><h3>Projektarbeit</h3><p>Im Team planen, umsetzen und dokumentieren.</p>
+        <div class="chips"><span>Scrum</span><span>UML</span><span>Teamarbeit</span><span>Dokumentation</span></div></article>
+    </div>
+    <div class="langs rv" id="langs">
+      <div class="lang"><div class="row"><span>Java</span><span>85%</span></div><div class="meter"><i data-w="85"></i></div></div>
+      <div class="lang"><div class="row"><span>JavaScript</span><span>80%</span></div><div class="meter"><i data-w="80"></i></div></div>
+      <div class="lang"><div class="row"><span>HTML &amp; CSS</span><span>85%</span></div><div class="meter"><i data-w="85"></i></div></div>
+      <div class="lang"><div class="row"><span>C#</span><span>70%</span></div><div class="meter"><i data-w="70"></i></div></div>
+      <div class="lang"><div class="row"><span>SQL</span><span>75%</span></div><div class="meter"><i data-w="75"></i></div></div>
+      <div class="lang"><div class="row"><span>Python</span><span>65%</span></div><div class="meter"><i data-w="65"></i></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 03 WERDEGANG ================= -->
+<section id="werdegang" style="padding-top:20px">
+  <div class="wrap">
+    <header class="sh rv"><h2><b>03</b>Werdegang</h2></header>
+    <ol class="tl">
+      <li class="rv"><div class="when">[Jahr] – heute</div><h3>HTL Leonding · Abteilung Informatik</h3><p>Fünfjährige Ausbildung mit Matura und Diplomarbeit. Softwareentwicklung, Datenbanken, Netzwerktechnik, Betriebssysteme und Projektmanagement.</p></li>
+      <li class="rv"><div class="when">[Sommer Jahr]</div><h3>Pflichtpraktikum · [Firma]</h3><p>[Was du dort gemacht hast, z. B. Mitarbeit an einer Webanwendung im Entwicklerteam.]</p></li>
+      <li class="rv"><div class="when">[Jahr]</div><h3>Diplomarbeit · [Thema]</h3><p>[Kurze Beschreibung deines Diplomarbeitsprojekts und deiner Rolle im Team.]</p></li>
+      <li class="rv"><div class="when">laufend</div><h3>Eigene Projekte</h3><p>Browserspiele, Websites und kleine Tools, um Neues auszuprobieren und dazuzulernen.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= 04 PROJEKTE ================= -->
+<section id="projekte" style="padding-top:20px">
+  <div class="wrap">
+    <header class="sh rv"><h2><b>04</b>Projekte</h2></header>
+    <div class="projects">
+      <article class="proj feat rv">
+        <div class="top"><span class="emoji">🦖</span><span>Browserspiel · 2026</span></div>
+        <h3>Dinoangler</h3>
+        <p>Ein kleiner Dino, ein Boot und ein riesiger Ozean. Fische fangen, Ausrüstung verbessern, mit Senkblei bis in den Tiefseegraben angeln und sieben Geheimnisse finden.</p>
+        <div class="chips"><span>JavaScript</span><span>Canvas</span><span>WebAudio</span></div>
+        <div class="actions"><a class="btn primary" href="dinoGoesFishing.html">Spielen →</a><a class="btn" href="geheimnisse.html">Geheimnisse</a></div>
+      </article>
+      <article class="proj rv">
+        <div class="top"><span class="emoji">🌐</span><span>Website · 2026</span></div>
+        <h3>Diese Portfolio-Seite</h3>
+        <p>Handgeschrieben in HTML, CSS und JavaScript, ohne Framework. Mit einem kleinen Geheimnis ganz unten.</p>
+        <div class="chips"><span>HTML</span><span>CSS</span><span>JS</span></div>
+        <div class="actions"><a class="btn" href="#spiel">Zum Geheimnis ↓</a></div>
+      </article>
+      <article class="proj rv">
+        <div class="top"><span class="emoji">🎓</span><span>Diplomarbeit</span></div>
+        <h3>[Projektname]</h3>
+        <p>[Kurze Beschreibung: Welches Problem löst das Projekt, welche Technologien wurden verwendet?]</p>
+        <div class="chips"><span>[Tech 1]</span><span>[Tech 2]</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 05 KONTAKT ================= -->
+<section class="contact" id="kontakt" style="padding-top:20px">
+  <div class="wrap">
+    <header class="sh rv"><h2><b>05</b>Kontakt</h2></header>
+    <div class="box rv">
+      <h3>Lass uns<br><span>was bauen.</span></h3>
+      <p>Du hast einen Praktikumsplatz, ein Projekt oder einfach eine Frage? Schreib mir, ich melde mich schnell zurück.</p>
+      <div class="cta">
+        <a class="btn primary" href="mailto:l.moertendorfer@students.htl-leonding.ac.at">✉ E-Mail schreiben</a>
+        <a class="btn" href="https://github.com/MoertendorferLukas" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 06 SPIEL ================= -->
+<section class="game" id="spiel" style="padding-top:20px">
+  <div class="wrap">
+    <header class="sh rv"><h2><b>06</b>Kurze Pause?</h2></header>
+    <p class="lead rv">Spring über die Kakteen. Manchmal liegt ein Boot im Wasser, über das du einfach drüberlaufen kannst. <b>Oder du springst rein …</b> Und wenn ein Spinnenfaden von der Decke hängt: hochspringen und nochmal drücken.</p>
+    <div class="stage rv"><canvas id="dg" aria-label="Dino-Spiel: Springen mit Leertaste oder Tippen"></canvas></div>
+    <div class="controls">
+      <span><kbd>Leertaste</kbd><kbd>↑</kbd> oder tippen = springen</span>
+      <span>Länger drücken = höher</span>
+      <span><kbd>↓</kbd> = schneller landen</span>
+      <span>Am Faden in der Luft nochmal drücken = festhalten</span>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap"><span>© 2026 · <b>Lukas Mörtendorfer</b></span><span class="mono">built with ☕ &amp; 🦖</span></div></footer>
+
+<div id="spwipe" aria-hidden="true"><div class="sbg"></div><svg viewBox="-100 -100 200 200" preserveAspectRatio="xMidYMid slice"></svg><div class="st"><b>SPIDER<i>-</i>REX</b></div></div>
+<div id="wipe" aria-hidden="true"><div class="wr"></div><div class="wb"></div><div class="wt"><span>DINO</span><span>GOES</span><span>FISHING</span></div></div>
+
+<script>
+'use strict';
+// ---------- Terminal im Hero: tippt sich selbst ----------
+{
+  const LINES=[
+    ['<span class="p">lukas@htl</span>:<span class="k">~</span>$ ','whoami'],
+    ['','lukas_moertendorfer'],
+    ['<span class="p">lukas@htl</span>:<span class="k">~</span>$ ','cat info.json'],
+    ['','{\n  <span class="k">"alter"</span>: <span class="s">19</span>,\n  <span class="k">"schule"</span>: <span class="s">"HTL Leonding – Informatik"</span>,\n  <span class="k">"klasse"</span>: <span class="s">5</span>,\n  <span class="k">"rolle"</span>: <span class="s">"Softwareentwickler"</span>,\n  <span class="k">"kaffee"</span>: <span class="s">true</span>\n}'],
+    ['<span class="p">lukas@htl</span>:<span class="k">~</span>$ ','ls skills/'],
+    ['','java  csharp  python  javascript\nsql  git  linux  docker'],
+    ['<span class="p">lukas@htl</span>:<span class="k">~</span>$ ','<span class="c"># scroll runter, unten wartet ein Dino 🦖</span>']];
+  const el=document.getElementById('term'),reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let html='';
+  const cur='<span class="cursor"></span>';
+  if(reduce){el.innerHTML=LINES.map(l=>l[0]+l[1]).join('\n')+'\n'+cur;}
+  else{
+    let i=0;
+    const next=()=>{
+      if(i>=LINES.length){el.innerHTML=html+cur;return;}
+      const [pre,txt]=LINES[i++];
+      if(!pre){html+=txt+'\n';el.innerHTML=html+cur;setTimeout(next,280);return;}
+      // Befehl Zeichen für Zeichen tippen (HTML-Tags am Stück)
+      const parts=txt.match(/<[^>]+>|&[^;]+;|[^<&]/g);let k=0,line=pre;
+      const step=()=>{if(k<parts.length){line+=parts[k++];el.innerHTML=html+line+cur;setTimeout(step,parts[k-1].length>1?0:38+Math.random()*50);}
+        else{html+=line+'\n';setTimeout(next,320);}};
+      el.innerHTML=html+line+cur;setTimeout(step,500);
+    };
+    setTimeout(next,600);
+  }
+}
+// ---------- Skill-Balken füllen sich beim Reinscrollen ----------
+new IntersectionObserver((es,o)=>{for(const e of es)if(e.isIntersecting){e.target.querySelectorAll('.meter i').forEach(m=>m.style.width=m.dataset.w+'%');o.disconnect();}},{threshold:.3}).observe(document.getElementById('langs'));
+</script>
+<script>
+'use strict';
+// ---------- Einblenden beim Scrollen ----------
+{
+  const io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}},{threshold:.15});
+  document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+}
+
+// =====================================================================
+//  Dino-Runner – Kakteen überspringen, ins Boot springen = Angelspiel
+// =====================================================================
+const cv=document.getElementById('dg'), cx=cv.getContext('2d');
+const PAPER='#ffffff', PAPER2='#9aa6c4', INK='#0a1633', RED='#1740d8', WATER='#8aa6ff';
+const HOLE='#0a1633', FOAM='#ffffff';
+let W=800,H=280,GY=234;
+function resize(){
+  W=Math.round(cv.parentElement.clientWidth);H=W<560?240:280;GY=H-46;
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.height=H+'px';cx.setTransform(dpr,0,0,dpr,0,0);
+  if(dino&&st!=='board'&&st!=='web')dino.x=dinoX();
+}
+const dinoX=()=>W<560?30:70;
+
+// Dino als Pixelbild (4px pro Pixel): # = schwarz, r = rote Mütze, o = Auge
+const PX=4;
+const BODY=[
+  '......rrrr..',
+  '.....rrrrrrr',
+  '.....#o#####',
+  '.....#######',
+  '.....###....',
+  '.....######.',
+  '#...#####...',
+  '#..#######..',
+  '##########..',
+  '########.#..',
+  '.#######....',
+  '..######....'];
+const LEGS={a:['...#...##...','...##.......'],b:['...##...#...','.......##...'],air:['...#...#....','...##..##...']};
+const DW=12*PX, DH=14*PX;
+
+const rand=(a,b)=>a+Math.random()*(b-a);
+const hash=n=>{const s=Math.sin(n*127.1+311.7)*43758.5453;return s-Math.floor(s);};
+
+let st='ready', speed=380, dist=0, obs=[], gapNeed=0, dino=null, t=0, deadT=0, holding=false;
+let obsCount=0, boatSeen=false, board=null, web=null, parts=[], score=0, lastMile=0, inView=false;
+let hi=0;try{hi=+localStorage.getItem('dino-runner-hi')||0;}catch(e){}
+
+function reset(){
+  speed=380;dist=0;obs=[];gapNeed=W*0.5;obsCount=0;boatSeen=false;board=null;web=null;parts=[];score=0;lastMile=0;
+  dino={x:dinoX(),y:0,vy:0,fast:false,leg:0};
+}
+reset();
+
+// ---------- Sound ----------
+let ac=null;
+function beep(f,d,type='square',v=0.04,f2=0,delay=0){
+  try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    const t0=ac.currentTime+delay,o=ac.createOscillator(),g=ac.createGain();
+    o.type=type;o.frequency.setValueAtTime(f,t0);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+d);
+    g.gain.setValueAtTime(v,t0);g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
+    o.connect(g).connect(ac.destination);o.start(t0);o.stop(t0+d+0.02);}catch(e){}
+}
+
+function crunch(){
+  try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    const len=Math.floor(ac.sampleRate*0.7),buf=ac.createBuffer(1,len,ac.sampleRate),d=buf.getChannelData(0);
+    for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.6)*(0.6+0.4*Math.sin(i/90));
+    const src=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();
+    src.buffer=buf;f.type='lowpass';f.frequency.value=700;g.gain.value=0.35;
+    src.connect(f).connect(g).connect(ac.destination);src.start();}catch(e){}
+  beep(90,0.5,'sawtooth',0.05,40);
+}
+// "Thwip": kurzer, gefilterter Rauschstoß mit fallender Tonhöhe
+function thwip(){
+  try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    const len=Math.floor(ac.sampleRate*0.22),buf=ac.createBuffer(1,len,ac.sampleRate),d=buf.getChannelData(0);
+    for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.2);
+    const src=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain(),t0=ac.currentTime;
+    src.buffer=buf;f.type='bandpass';f.Q.value=4;f.frequency.setValueAtTime(3800,t0);f.frequency.exponentialRampToValueAtTime(700,t0+0.2);
+    g.gain.value=0.5;src.connect(f).connect(g).connect(ac.destination);src.start();}catch(e){}
+}
+
+// ---------- Hindernisse ----------
+const CACTI=[
+  [{dx:0,w:14,h:34}],
+  [{dx:0,w:20,h:50}],
+  [{dx:0,w:14,h:34},{dx:18,w:14,h:28}],
+  [{dx:0,w:14,h:32},{dx:17,w:20,h:48},{dx:40,w:14,h:30}]];
+const ow=o=>o.k==='boat'?o.w:o.k==='web'?24:o.st.reduce((m,s)=>Math.max(m,s.dx+s.w),0);
+function spawn(){
+  obsCount++;
+  // Boot: ab dem 3. Hindernis zufällig, spätestens beim 5. garantiert
+  if(obsCount>=3&&(Math.random()<0.22||(!boatSeen&&obsCount>=5))){
+    boatSeen=true;obs.push({k:'boat',x:W+20,w:180});gapNeed=speed*0.5+rand(360,520);return;
+  }
+  // Spinnenfaden: ab dem 4. Hindernis ab und zu
+  if(obsCount>=4&&Math.random()<0.13){
+    obs.push({k:'web',x:W+20,ph:rand(0,6)});gapNeed=speed*0.45+rand(200,380);return;
+  }
+  const pool=speed>540?4:speed>440?3:2;
+  obs.push({k:'cac',x:W+20,st:CACTI[Math.floor(Math.random()*pool)]});
+  gapNeed=speed*0.55+rand(220,520);
+}
+const ropeEnd=o=>GY-DH-64+Math.sin(t*1.6+o.ph)*6;       // y-Position der Spinne am Fadenende
+const ropeSway=o=>Math.sin(t*1.9+o.ph)*5;
+function ropeNear(){
+  const d=dino;if(d.y<18)return null;
+  const c=d.x+DW/2,top=GY-DH-d.y;
+  return obs.find(o=>o.k==='web'&&Math.abs(o.x+ropeSway(o)-c)<DW/2+20&&top<ropeEnd(o)+70)||null;
+}
+const boatUnder=cxp=>obs.find(o=>o.k==='boat'&&cxp>o.x+8&&cxp<o.x+o.w-8);
+
+function hitCactus(){
+  const d=dino,x1=d.x+8,x2=d.x+DW-10,bot=GY-d.y,top=bot-DH+10;
+  for(const o of obs){if(o.k!=='cac')continue;
+    for(const s of o.st){const a=o.x+s.dx+2,b=a+s.w-4,ct=GY-s.h+3;
+      if(x2>a&&x1<b&&bot>ct&&top<GY)return true;}}
+  return false;
+}
+
+// ---------- Steuerung ----------
+function jump(){if(dino.y===0&&dino.vy===0){dino.vy=780;beep(420,0.12,'square',0.035,760);}}
+function press(){
+  if(st==='ready'){reset();st='run';jump();}
+  else if(st==='run'){const r=ropeNear();if(r)startWeb(r);else jump();}
+  else if(st==='dead'&&t-deadT>0.45){reset();st='run';}
+}
+const JUMP_KEYS=['Space','ArrowUp','KeyW'];
+addEventListener('keydown',e=>{
+  if(!inView||st==='board'||st==='web')return;
+  if(JUMP_KEYS.includes(e.code)){e.preventDefault();holding=true;if(!e.repeat)press();}
+  else if((e.code==='ArrowDown'||e.code==='KeyS')&&st==='run'){e.preventDefault();if(dino.y>0)dino.fast=true;}
+});
+addEventListener('keyup',e=>{if(JUMP_KEYS.includes(e.code))holding=false;});
+cv.addEventListener('pointerdown',e=>{e.preventDefault();if(st==='board'||st==='web')return;holding=true;press();});
+addEventListener('pointerup',()=>holding=false);
+addEventListener('pointercancel',()=>holding=false);
+new IntersectionObserver(es=>{inView=es[0].isIntersecting;},{threshold:.55}).observe(cv);
+
+// ---------- Ins Boot springen ----------
+function startBoard(b){
+  st='board';
+  // Wasser bleibt, wo es ist: wx0 = linkes Ufer, cols = zerschlagene Bodenstreifen rechts davon
+  board={b,t:0,v:0,off:dino.x-b.x,wiped:false,wx0:b.x,wx1:b.x+b.w,front:null,cols:[],shake:0,sailing:false};
+  for(let i=0;i<18;i++)parts.push({x:dino.x+DW/2+rand(-30,30),y:GY+4,vx:rand(-140,140),vy:rand(-380,-160),life:rand(.5,.9),c:Math.random()<.5?FOAM:WATER,s:4});
+  beep(180,0.25,'triangle',0.06,70);beep(523,0.1,'square',0.035,0,0.12);beep(784,0.18,'square',0.035,0,0.22);
+}
+const COL=6, SMASH_V=1500;
+function waterEnd(){const B=board;return B.cols.length?B.cols[B.cols.length-1].x+COL:B.wx1;}
+function smashColumn(x){
+  board.cols.push({x,t0:t});
+  for(let k=0;k<2;k++)parts.push({x:x+rand(0,COL),y:GY+rand(0,14),vx:rand(-40,220),vy:rand(-520,-200),life:rand(.6,1.1),c:Math.random()<.6?INK:PAPER2,s:rand(4,11)});
+  // Kakteen im Weg fliegen mit weg
+  for(const o of obs)if(o.k==='cac'&&!o.gone&&o.x>=board.wx1-4&&x>=o.x-4){o.gone=true;
+    for(const st2 of o.st)for(let k=0;k<10;k++)parts.push({x:o.x+st2.dx+rand(0,st2.w),y:GY-rand(0,st2.h),vx:rand(60,320),vy:rand(-600,-250),life:rand(.7,1.2),c:Math.random()<.25?RED:INK,s:rand(4,9)});}
+}
+function updateBoard(dt){
+  const B=board,b=B.b;B.t+=dt;
+  speed*=Math.exp(-11*dt);const dx=speed*dt;dist+=dx;
+  for(const o of obs)o.x-=dx;
+  B.wx0-=dx;B.wx1-=dx;for(const c of B.cols)c.x-=dx;if(B.front!==null)B.front-=dx;
+  obs=obs.filter(o=>!o.gone||o===b);
+  B.off+=((b.w-DW)/2-B.off)*Math.min(1,dt*8);          // Dino rutscht in die Bootsmitte
+
+  // 1) Der Boden vor dem Boot zerbricht bis zum Bildschirmrand
+  if(B.t>0.3&&B.front===null){B.front=B.wx1;crunch();}
+  if(B.front!==null&&B.front<W+COL){
+    B.front+=SMASH_V*dt;B.shake=7;
+    while(waterEnd()<Math.min(B.front,W+COL))smashColumn(waterEnd());
+  }
+  B.shake*=Math.exp(-6*dt);
+
+  // 2) Wenn das Wasser vor dem Bug steht, fährt das Boot den neuen Kanal entlang
+  if(B.t>0.55){
+    B.sailing=true;B.v+=650*dt;b.x+=B.v*dt;
+    const maxX=waterEnd()-b.w-2;if(b.x>maxX&&waterEnd()<W){b.x=maxX;B.v=Math.min(B.v,SMASH_V);}
+    if(Math.random()<0.7)parts.push({x:b.x+2,y:GY+6,vx:-rand(40,140),vy:-rand(20,90),life:.5,c:FOAM,s:3});
+  }
+  dino.x=b.x+B.off;
+  if(!B.wiped&&(b.x+b.w*0.5>W*0.62||B.t>2.6)){B.wiped=true;document.getElementById('wipe').classList.add('go');
+    setTimeout(()=>{location.href='dinoGoesFishing.html?ankunft=1';},1150);}
+}
+
+// ---------- Am Spinnenfaden hochziehen lassen = Spider-Rex ----------
+function startWeb(o){
+  st='web';holding=false;
+  const d=dino,top=GY-DH-d.y;
+  // gy = Fadenende (klebt am Kopf), ang/av = Pendel, k = Einrasten auf den Faden
+  web={o,t:0,gy:top-2,v:0,ang:0,av:-2.4,x0:d.x,k:0,sx:o.x+ropeSway(o),wiped:false};
+  for(let i=0;i<14;i++)parts.push({x:o.x+rand(-8,8),y:top+rand(-6,10),vx:rand(-160,160),vy:rand(-260,60),life:rand(.3,.6),c:Math.random()<.5?INK:PAPER2,s:rand(2,4)});
+  thwip();beep(660,0.08,'square',0.03,1320);
+}
+function updateWeb(dt){
+  const S=web,o=S.o;S.t+=dt;
+  speed*=Math.exp(-10*dt);const dx=speed*dt;dist+=dx;
+  for(const q of obs)q.x-=dx;
+  S.av+=(-70*S.ang-4*S.av)*dt;S.ang+=S.av*dt;              // gedämpftes Pendeln
+  S.k=Math.min(1,S.t/0.12);
+  if(S.t>0.3){S.v+=2800*dt;S.gy-=S.v*dt;                 // Faden zieht hoch
+    if(Math.random()<0.8)parts.push({x:o.x+rand(-14,14),y:S.gy+DH+rand(0,20),vx:rand(-10,10),vy:rand(60,200),life:.35,c:PAPER2,s:2});}
+  S.sx=o.x+Math.sin(S.ang)*Math.max(0,S.gy)*0.5;
+  dino.x=S.x0+(S.sx-DW/2-S.x0)*S.k;
+  if(!S.wiped&&S.t>0.5){S.wiped=true;
+    const r=cv.getBoundingClientRect(),w=document.getElementById('spwipe');
+    w.style.setProperty('--ox',(r.left+o.x)+'px');w.style.setProperty('--oy',Math.max(0,r.top+Math.max(0,S.gy))+'px');
+    w.classList.add('go');beep(220,0.5,'triangle',0.05,880);
+    setTimeout(()=>{location.href='spiderDinoGame.html?ankunft=1';},1500);}
+}
+// Netz fürs Übergangsbild (dasselbe Netz steht in spiderDinoGame.html)
+{
+  const N=12,R=[9,18,29,42,57,75,96,120,148],svg=document.querySelector('#spwipe svg');
+  const A=[...Array(N)].map((_,i)=>(i+0.5*hash(i+3)-0.25)/N*Math.PI*2);
+  const P=(a,r)=>(Math.cos(a)*r).toFixed(1)+' '+(Math.sin(a)*r).toFixed(1);
+  let h='';
+  A.forEach((a,i)=>{h+=`<path pathLength="1" style="transition-delay:${(.3+i*.015).toFixed(3)}s" d="M0 0L${P(a,170)}"/>`;});
+  R.forEach((r,j)=>{let d='M'+P(A[0],r);
+    for(let i=1;i<=N;i++){const a0=A[i-1],a1=i<N?A[i]:A[0]+Math.PI*2;d+=`Q${P((a0+a1)/2,r*0.86)} ${P(a1,r)}`;}
+    h+=`<path pathLength="1" style="transition-delay:${(.4+j*.04).toFixed(3)}s" d="${d}"/>`;});
+  svg.innerHTML=h;
+  try{document.fonts&&document.fonts.load('40px Bangers');}catch(e){}
+}
+// Zurück-Taste: Seite aus dem Cache sauber zurücksetzen
+addEventListener('pageshow',e=>{if(e.persisted){document.getElementById('wipe').classList.remove('go');document.getElementById('spwipe').classList.remove('go');st='ready';reset();}});
+
+// ---------- Update ----------
+function update(dt){
+  t+=dt;
+  for(const p of parts){p.vy+=900*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;}
+  parts=parts.filter(p=>p.life>0);
+  if(st==='board'){updateBoard(dt);return;}
+  if(st==='web'){updateWeb(dt);return;}
+  if(st!=='run'||!inView)return;
+  speed=Math.min(820,speed+9*dt);
+  const dx=speed*dt;dist+=dx;
+  for(const o of obs)o.x-=dx;
+  obs=obs.filter(o=>o.x+ow(o)>-60);
+  const last=obs[obs.length-1];
+  if(!last||last.x+ow(last)<W-gapNeed)spawn();
+  score=Math.floor(dist/12);
+  if(score>=lastMile+100){lastMile=score-score%100;beep(880,0.07,'square',0.03);beep(1175,0.1,'square',0.03,0,0.08);}
+
+  const d=dino;
+  if(d.y>0||d.vy>0){
+    const g=d.fast?6500:(holding&&d.vy>0?2000:3400);
+    d.vy-=g*dt;const ny=d.y+d.vy*dt;
+    if(ny<=0){
+      const b=boatUnder(d.x+DW/2);
+      d.y=0;d.vy=0;d.fast=false;
+      if(b){startBoard(b);return;}
+    }else d.y=ny;
+  }
+  d.leg+=dt*speed/28;
+  if(hitCactus()){st='dead';deadT=t;beep(200,0.35,'sawtooth',0.05,60);
+    if(score>hi){hi=score;try{localStorage.setItem('dino-runner-hi',hi);}catch(e){}}}
+}
+
+// ---------- Zeichnen ----------
+function drawDino(x,y,frame,dead){
+  const rows=BODY.concat(LEGS[frame]);
+  for(let r=0;r<rows.length;r++)for(let c=0;c<12;c++){
+    const ch=rows[r][c];if(ch==='.')continue;
+    cx.fillStyle=ch==='r'?RED:ch==='o'?(dead?INK:PAPER):INK;
+    cx.fillRect(x+c*PX,y+r*PX,PX+0.6,PX+0.6);
+  }
+  if(dead){cx.strokeStyle=PAPER;cx.lineWidth=1.5;const ex=x+6*PX,ey=y+2*PX;
+    cx.beginPath();cx.moveTo(ex,ey);cx.lineTo(ex+PX,ey+PX);cx.moveTo(ex+PX,ey);cx.lineTo(ex,ey+PX);cx.stroke();}
+}
+function drawCactus(o){
+  for(const s of o.st){
+    const x=o.x+s.dx,top=GY-s.h;
+    cx.fillStyle=INK;cx.fillRect(x,top,s.w,s.h);
+    // Arme
+    const aw=Math.max(5,s.w*0.4);
+    cx.fillRect(x-aw,top+s.h*0.35,aw,5);cx.fillRect(x-aw,top+s.h*0.18,5,s.h*0.22);
+    cx.fillRect(x+s.w,top+s.h*0.5,aw,5);cx.fillRect(x+s.w+aw-5,top+s.h*0.3,5,s.h*0.25);
+    // rote Spitze
+    cx.fillStyle=RED;cx.beginPath();cx.moveTo(x,top);cx.lineTo(x+s.w/2,top-8);cx.lineTo(x+s.w,top);cx.fill();
+    cx.fillStyle=PAPER;cx.fillRect(x+s.w/2-1,top+6,2,s.h-12);
+  }
+}
+// Spinnenfaden: weißer Faden mit dunkler Kontur, kleine Spinne am Ende
+function threadPath(x0,x1,y1){cx.beginPath();cx.moveTo(x0,-4);cx.quadraticCurveTo(x0,y1*0.55,x1,y1);}
+function drawThread(x0,x1,y1){
+  if(y1<-4)return;
+  threadPath(x0,x1,y1);cx.strokeStyle=INK;cx.lineWidth=4;cx.stroke();
+  threadPath(x0,x1,y1);cx.strokeStyle=PAPER;cx.lineWidth=2;cx.stroke();
+}
+function drawSpider(x,y,wig){
+  cx.strokeStyle=INK;cx.lineWidth=2;cx.beginPath();
+  for(let s=-1;s<=1;s+=2)for(let i=0;i<4;i++){const a=Math.sin(t*14+i*1.7)*wig*6;
+    const kx=x+s*(10+a),ky=y-3+(i-1.5)*4;cx.moveTo(x+s*3,y+2+(i-1.5)*2);cx.lineTo(kx,ky);cx.lineTo(kx+s*4,ky+8+i*1.2);}
+  cx.stroke();
+  cx.fillStyle=INK;cx.beginPath();cx.ellipse(x,y+4,6,7,0,0,7);cx.fill();
+  cx.beginPath();cx.arc(x,y-4,4,0,7);cx.fill();
+  cx.fillStyle=RED;cx.fillRect(x-1.5,y+2,3,5);
+  cx.fillStyle=PAPER;cx.fillRect(x-2.5,y-5,2,2);cx.fillRect(x+0.5,y-5,2,2);
+}
+function drawRope(o){
+  if(web&&web.o===o)return;
+  const y=ropeEnd(o),x1=o.x+ropeSway(o);
+  drawThread(o.x,x1,y-4);drawSpider(x1,y,0.15);
+}
+function drawRopeLabel(o){
+  if(st!=='run'&&st!=='ready')return;
+  if(o.x<dino.x+DW)return;
+  const bx=o.x+ropeSway(o),by=ropeEnd(o)+44+Math.sin(t*5)*3;
+  cx.font='800 13px "JetBrains Mono", monospace';cx.textAlign='center';
+  const txt='SPRING + GREIF ZU!',tw=cx.measureText(txt).width;
+  cx.save();cx.translate(bx,by);cx.rotate(0.05);
+  cx.fillStyle=RED;cx.beginPath();cx.moveTo(-7,-18);cx.lineTo(7,-18);cx.lineTo(0,-28);cx.fill();
+  cx.fillStyle=INK;cx.fillRect(-tw/2-7,-18,tw+14,24);
+  cx.fillStyle=PAPER;cx.fillText(txt,0,0);
+  cx.restore();
+}
+// Wasserflächen: normale Boote = ihr Loch; beim Einsteigen = festes Loch + zerschlagener Kanal
+function waterSpans(){
+  const out=[];
+  for(const o of obs)if(o.k==='boat'&&!(board&&o===board.b))out.push({x0:o.x,x1:o.x+o.w,ready:o.x+o.w});
+  if(board){
+    const B=board;let ready=B.wx1;
+    for(const c of B.cols)if(t-c.t0>=0.35)ready=c.x+COL;
+    out.push({x0:B.wx0,x1:waterEnd(),ready,board:true});
+  }
+  return out;
+}
+function drawWaves(x0,x1){
+  if(x1-x0<2)return;
+  cx.strokeStyle='rgba(255,255,255,.7)';cx.lineWidth=2;
+  for(let i=0;i<4;i++){const yy=GY+14+i*9,ph=t*3+i*1.7;
+    cx.beginPath();for(let xx=x0;xx<=x1;xx+=6){const y2=yy+Math.sin((xx+dist)/14+ph)*1.6;xx===x0?cx.moveTo(xx,y2):cx.lineTo(xx,y2);}cx.stroke();}
+}
+function drawWater(w){
+  cx.fillStyle=WATER;cx.fillRect(w.x0,GY+6,w.ready-w.x0,H-GY-6);
+  if(w.board)for(const c of board.cols){ // frisch zerschlagen: dunkles Loch, das vollläuft
+    const age=t-c.t0;if(age>=0.35)continue;
+    const k=Math.max(0,age/0.35),top=H-k*(H-GY-6);
+    cx.fillStyle=HOLE;cx.fillRect(c.x,GY,COL+0.5,top-GY);
+    cx.fillStyle=WATER;cx.fillRect(c.x,top,COL+0.5,H-top);
+  }
+  drawWaves(w.x0,w.ready);
+  cx.fillStyle=INK;cx.fillRect(w.x0-3,GY,3,H-GY);
+  if(w.x1<W+COL)cx.fillRect(w.x1,GY,3,H-GY);
+}
+function drawBoat(o,bob){
+  const x=o.x,w=o.w,y=GY+bob;
+  cx.fillStyle=RED;cx.beginPath();cx.moveTo(x,y);cx.lineTo(x+w,y);cx.lineTo(x+w-26,y+26);cx.lineTo(x+14,y+26);cx.closePath();cx.fill();
+  cx.fillStyle=PAPER;cx.fillRect(x+16,y+12,w-44,4);
+  cx.fillStyle=INK;cx.fillRect(x-2,y-1,w+4,5);
+  // kleine Bullaugen
+  for(let i=0;i<3;i++){cx.beginPath();cx.arc(x+44+i*40,y+19,3,0,7);cx.fill();}
+}
+function drawLabel(o){
+  if(st!=='run'&&st!=='ready')return;
+  if(o.x+o.w/2<dino.x+DW)return;
+  const bx=o.x+o.w/2,by=GY-74+Math.sin(t*5)*4;
+  cx.font='800 15px "JetBrains Mono", monospace';cx.textAlign='center';
+  const txt='SPRING REIN!',tw=cx.measureText(txt).width;
+  cx.save();cx.translate(bx,by);cx.rotate(-0.06);
+  cx.fillStyle=INK;cx.fillRect(-tw/2-8,-20,tw+16,26);
+  cx.fillStyle=PAPER;cx.fillText(txt,0,0);
+  cx.fillStyle=RED;cx.beginPath();cx.moveTo(-8,10);cx.lineTo(8,10);cx.lineTo(0,22);cx.fill();
+  cx.restore();
+}
+function draw(){
+  cx.fillStyle=PAPER;cx.fillRect(0,0,W,H);
+  // Hintergrund: Sonne + diagonale Linien (konstruktivistisch)
+  cx.fillStyle='rgba(23,64,216,.12)';cx.beginPath();cx.arc(W*0.82,74,W<560?30:44,0,7);cx.fill();cx.strokeStyle='rgba(23,64,216,.6)';cx.lineWidth=4;cx.stroke();
+  cx.strokeStyle='rgba(10,22,51,.07)';cx.lineWidth=3;
+  const span=W+400;
+  for(let i=0;i<6;i++){const bx=((i*span/6-dist*0.15)%span+span)%span-200;
+    cx.beginPath();cx.moveTo(bx,GY);cx.lineTo(bx+150,10);cx.stroke();}
+  cx.fillStyle='rgba(10,22,51,.05)';
+  for(let i=0;i<4;i++){const bx=((i*span/4+80-dist*0.08)%span+span)%span-200;cx.fillRect(bx,GY-90-i%2*40,26,90+i%2*40);}
+
+  const boats=obs.filter(o=>o.k==='boat');
+  const spans=waterSpans();
+  const inGap=xx=>spans.some(w=>xx>w.x0-3&&xx<w.x1+3);
+  const sh=board?board.shake:0;
+  cx.save();if(sh>0.3)cx.translate(rand(-sh,sh),rand(-sh,sh)*0.6);
+  for(const w of spans)drawWater(w);
+
+  // Boden (mit Lücken für das Wasser)
+  cx.fillStyle=INK;
+  let segStart=0;const edges=spans.map(w=>[w.x0-3,w.x1+3]).sort((a,b)=>a[0]-b[0]);
+  for(const [a,b] of edges){if(a>segStart)cx.fillRect(segStart,GY,a-segStart,3);segStart=Math.max(segStart,b);}
+  if(segStart<W)cx.fillRect(segStart,GY,W-segStart,3);
+  const off=Math.floor(dist/34);
+  for(let i=-1;i<W/34+2;i++){const n=off+i,px=n*34-dist+hash(n)*20;if(inGap(px)||inGap(px+8))continue;
+    cx.fillRect(px,GY+9+hash(n+7)*24,2+hash(n+3)*7,2);}
+
+  const bob=st==='board'?Math.sin(t*6)*2:0;
+  for(const o of obs){if(o.k==='cac')drawCactus(o);else if(o.k==='web')drawRope(o);else drawBoat(o,o===board?.b?bob:0);}
+
+  // Dino
+  const d=dino,frame=st==='ready'?'a':(d.y>0||st==='board')?'air':(Math.floor(d.leg)%2?'a':'b');
+  if(st==='web'){ // hängt am Faden und wird hochgezogen
+    const S=web,top=GY-DH-d.y,hy=top+(S.gy+2-top)*S.k;
+    drawThread(S.o.x,S.sx,hy+3);
+    cx.save();cx.translate(d.x+DW/2,hy);cx.rotate(S.ang*S.k);drawDino(-DW/2,0,'air',false);cx.restore();
+    const sy=hy-8-Math.max(0,S.t-0.05)*520;                 // Spinne flitzt den Faden hoch
+    if(sy>-20)drawSpider(S.o.x+(S.sx-S.o.x)*Math.max(0,sy)/Math.max(1,hy),sy,0.5);
+  }else drawDino(d.x,GY-DH-d.y+(st==='board'?bob:0),frame,st==='dead');
+  if(st==='board'){ // Angel in der Hand
+    const hx=d.x+DW-6,hy=GY-DH-d.y+bob+38;
+    cx.strokeStyle=INK;cx.lineWidth=3;cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(hx+26,hy-34);cx.stroke();
+    cx.lineWidth=1;cx.beginPath();cx.moveTo(hx+26,hy-34);cx.lineTo(hx+34,GY+20);cx.stroke();
+  }
+  for(const o of boats)drawLabel(o);
+  for(const o of obs)if(o.k==='web')drawRopeLabel(o);
+
+  for(const p of parts){const z=p.s||4;cx.fillStyle=p.c;cx.fillRect(p.x-z/2,p.y-z/2,z,z);}
+  cx.restore();
+
+  // Punkte
+  cx.font='700 18px "JetBrains Mono", monospace';cx.textAlign='right';cx.fillStyle=INK;
+  cx.fillText(String(score).padStart(5,'0'),W-16,32);
+  cx.fillStyle=RED;cx.fillText('HI '+String(hi).padStart(5,'0'),W-96,32);
+
+  cx.textAlign='center';
+  if(st==='ready')banner('LEERTASTE ODER TIPPEN','ZUM STARTEN');
+  if(st==='dead')banner('AUTSCH!','NOCHMAL: LEERTASTE / TIPPEN');
+}
+function banner(a,b){
+  const y=H*0.36;
+  cx.save();cx.translate(W/2,y);cx.rotate(-0.04);
+  cx.font='800 '+(W<560?24:34)+'px "JetBrains Mono", monospace';const tw=cx.measureText(a).width;
+  cx.fillStyle=RED;cx.fillRect(-tw/2-16,-38,tw+32,50);
+  cx.fillStyle=PAPER;cx.fillText(a,0,0);
+  cx.font='14px "JetBrains Mono", monospace';cx.fillStyle=INK;cx.fillText(b,0,36);
+  cx.restore();
+}
+
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(0.033,(now-last)/1000);last=now;
+  update(dt);draw();requestAnimationFrame(loop);
+}
+addEventListener('resize',resize);
+resize();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dinoangler – Geheimnisse</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#fff6e3;--ink:#2b1b10;--row:#f6e6c6;--muted:#7b5a3c;--good:#2e9b4f}
+  html,body{margin:0;min-height:100%}
+  body{background:linear-gradient(#2f9bd6 0,#1c6fae 18%,#0e3f75 45%,#062246 75%,#020a18 100%) fixed;font-family:Fredoka,"Trebuchet MS",system-ui,sans-serif;color:var(--ink);padding:24px 16px;box-sizing:border-box}
+  .card{background:var(--paper);border:4px solid #5a3519;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.5);max-width:820px;margin:0 auto;padding:20px 22px;box-sizing:border-box}
+  h1{margin:0 0 4px;font-size:32px;color:#7a3f12}
+  .sub{color:var(--muted);margin-bottom:16px}
+  .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  a.btn,button{font-family:inherit;font-weight:600;font-size:15px;border:none;border-radius:10px;padding:8px 14px;cursor:pointer;background:#f2c14e;color:#3a2410;box-shadow:0 3px 0 #a87a1d;text-decoration:none;display:inline-block}
+  button.blue{background:#5aa9f0;color:#08243f;box-shadow:0 3px 0 #2a6aa8}
+  .progress{margin-left:auto;font-weight:600;color:var(--muted)}
+  .s{display:flex;gap:14px;background:var(--row);border-radius:12px;padding:12px 14px;margin-bottom:10px;align-items:flex-start}
+  .s .ic{font-size:30px;line-height:1;flex:none;width:40px;text-align:center}
+  .s .grow{flex:1;min-width:0}
+  .s h2{margin:0 0 2px;font-size:19px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .found{font-size:12px;background:var(--good);color:#fff;border-radius:999px;padding:2px 8px;display:none}
+  .s.is-found .found{display:inline-block}
+  .hint{color:var(--muted);font-style:italic;font-size:14px;margin-bottom:6px}
+  .how{line-height:1.5}
+  .how b{color:#7a3f12}
+  .reward{font-size:14px;margin-top:4px}
+  kbd{background:#3a2410;color:#fff;border-radius:5px;padding:1px 6px;font-family:inherit;font-size:13px;white-space:nowrap}
+  .spoiler .how,.spoiler .reward{filter:blur(6px);cursor:pointer;user-select:none;transition:filter .2s}
+  .spoiler.open .how,.spoiler.open .reward{filter:none;user-select:auto}
+  .tag{font-size:12px;color:var(--muted);font-weight:400}
+  @media (max-width:520px){h1{font-size:26px}.s{gap:10px}.s .ic{width:30px;font-size:24px}.progress{margin-left:0}}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🗝️ Geheimnisse im Dinoangler</h1>
+  <div class="sub">So findest du alle 7 Geheimnisse. Die Lösungen sind verschwommen, damit du dir nicht aus Versehen etwas verdirbst. Klick auf eine Lösung, um sie zu lesen.</div>
+  <div class="top">
+    <a class="btn" href="dinoGoesFishing.html">🎣 Zurück zum Spiel</a>
+    <button class="blue" id="all">Alle Lösungen zeigen</button>
+    <span class="progress" id="prog"></span>
+  </div>
+
+  <div id="list">
+    <div class="s spoiler" data-id="disco"><div class="ic">🕺</div><div class="grow">
+      <h2>Discodino <span class="found">✓ gefunden</span></h2>
+      <div class="hint">„Ein uralter Code aus Videospielzeiten …“</div>
+      <div class="how">Gib während des Spielens den <b>Konami-Code</b> ein: <kbd>↑</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> <kbd>←</kbd> <kbd>→</kbd> <kbd>B</kbd> <kbd>A</kbd>. Nochmal eingeben schaltet die Disco wieder aus.</div>
+      <div class="reward">🎁 Bunte Farben, Disco-Beat und der Dino trägt Sonnenbrille.</div>
+    </div></div>
+
+    <div class="s spoiler" data-id="katze"><div class="ic">❤️</div><div class="grow">
+      <h2>Dinoliebe <span class="found">✓ gefunden</span></h2>
+      <div class="hint">„Schreib einfach, was du bist.“</div>
+      <div class="how">Tippe während des Spielens das Wort <kbd>dino</kbd>. Klappt beliebig oft.</div>
+      <div class="reward">🎁 Herzchen fliegen und der Dino brüllt dreistimmig.</div>
+    </div></div>
+
+    <div class="s spoiler" data-id="flip"><div class="ic">🤸</div><div class="grow">
+      <h2>Salto-Saurier <span class="found">✓ gefunden</span></h2>
+      <div class="hint">„Der Dino mag Aufmerksamkeit. Sehr viel Aufmerksamkeit.“</div>
+      <div class="how">Klicke <b>10-mal schnell</b> (innerhalb von 3 Sekunden) direkt auf den Kopf des Dinos, während die Angel eingeholt ist.</div>
+      <div class="reward">🎁 Der Dino macht einen Salto. Wuiiii!</div>
+    </div></div>
+
+    <div class="s spoiler" data-id="bottle"><div class="ic">📜</div><div class="grow">
+      <h2>Flaschenpost <span class="found">✓ gefunden</span></h2>
+      <div class="hint">„Manchmal treibt etwas an der Oberfläche …“</div>
+      <div class="how">Etwa alle 1–2 Minuten treibt irgendwo in der Nähe des Boots eine <b>grüne Flasche</b> an der Wasseroberfläche (achte auf das Glitzern). Wirf den Haken direkt daneben aus, sodass er sie berührt.</div>
+      <div class="reward">🎁 Eine lustige Nachricht und 100–600 $. Gibt es immer wieder.</div>
+    </div></div>
+
+    <div class="s spoiler" data-id="duck"><div class="ic">🦆</div><div class="grow">
+      <h2>Quietscheente <span class="found">✓ gefunden</span></h2>
+      <div class="hint">„Ganz selten schwimmt etwas Gelbes vorbei.“</div>
+      <div class="how">Statt einer Flaschenpost treibt manchmal (ungefähr jedes 5. Mal) eine <b>gelbe Gummiente</b> an der Oberfläche. Berühre sie mit dem Haken, bevor sie nach etwa 2½ Minuten wieder verschwindet.</div>
+      <div class="reward">🎁 Quietsch! Die Ente fährt danach für immer vorne auf deinem Boot mit.</div>
+    </div></div>
+
+    <div class="s spoiler" data-id="chest"><div class="ic">🏴‍☠️</div><div class="grow">
+      <h2>Piratenschatz <span class="found">✓ gefunden</span></h2>
+      <div class="hint">„Ganz unten. Ganz weit draußen.“</div>
+      <div class="how">Fahr ganz nach rechts bis ans Ende der Welt, weit hinter die rote Boje. Dort liegt auf dem Grund des Tiefseegrabens (~930 m) eine <b>Schatzkiste</b>. Du brauchst dafür das <b>1-kg-Senkblei</b>, die <b>950-m-Schnur</b> und am besten eine starke Lampe.</div>
+      <div class="reward">🎁 +5000 $ (einmalig). Danach steht die Kiste offen.</div>
+    </div></div>
+
+    <div class="s spoiler" data-id="eye"><div class="ic">👁️</div><div class="grow">
+      <h2>Das Auge <span class="found">✓ gefunden</span></h2>
+      <div class="hint">„Nachts, im tiefsten Abgrund, ist man nicht allein.“</div>
+      <div class="how">Warte, bis es <b>Nacht</b> ist 🌙, und lass den Haken im Tiefseegraben ein Stück vor dem Schatz bis fast auf den Grund (~910 m) sinken. Bleib dort ein paar Sekunden still. Auch hier brauchst du das <b>1-kg-Senkblei</b>.</div>
+      <div class="reward">🎁 Ein riesiges Auge öffnet sich und folgt deinem Haken. Alle Fische in der Nähe fliehen.</div>
+    </div></div>
+  </div>
+  <div class="sub" style="margin:14px 0 0;font-size:14px">Tipp: Zum Testen gibt es im Spiel den 💸-Knopf (oder Taste <kbd>G</kbd>), der dir 10.000 $ schenkt.</div>
+</div>
+<script>
+'use strict';
+document.querySelectorAll('.spoiler').forEach(el=>el.addEventListener('click',()=>el.classList.add('open')));
+document.getElementById('all').onclick=()=>document.querySelectorAll('.spoiler').forEach(el=>el.classList.add('open'));
+// Gefundene Geheimnisse aus dem Spielstand markieren (klappt, wenn Spiel und Seite im selben Browser laufen)
+let found={};
+try{const d=JSON.parse(localStorage.getItem('katzenangler-save-v1')||'null');if(d&&d.secrets)found=d.secrets;}catch(e){}
+const items=[...document.querySelectorAll('.s')];let n=0;
+for(const el of items)if(found[el.dataset.id]){el.classList.add('is-found');n++;}
+document.getElementById('prog').textContent=`Gefunden: ${n} / ${items.length}`;
+</script>
+</body>
+</html>
