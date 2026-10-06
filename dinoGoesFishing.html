@@ -101,6 +101,8 @@
   .choice button .ci{font-size:42px;line-height:1}
   .choice button small{font-size:13px;font-weight:500;opacity:.85}
   button.pirate{background:#211b17;color:#f2c14e;box-shadow:0 3px 0 #000}
+  #bPirate{padding:3px 8px;line-height:0}
+  #bPirate svg{transition:transform .2s}#bPirate:hover svg{transform:rotate(-10deg) scale(1.1)}
   @media (max-width:480px){.choice{grid-template-columns:1fr}}
   /* Pirat werden → Käpt'n Rexbart: Endbild = Startbild von html.flag #arrive in dinoPirat.html – bei Änderungen beide anpassen */
   #fwipe{position:fixed;inset:0;z-index:70;display:none;pointer-events:none;overflow:hidden}
@@ -130,6 +132,7 @@
 </div>
 <button id="dockHint" class="green">🏠 Hafen betreten<span class="kh"> (E)</span></button>
 <div id="btns">
+  <button class="pirate" id="bPirate" title="Zu Käpt'n Rexbart segeln" style="display:none"><svg viewBox="0 0 44 28" width="42" height="27" aria-hidden="true"><path d="M2 19 C8 6 15 3 22 3 C29 3 36 6 42 19 C34 14 28 16 22 22 C16 16 10 14 2 19 Z" fill="#4a3a2e" stroke="#f2c14e" stroke-width="2" stroke-linejoin="round"/><circle cx="22" cy="11" r="3.6" fill="#f3ead2"/><path d="M17.5 15.5 L26.5 19.5 M26.5 15.5 L17.5 19.5" stroke="#f3ead2" stroke-width="1.8" stroke-linecap="round"/></svg></button>
   <button id="bCheat" title="Testmodus: +10.000 $ (Taste G)">💸 +10k</button>
   <button class="blue" id="bJournal">📖 Fangbuch<span class="kh"> (J)</span></button>
   <button class="blue" id="bSound">🔊</button>
@@ -378,6 +381,7 @@ function rodGeom(){
   const tip={x:base.x+f*Math.cos(a)*len,y:base.y-Math.sin(a)*len};
   let bend=0;
   if(hook.fish&&(hook.state==='water'))bend=Math.min(1,0.25+hook.fish.w/U('str')*1.4);
+  if(hook.chest&&hook.state==='water')bend=0.85;
   if(bend){const dx=hook.x-tip.x,dy=hook.y-tip.y,d=Math.hypot(dx,dy)||1;tip.x+=dx/d*bend*16;tip.y+=dy/d*bend*16;}
   return {base,tip,bend};
 }
@@ -451,16 +455,22 @@ document.getElementById('mapBtn').onclick=()=>{
 document.getElementById('cMoney').onclick=()=>{
   S.money+=100000;secret('chest');closePanels();sfx.cash();
   toast('💰 +100.000 $! Du bist steinreich.','good');
-  for(let i=0;i<16;i++)parts.push({k:'txt',x:CHEST_X+rand(-30,30),y:floorY(CHEST_X)-20-rand(0,40),text:i%2?'🪙':'$',col:'#ffd23a',vy:-rand(30,80),life:rand(1.5,2.6)});
+  for(let i=0;i<16;i++)parts.push({k:'txt',x:boat.x+rand(-40,40),y:boat.y-60-rand(0,40),text:i%2?'🪙':'$',col:'#ffd23a',vy:-rand(30,80),life:rand(1.5,2.6)});
+  updPirateBtn();
 };
-document.getElementById('cPirate').onclick=()=>{
-  audio();secret('chest');document.getElementById('pChest').classList.remove('open');document.getElementById('fwipe').classList.add('go');
+document.getElementById('cPirate').onclick=()=>{secret('chest');goPirate();};
+// Piratenhut-Knopf: nach dem ersten Hochholen der Truhe jederzeit zu Käpt'n Rexbart
+function updPirateBtn(){document.getElementById('bPirate').style.display=S.secrets&&S.secrets.chest?'':'none';}
+document.getElementById('bPirate').onclick=()=>{if(S.secrets&&S.secrets.chest)goPirate();};
+updPirateBtn();
+function goPirate(){
+  audio();closePanels();uiOpen=true;document.getElementById('fwipe').classList.add('go');
   noise(0.5,0.18,700);
   tone(62,0.8,'sine',0.35,0.5,0.62);setTimeout(()=>noise(0.3,0.3,380),620);
   [220,277,330,440].forEach((f,i)=>tone(f,0.7,'sawtooth',0.03,0,0.72+i*0.06));
   try{save();}catch(e){}
   setTimeout(()=>{location.href='dinoPirat.html?ankunft=flagge';},1550);
-};
+}
 function updateSecrets(dt){
   if(dinoFlip>0)dinoFlip=Math.max(0,dinoFlip-dt*1.2);
   // Disco-Beat
@@ -476,9 +486,9 @@ function updateSecrets(dt){
   for(const fl of floaters){fl.t+=dt;fl.x=clamp(fl.x+fl.vx*dt,SHORE+200,WORLD_W-60);if(fl.t>160)fl.dead=true;
     if(hook.state==='water'&&Math.hypot(hook.x-fl.x,hook.y-waveY(fl.x,gt))<34)collectFloater(fl);}
   floaters=floaters.filter(f=>!f.dead);
-  // Piratenschatz
-  if(!S.secrets.chest&&hook.state==='water'&&Math.hypot(hook.x-CHEST_X,hook.y-(floorY(CHEST_X)-14))<45){
-    sfx.cash();sfx.catch();openPanel('pChest');
+  // Piratenschatz anhaken – die Wahl kommt erst, wenn die Truhe am Boot ist (land)
+  if(!S.secrets.chest&&!hook.chest&&!hook.fish&&hook.state==='water'&&Math.hypot(hook.x-CHEST_X,hook.y-(floorY(CHEST_X)-14))<45){
+    hook.chest=true;sfx.bite();toast('🏴‍☠️ Die Schatztruhe hängt am Haken! Hol sie ganz rauf bis zum Boot!','good');
   }
   // Das Auge im Abgrund
   const near=nightF>0.5&&hook.state==='water'&&Math.hypot(hook.x-EYE_X,hook.y-eyeY())<420;
@@ -508,8 +518,10 @@ function drawFloaters(c){
   }
 }
 function drawChest(c){
-  const cy=floorY(CHEST_X);if(!onScreen(CHEST_X,cy,80))return;
-  c.save();c.translate(CHEST_X,cy-2);
+  // am Haken hängt die Truhe unter dem Haken und schaukelt
+  const up=hook.chest,x=up?hook.x:CHEST_X,y=up?hook.y+36:floorY(CHEST_X)-2;if(!onScreen(x,y,80))return;
+  c.save();c.translate(x,y);
+  if(up){c.rotate(Math.sin(gt*3)*0.12);c.scale(0.8,0.8);c.strokeStyle='#3a2410';c.lineWidth=2.5;c.beginPath();c.moveTo(0,-45);c.lineTo(0,-34);c.stroke();}
   c.fillStyle='#6b3c1c';c.fillRect(-26,-26,52,26);
   c.fillStyle='#d4a52c';c.fillRect(-26,-26,52,4);c.fillRect(-20,-26,5,26);c.fillRect(15,-26,5,26);
   if(S.secrets.chest){c.fillStyle='#4a2a12';c.beginPath();c.moveTo(-26,-26);c.lineTo(-30,-52);c.lineTo(22,-56);c.lineTo(26,-26);c.closePath();c.fill();}
@@ -534,6 +546,9 @@ function drawEye(c){
 }
 function isFull(){return S.cooler.length>=U('cool');}
 function land(){
+  if(hook.chest){hook.chest=false;hook.state='idle';
+    popText(boat.x,boat.y-120,'Ein Piratenschatz!','#ffe27a');popText(boat.x+boat.facing*20,boat.y-95,'Rawr!','#fff');
+    sfx.cash();sfx.catch();sfx.roar();openPanel('pChest');return;}
   const f=hook.fish;
   if(f){
     f.dead=true;hook.fish=null;
@@ -641,7 +656,7 @@ function update(dt){
       break;}
     case 'water':{
       if(input.down){
-        let sp=U('reel');if(hook.fish)sp*=1-0.55*Math.min(1,hook.fish.w/U('str'));
+        let sp=U('reel');if(hook.fish)sp*=1-0.55*Math.min(1,hook.fish.w/U('str'));if(hook.chest)sp*=0.6;
         const dx=tip.x-hook.x,dy=tip.y-hook.y,d=Math.hypot(dx,dy);
         if(d<22){land();break;}
         hook.x+=dx/d*sp*dt;hook.y+=dy/d*sp*dt;
@@ -651,7 +666,7 @@ function update(dt){
       }else{
         hook.vx*=Math.pow(0.05,dt);hook.x+=hook.vx*dt;
         hook.x+=clamp(mW.x-hook.x,-130*dt,130*dt);
-        hook.y+=SINK[S.up.sink].spd*dt*(hook.fish?0.35:1);
+        hook.y+=SINK[S.up.sink].spd*dt*(hook.fish||hook.chest?0.35:1);
         hook.y=Math.max(hook.y,4);
       }
       if(hook.fish){
@@ -672,7 +687,7 @@ function update(dt){
   }
 
   // Fische
-  const bait=U('bait'), hookAvail=hook.state==='water'&&!hook.fish;
+  const bait=U('bait'), hookAvail=hook.state==='water'&&!hook.fish&&!hook.chest;
   for(const f of fishes){
     const T=f.T;f.t+=dt;if(f.cool>0)f.cool-=dt;
     if(f.state==='hooked'){
