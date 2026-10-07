@@ -232,8 +232,106 @@
   #wipe.go .wt span:nth-child(2){transition-delay:.5s}
   #wipe.go .wt span:nth-child(3){transition-delay:.58s}
 
+  /* ---------- Spielebuch: kleines Buch zum Aufklappen mit allen Spielen ---------- */
+  /* 2D-Buch auf der Seite: gleiche Proportionen wie der 3D-Einband (8px statt 16px Schrift) */
+  .bookrow{display:flex;align-items:center;flex-wrap:wrap;gap:36px 56px;margin:0 0 64px;padding-left:6px}
+  .b2d{position:relative;flex:none;width:220px;height:280px;padding:0;border:0;background:none;font-size:8px;text-align:left;cursor:pointer;transform:rotate(-3deg);transition:transform .2s cubic-bezier(.2,.7,.2,1);-webkit-tap-highlight-color:transparent}
+  .b2d::before{content:"";position:absolute;left:8px;top:8px;right:-10px;bottom:-10px;background:repeating-linear-gradient(90deg,#fff 0 3px,#d9dce8 3px 4px);border:3px solid var(--ink);box-shadow:8px 8px 0 var(--blue)}
+  .b2d:hover,.b2d:focus-visible{transform:rotate(-1deg) translate(-3px,-4px)}
+  .b2d.gone{visibility:hidden}
+  .bookrow .bt{flex:1;min-width:240px;max-width:520px}
+  .bookrow .bt h3{margin:0 0 10px;font-family:var(--disp);font-weight:900;font-size:clamp(38px,5vw,54px);line-height:.9;text-transform:uppercase}
+  .bookrow .bt p{margin:0;color:var(--muted)}
+  .bookrow .bt p b{color:var(--blue)}
+  html.bookopen,html.bookopen body{overflow:hidden}
+
+  /* 3D-Buch: fliegt aus der Position des 2D-Buchs heraus (.bfly) und klappt auf */
+  #bookov{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:16px;visibility:hidden;background:rgba(10,22,51,0);transition:background .45s}
+  #bookov.vis{visibility:visible}
+  #bookov.on{background:rgba(10,22,51,.82)}
+  #bookov .bx{position:absolute;top:14px;right:14px;width:46px;height:46px;font-family:var(--disp);font-size:30px;font-weight:900;line-height:1;color:var(--ink);background:#fff;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--blue);cursor:pointer}
+  #bookov .bx,#bookov .bnav{opacity:0;transition:opacity .25s}
+  #bookov.on .bx,#bookov.on .bnav{opacity:1;transition-delay:.7s}
+  .bstage{perspective:1600px;font-size:clamp(10px,min(1.55vw,2.3vh),16px)}
+  .bfly,.book,.leaf{transform-style:preserve-3d}
+  /* Hardcover-Modell: --b Deckeldicke, --g Abstand je Blatt, --o Überstand der Deckel, --h Mitte (Drehachse am Rücken) */
+  .book{--b:.6em;--g:.85em;--o:.85em;--tilt:26deg;--h:calc(var(--b) + 2*var(--g));--nl:0px;--nr:0px;position:relative;width:min(880px,94vw);height:min(560px,78vh);transform:rotateX(var(--tilt));transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+  .book.closed{transform:translateX(-25%) rotateX(var(--tilt))}
+  .book.instant,.book.instant .leaf,.book.instant .pe{transition:none}
+  .book.fast .leaf,.book.fast .pe{transition-duration:.45s}
+  .leaf{position:absolute;left:50%;top:var(--o);width:calc(50% - var(--o));height:calc(100% - 2*var(--o));transform-origin:left center;transform:translateZ(var(--h)) rotateY(0deg) translateZ(var(--z,0px));transition:transform .85s cubic-bezier(.45,.05,.2,1)}
+  .leaf.flipped{transform:translateZ(var(--h)) rotateY(-180deg) translateZ(var(--z,0px))}
+  .leaf.cv{top:0;width:50%;height:100%}
+  .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;cursor:pointer;overflow:hidden}
+  .face.back{transform:rotateY(180deg)}
+  .cv .face.front{transform:translateZ(calc(var(--b)/2))}
+  .cv .face.back{transform:rotateY(180deg) translateZ(calc(var(--b)/2))}
+  /* Kanten: Deckel dunkelblau, Seitenschnitt cremefarben mit feinen Linien */
+  .ed{position:absolute;display:block;background:var(--ink)}
+  .pe{background:repeating-linear-gradient(0deg,#fbf7ea 0 2px,#d3c9ae 2px 3px);transition:height .85s cubic-bezier(.45,.05,.2,1),width .85s cubic-bezier(.45,.05,.2,1),transform .85s cubic-bezier(.45,.05,.2,1)}
+  .eR,.eL{bottom:var(--o);width:calc(50% - var(--o));transform-origin:center bottom;transform:translateZ(var(--b)) rotateX(-90deg)}
+  .eR{left:50%;height:var(--nr)}
+  .eL{left:var(--o);height:var(--nl)}
+  .eF{left:calc(100% - var(--o));top:var(--o);height:calc(100% - 2*var(--o));width:var(--nr);transform-origin:left center;transform:translateZ(calc(var(--b) + var(--nr))) rotateY(90deg);background:repeating-linear-gradient(90deg,#fbf7ea 0 2px,#d3c9ae 2px 3px)}
+  .bb-b{left:50%;bottom:0;width:50%;height:var(--b);transform-origin:center bottom;transform:rotateX(-90deg)}
+  .bb-r{left:100%;top:0;height:100%;width:var(--b);transform-origin:left center;transform:translateZ(var(--b)) rotateY(90deg)}
+  .ce-b{left:0;bottom:0;width:100%;height:var(--b);transform-origin:center bottom;transform:translateZ(calc(var(--b)/-2)) rotateX(-90deg)}
+  .ce-r{left:100%;top:0;height:100%;width:var(--b);transform-origin:left center;transform:translateZ(calc(var(--b)/2)) rotateY(90deg)}
+  /* Rückdeckel (bleibt liegen) und Innenseiten der Deckel mit Vorsatzpapier */
+  .bboard{position:absolute;left:50%;top:0;width:50%;height:100%;transform:translateZ(var(--b))}
+  .endp{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1em;background:var(--blue);border:3px solid var(--ink);color:#fff;text-align:center}
+  .endp::before{content:"";position:absolute;inset:var(--o);background:#0b2a8f radial-gradient(circle,rgba(157,182,255,.3) 0 .2em,transparent .25em) 0 0/1.4em 1.4em;box-shadow:inset 0 0 0 2px rgba(10,22,51,.5)}
+  .bboard .endp{border-left:0}.bboard .endp::before{left:0}
+  .cv .endp{border-right:0}.cv .endp::before{right:0}
+  .endp > *{position:relative;z-index:1}
+  .endp .lm{display:grid;place-items:center;height:2em;padding:0 .4em;font-family:var(--disp);font-size:2.4em;font-weight:900;background:var(--blue);border:3px solid var(--ink);transform:rotate(-4deg);box-shadow:.12em .12em 0 var(--ink)}
+  .endp p{margin:0;padding:.3em .7em;font-family:var(--mono);font-size:.8em;background:var(--ink)}
+  .exl{display:flex;flex-direction:column;align-items:center;gap:.3em;padding:1em 1.5em;background:#fffdf6;color:var(--ink);border:3px solid var(--ink);box-shadow:.3em .3em 0 var(--ink);font-family:var(--mono);font-size:.8em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;transform:rotate(-3deg)}
+  .exl b{font-size:3.2em;line-height:1.1;letter-spacing:0}
+  .pg{position:absolute;inset:0;display:flex;flex-direction:column;padding:1.7em 1.6em 2.2em;background:#fffdf6;color:var(--ink);font-size:1em;line-height:1.45;border:3px solid var(--ink)}
+  .front .pg{border-left:0;background:linear-gradient(90deg,rgba(10,22,51,.2),rgba(10,22,51,0) 10%),#fffdf6;box-shadow:inset 0 -.5em 0 -.25em #e9e4d4}
+  .back .pg{border-right:0;background:linear-gradient(270deg,rgba(10,22,51,.2),rgba(10,22,51,0) 10%),#fffdf6;box-shadow:inset 0 -.5em 0 -.25em #e9e4d4}
+  .pg .pno{position:absolute;bottom:.8em;left:0;right:0;text-align:center;font-family:var(--mono);font-size:.75em;font-weight:700;color:var(--muted)}
+  .pg .pic{flex:none;display:grid;place-items:center;width:1.6em;height:1.6em;margin:0 0 .35em;font-size:2.5em;line-height:1;background:var(--blue);border:3px solid var(--ink);box-shadow:.12em .12em 0 var(--ink);transform:rotate(-6deg)}
+  /* Screenshot wie ein eingeklebtes Foto mit Klebestreifen, nimmt den freien Platz der Seite */
+  .pg .shot{position:relative;flex:1 1 0;min-height:5em;max-height:15em;margin:.3em 0 .9em;border:3px solid var(--ink);background:#fff;box-shadow:.25em .25em 0 var(--blue);transform:rotate(-1deg)}
+  .back .pg .shot{transform:rotate(1deg)}
+  .pg .shot img{display:block;width:100%;height:100%;object-fit:cover;object-position:left center}
+  .pg .shot::before{content:"";position:absolute;z-index:1;top:-.7em;left:50%;width:5em;height:1.3em;margin-left:-2.5em;background:rgba(255,236,170,.8);box-shadow:0 1px 2px rgba(10,22,51,.2);transform:rotate(-4deg)}
+  .pg .shot .pic{position:absolute;left:-.45em;bottom:-.55em;margin:0;font-size:1.6em}
+  .pg h4{margin:.25em 0 .1em;font-family:var(--disp);font-weight:900;font-size:2.4em;line-height:.9;text-transform:uppercase;letter-spacing:.01em}
+  .pg .tag{margin:0 0 .7em;font-family:var(--mono);font-size:.72em;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue)}
+  .pg p{margin:0 0 .7em;font-size:.95em;color:#2b3557}
+  .pg .egg{padding:.35em .6em;border-left:.3em solid var(--blue);background:#eef1fb;font-family:var(--mono);font-size:.72em;line-height:1.4;color:var(--ink)}
+  .pg .egg b{color:var(--blue)}
+  .pg .btn{align-self:flex-start;margin-top:auto;padding:.4em .9em .3em;font-size:1.2em;box-shadow:.25em .25em 0 var(--ink)}
+  .pg .btn:hover{box-shadow:.35em .35em 0 var(--ink)}
+  /* Inhaltsverzeichnis */
+  .pg ol{list-style:none;margin:.4em 0 0;padding:0;counter-reset:toc}
+  .pg ol a{display:flex;align-items:baseline;gap:.4em;padding:.38em 0;border-bottom:2px dotted rgba(10,22,51,.3);text-decoration:none;font-weight:600}
+  .pg ol a span{font-size:1.15em}
+  .pg ol a i{flex:1;font-style:normal}
+  .pg ol a em{font-style:normal;font-family:var(--mono);font-size:.8em;color:var(--blue)}
+  .pg ol a:hover{color:var(--blue)}
+  /* Einband */
+  .cover{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:2em 2em 2em 2.6em;background:var(--blue);color:#fff;border:4px solid var(--ink);border-left:1.1em solid var(--ink);overflow:hidden}
+  .cover::before{content:"";position:absolute;width:16em;height:16em;right:-6em;bottom:-6em;border-radius:50%;background:#fff}
+  .cover::after{content:"";position:absolute;left:-10%;width:130%;height:1.6em;top:62%;background:var(--ink);transform:rotate(-12deg)}
+  .cover > *{position:relative;z-index:1}
+  .cover .ck{padding:.2em .6em;background:var(--ink);font-family:var(--mono);font-size:.75em;letter-spacing:.14em;text-transform:uppercase}
+  .cover .ct{display:block;margin:.3em 0 .2em;font-family:var(--disp);font-weight:900;font-size:4.6em;line-height:.82;text-transform:uppercase}
+  .cover .ct span{display:inline-block;margin-top:.08em;padding:0 .12em;background:#fff;color:var(--blue);transform:rotate(-4deg)}
+  .cover .cs{font-family:var(--mono);font-size:.8em;color:#dbe4ff}
+  .cover .cd{position:absolute;right:.5em;bottom:.4em;font-size:5em;line-height:1;transform:scaleX(-1)}
+  .bnav{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:13px;color:#fff}
+  .bnav button{width:44px;height:40px;font-size:18px;font-weight:800;color:var(--ink);background:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--blue);cursor:pointer}
+  .bnav button:disabled{opacity:.35;cursor:default}
+  .bnav span{min-width:150px;text-align:center}
+  @media (max-aspect-ratio:3/4){.bstage{font-size:clamp(10px,3vw,14px)}.book{height:min(620px,70vh)}.pg{padding:1.3em 1.1em 2em}}
+
   @media (prefers-reduced-motion:reduce){
     html{scroll-behavior:auto}
+    .leaf,.book{transition-duration:.01s}
     .rv{opacity:1;transform:none;transition:none}
     .cursor,.tk{animation:none}
   }
@@ -272,6 +370,7 @@
       <div class="cta">
         <a class="btn primary" href="#projekte">Projekte ansehen →</a>
         <a class="btn" href="#kontakt">Kontakt</a>
+        <a class="btn" href="#spielebuch" data-book>📖 Spielebuch</a>
       </div>
       <div class="badges"><span>Java</span><span>C#</span><span>Python</span><span>JavaScript</span><span>SQL</span></div>
     </div>
@@ -358,6 +457,18 @@
 <section id="projekte" style="padding-top:20px">
   <div class="wrap">
     <header class="sh rv"><h2><b>04</b>Projekte</h2></header>
+    <div class="bookrow rv" id="spielebuch">
+      <button class="b2d" id="book2d" type="button" aria-label="Spielebuch öffnen"><span class="cover">
+        <span class="ck">Band Nº 01</span>
+        <span class="ct">Das Dino-<br><span>Spielebuch</span></span>
+        <span class="cs">von Lukas Mörtendorfer · 2026</span>
+        <span class="cd">🦖</span>
+      </span></button>
+      <div class="bt">
+        <h3>Das Spielebuch</h3>
+        <p>Alle meine Spiele in einem kleinen Buch: kurze Beschreibung, geheimer Eingang und direkt starten. <b>Klick aufs Buch und blätter durch.</b></p>
+      </div>
+    </div>
     <div class="projects">
       <article class="proj feat rv">
         <div class="top"><span class="emoji">🦖</span><span>Browserspiel · 2026</span></div>
@@ -445,6 +556,112 @@
 </section>
 
 <footer><div class="wrap"><span>© 2026 · <b>Lukas Mörtendorfer</b></span><span class="mono">built with ☕ &amp; 🦖</span></div></footer>
+
+<!-- ================= SPIELEBUCH ================= -->
+<div id="bookov" role="dialog" aria-modal="true" aria-label="Spielebuch" aria-hidden="true">
+  <button class="bx" type="button" aria-label="Spielebuch schließen">×</button>
+  <div class="bstage"><div class="bfly" id="bfly"><div class="book closed" id="book">
+    <div class="bboard"><div class="endp"><b class="lm">LM</b><p>Handgeschrieben in HTML, CSS &amp; JavaScript</p></div></div>
+    <i class="ed bb-b"></i><i class="ed bb-r"></i>
+    <i class="ed pe eR"></i><i class="ed pe eL"></i><i class="ed pe eF"></i>
+    <div class="leaf cv">
+      <div class="face front"><div class="cover">
+        <span class="ck">Band Nº 01</span>
+        <span class="ct">Das Dino-<br><span>Spielebuch</span></span>
+        <span class="cs">von Lukas Mörtendorfer · 2026</span>
+        <span class="cd">🦖</span>
+      </div></div>
+      <div class="face back"><div class="endp"><span class="exl">Ex Libris<b>🦖</b>Dieses Buch gehört dir</span></div></div>
+      <i class="ed ce-b"></i><i class="ed ce-r"></i>
+    </div>
+    <div class="leaf">
+      <div class="face front"><div class="pg">
+        <h4>Inhalt</h4>
+        <p class="tag">Sechs Spiele, ein Dino</p>
+        <ol>
+          <li><a href="#" data-go="2"><span>🎣</span><i>Dinoangler</i><em>02</em></a></li>
+          <li><a href="#" data-go="2"><span>🕷️</span><i>Spider-Rex</i><em>03</em></a></li>
+          <li><a href="#" data-go="3"><span>🥚</span><i>Dino-Weitwurf</i><em>04</em></a></li>
+          <li><a href="#" data-go="3"><span>😋</span><i>Mampfosaurus</i><em>05</em></a></li>
+          <li><a href="#" data-go="4"><span>🏴‍☠️</span><i>Käpt'n Rexbart</i><em>06</em></a></li>
+          <li><a href="#" data-go="4"><span>🌵</span><i>Dino-Runner</i><em>07</em></a></li>
+          <li><a href="#" data-go="5"><span>🗝️</span><i>Geheimnisse</i><em>08</em></a></li>
+        </ol>
+        <span class="pno">01</span>
+      </div></div>
+      <div class="face back"><div class="pg">
+        <figure class="shot"><img src="img/spiele/dinoangler.jpg" alt="Screenshot: Dinoangler" decoding="async"><span class="pic">🎣</span></figure>
+        <h4>Dinoangler</h4>
+        <p class="tag">Angelspiel · Canvas 2D</p>
+        <p>Ein kleiner Dino im Boot und ein riesiger Ozean. Fische fangen und verkaufen, Rute und Boot verbessern, mit dem Senkblei bis in den Tiefseegraben angeln und sieben Geheimnisse finden.</p>
+        <p class="egg"><b>Geheimer Eingang:</b> Im Dino-Runner ins Boot springen.</p>
+        <a class="btn primary" href="dinoGoesFishing.html">Spielen →</a>
+        <span class="pno">02</span>
+      </div></div>
+    </div>
+    <div class="leaf">
+      <div class="face front"><div class="pg">
+        <figure class="shot"><img src="img/spiele/spiderrex.jpg" alt="Screenshot: Spider-Rex" decoding="async"><span class="pic">🕷️</span></figure>
+        <h4>Spider-Rex</h4>
+        <p class="tag">3D-Spiel · Three.js</p>
+        <p>Ein Dino im Spinnenanzug schwingt sich durch eine 3D-Stadt. Netzschwingen, Netz-Zip, Wände hochklettern, Gegner einwickeln und Objekte durch die Gegend schleudern.</p>
+        <p class="egg"><b>Geheimer Eingang:</b> Im Runner zum Spinnenfaden hochspringen und festhalten.</p>
+        <a class="btn primary" href="spiderDinoGame.html">Spielen →</a>
+        <span class="pno">03</span>
+      </div></div>
+      <div class="face back"><div class="pg">
+        <figure class="shot"><img src="img/spiele/weitwurf.jpg" alt="Screenshot: Dino-Weitwurf" decoding="async"><span class="pic">🥚</span></figure>
+        <h4>Dino-Weitwurf</h4>
+        <p class="tag">Wurfspiel · Canvas 2D</p>
+        <p>Papa-Rex schleudert sein Baby so weit wie möglich. Pilze, Geysire und Flugsaurier helfen, Fresspflanzen nicht. Jeder Meter bringt Geld für Upgrades. Und ganz weit oben wartet etwas Dunkles …</p>
+        <p class="egg"><b>Geheimer Eingang:</b> Im Runner das Maul nicht überspringen.</p>
+        <a class="btn primary" href="dinoWeitwurf.html">Spielen →</a>
+        <span class="pno">04</span>
+      </div></div>
+    </div>
+    <div class="leaf">
+      <div class="face front"><div class="pg">
+        <figure class="shot"><img src="img/spiele/mampfosaurus.jpg" alt="Screenshot: Mampfosaurus" decoding="async"><span class="pic">😋</span></figure>
+        <h4>Mampfosaurus</h4>
+        <p class="tag">Fressspiel · Canvas 2D</p>
+        <p>Ein Dino-Kopf mit riesigem Maul verschlingt das Urzeit-Land: Eier, Höhlenmenschen, Hütten, Mammuts und am Ende vielleicht den Vulkan. Gegen fünf hungrige Gegner, zwei Minuten pro Runde.</p>
+        <p class="egg"><b>Geheimer Eingang:</b> Bei Dino-Weitwurf 1000 m hoch fliegen.</p>
+        <a class="btn primary" href="mampfosaurus.html">Spielen →</a>
+        <span class="pno">05</span>
+      </div></div>
+      <div class="face back"><div class="pg">
+        <figure class="shot"><img src="img/spiele/rexbart.jpg" alt="Screenshot: Käpt'n Rexbart" decoding="async"><span class="pic">🏴‍☠️</span></figure>
+        <h4>Käpt'n Rexbart</h4>
+        <p class="tag">Piratenspiel · Canvas 2D</p>
+        <p>Ein T-Rex als Pirat: mit dem Wind segeln, Breitseiten feuern, im Säbelduell entern, Schatzkarten zusammensetzen. Nachts spuken Geisterschiffe, und auf hoher See warten zwei Bosse.</p>
+        <p class="egg"><b>Geheimer Eingang:</b> In Dinoangler die Schatztruhe aus dem Tiefseegraben holen.</p>
+        <a class="btn primary" href="dinoPirat.html">Spielen →</a>
+        <span class="pno">06</span>
+      </div></div>
+    </div>
+    <div class="leaf">
+      <div class="face front"><div class="pg">
+        <figure class="shot"><img src="img/spiele/runner.jpg" alt="Screenshot: Dino-Runner" decoding="async"><span class="pic">🌵</span></figure>
+        <h4>Dino-Runner</h4>
+        <p class="tag">Minispiel · hier auf der Seite</p>
+        <p>Der kleine Dino ganz unten auf dieser Seite: über Kakteen springen, so weit es geht. Wer genau hinschaut, findet dabei die Eingänge zu den anderen Spielen.</p>
+        <p class="egg"><b>Tipp:</b> Boot, Spinnenfaden und Maul tauchen ab dem 4. Hindernis auf.</p>
+        <a class="btn primary" href="#spiel" data-close>Spielen ↓</a>
+        <span class="pno">07</span>
+      </div></div>
+      <div class="face back"><div class="pg">
+        <figure class="shot"><img src="img/spiele/geheimnisse.jpg" alt="Screenshot: Geheimnisse-Seite" decoding="async"><span class="pic">🗝️</span></figure>
+        <h4>Geheimnisse</h4>
+        <p class="tag">Für alle, die nicht weiterkommen</p>
+        <p>In Dinoangler sind sieben Geheimnisse versteckt. Wer alle finden will, ohne zu suchen, findet hier die Lösungen.</p>
+        <p class="egg"><b>Fortsetzung folgt …</b> Band Nº 02 ist schon in Arbeit.</p>
+        <a class="btn" href="geheimnisse.html">Lösungen →</a>
+        <span class="pno">08</span>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="bnav"><button type="button" data-step="-1" aria-label="Zurückblättern">◀</button><span id="bpos">Zum Aufschlagen klicken</span><button type="button" data-step="1" aria-label="Weiterblättern">▶</button></div>
+</div>
 
 <div id="spwipe" aria-hidden="true"><div class="sbg"></div><svg viewBox="-100 -100 200 200" preserveAspectRatio="xMidYMid slice"></svg><div class="st"><b>SPIDER<i>-</i>REX</b></div></div>
 <div id="jwipe" aria-hidden="true"><div class="jm"></div><div class="jt"></div><div class="jb"></div><div class="jx"><b>DINO-WEITWURF</b></div></div>
@@ -628,7 +845,7 @@ function press(){
 }
 const JUMP_KEYS=['Space','ArrowUp','KeyW'];
 addEventListener('keydown',e=>{
-  if(!inView||st==='board'||st==='web'||st==='chomp')return;
+  if(!inView||document.documentElement.classList.contains('bookopen')||st==='board'||st==='web'||st==='chomp')return;
   if(JUMP_KEYS.includes(e.code)){e.preventDefault();holding=true;if(!e.repeat)press();}
   else if((e.code==='ArrowDown'||e.code==='KeyS')&&st==='run'){e.preventDefault();if(dino.y>0)dino.fast=true;}
 });
@@ -1013,6 +1230,122 @@ function loop(now){
 }
 addEventListener('resize',resize);
 resize();requestAnimationFrame(loop);
+</script>
+<script>
+'use strict';
+// ---------- Spielebuch: 2D-Buch fliegt in 3D heraus, klappt auf; Blättern per Klick, Pfeiltasten, Inhaltsverzeichnis ----------
+{
+  const ov=document.getElementById('bookov'),bk=document.getElementById('book'),fly=document.getElementById('bfly');
+  const b2d=document.getElementById('book2d'),pos=document.getElementById('bpos');
+  const leaves=[...bk.querySelectorAll('.leaf')],N=leaves.length,root=document.documentElement,TILT=26;
+  const prev=ov.querySelector('[data-step="-1"]'),next=ov.querySelector('[data-step="1"]');
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let p=0,ac=null,lastFocus=null,busy=false;
+  // Höhe jedes Blatts über der Drehachse (Deckel ganz oben); beim Umdrehen landet es spiegelverkehrt links
+  leaves.forEach((l,i)=>l.style.setProperty('--z',i?`calc(${2.5-i}*var(--g))`:'calc(var(--b)/2 + 2*var(--g))'));
+  bk.style.setProperty('--tilt',TILT+'deg');
+  // Dicke der beiden Seitenstapel (Schnittkanten unten/rechts)
+  const edges=()=>{
+    const nl=leaves.filter((l,i)=>i&&l.classList.contains('flipped')).length,nr=N-1-nl;
+    const th=n=>n?`calc(${n-.5}*var(--g))`:'0px';
+    bk.style.setProperty('--nl',th(nl));bk.style.setProperty('--nr',th(nr));
+  };
+  const label=()=>{
+    const pad=n=>String(n).padStart(2,'0');
+    bk.classList.toggle('closed',p===0);
+    pos.textContent=p===0?'Zum Aufschlagen klicken':p===1?'Seite 01':p===N?'Seite 08 · Ende':'Seite '+pad(2*p-2)+' / '+pad(2*p-1);
+    prev.disabled=p===0;next.disabled=p===N;
+  };
+  // Raschelgeräusch beim Umblättern (gefiltertes Rauschen)
+  const rustle=()=>{
+    try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+      const len=Math.floor(ac.sampleRate*.28),buf=ac.createBuffer(1,len,ac.sampleRate),d=buf.getChannelData(0);
+      for(let i=0;i<len;i++){const t=i/len;d[i]=(Math.random()*2-1)*Math.sin(Math.PI*t)*(1-t);}
+      const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();
+      f.type='bandpass';f.frequency.value=2200+Math.random()*800;f.Q.value=.7;g.gain.value=.22;
+      s.buffer=buf;s.connect(f).connect(g).connect(ac.destination);s.start();
+    }catch(_){}
+  };
+  // blättert bis Seite np, gibt die Dauer in ms zurück
+  const go=(np,gap=140)=>{
+    np=Math.max(0,Math.min(N,np));if(np===p)return 0;
+    const fwd=np>p,list=[];
+    if(fwd)for(let i=p;i<np;i++)list.push(i);else for(let i=p-1;i>=np;i--)list.push(i);
+    list.forEach((i,k)=>setTimeout(()=>{leaves[i].classList.toggle('flipped',fwd);edges();rustle();},k*gap));
+    p=np;label();
+    return (list.length-1)*gap+(bk.classList.contains('fast')?450:850);
+  };
+  // Startlage: zugeklappter 3D-Einband genau über dem 2D-Buch
+  const flat=()=>{
+    fly.style.transform='none';
+    const r=b2d.getBoundingClientRect(),f=fly.getBoundingClientRect();
+    const sx=b2d.offsetWidth/(bk.offsetWidth/2),sy=b2d.offsetHeight/bk.offsetHeight;
+    const dx=r.left+r.width/2-(f.left+f.width/2),dy=r.top+r.height/2-(f.top+f.height/2);
+    fly.style.transform='';
+    return `translate(${dx}px,${dy}px) scale3d(${sx},${sy},${sx}) rotateZ(-3deg) rotateY(0deg) rotateX(${-TILT}deg)`;
+  };
+  const MID='translate(0px,-3vh) scale3d(.8,.8,.8) rotateZ(2deg) rotateY(-32deg) rotateX(-4deg)';
+  const END='translate(0px,0px) scale3d(1,1,1) rotateZ(0deg) rotateY(0deg) rotateX(0deg)';
+  const open=()=>{
+    if(busy||ov.classList.contains('vis'))return;busy=true;
+    lastFocus=document.activeElement;
+    const S=flat(),sb=innerWidth-root.clientWidth;
+    root.classList.add('bookopen');document.body.style.paddingRight=sb+'px';
+    ov.classList.add('vis');ov.setAttribute('aria-hidden','false');b2d.classList.add('gone');
+    ov.offsetWidth;ov.classList.add('on');
+    fly.animate([{transform:S},{transform:MID,offset:.55},{transform:END}],{duration:reduce?1:1000,easing:'cubic-bezier(.35,.1,.25,1)'})
+      .onfinish=()=>{busy=false;go(1);ov.querySelector('.bx').focus({preventScroll:true});};
+  };
+  const close=after=>{
+    if(busy||!ov.classList.contains('vis'))return;busy=true;
+    const wasOpen=p>0;bk.classList.add('fast');
+    const t=go(0,60);
+    setTimeout(()=>{
+      bk.classList.remove('fast');
+      const S=flat();ov.classList.remove('on');
+      const a=fly.animate([{transform:END},{transform:MID,offset:.45},{transform:S}],{duration:reduce?1:850,easing:'cubic-bezier(.5,0,.3,1)',fill:'forwards'});
+      a.onfinish=()=>{
+        b2d.classList.remove('gone');ov.classList.remove('vis');ov.setAttribute('aria-hidden','true');
+        root.classList.remove('bookopen');document.body.style.paddingRight='';a.cancel();busy=false;
+        if(after)after();else if(lastFocus&&lastFocus.focus)lastFocus.focus({preventScroll:true});
+      };
+    },wasOpen?Math.max(t,700):0);
+  };
+  b2d.addEventListener('click',open);
+  // Knopf im Hero: erst zum Buch scrollen, dann öffnen
+  document.querySelectorAll('[data-book]').forEach(b=>b.addEventListener('click',e=>{
+    e.preventDefault();b2d.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});setTimeout(open,reduce?50:800);
+  }));
+  ov.querySelector('.bx').addEventListener('click',()=>close());
+  prev.addEventListener('click',()=>{if(!busy)go(p-1);});
+  next.addEventListener('click',()=>{if(!busy)go(p+1);});
+  ov.addEventListener('click',e=>{
+    if(e.target===ov){close();return;}
+    const a=e.target.closest('a');
+    if(a){
+      if(a.dataset.go){e.preventDefault();if(!busy)go(+a.dataset.go);}
+      else if(a.hasAttribute('data-close')){e.preventDefault();close(()=>document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth'}));}
+      return;   // normale Links (Spiele) einfach öffnen
+    }
+    const f=e.target.closest('.face');
+    if(f&&!busy)go(f.classList.contains('front')?p+1:p-1);   // rechte Seite = vor, linke = zurück
+  });
+  addEventListener('keydown',e=>{
+    if(!ov.classList.contains('vis'))return;
+    if(e.key==='Escape')close();
+    else if(e.key==='ArrowRight'){e.preventDefault();if(!busy)go(p+1);}
+    else if(e.key==='ArrowLeft'){e.preventDefault();if(!busy)go(p-1);}
+  });
+  // Zurück-Navigation aus einem Spiel: Buch sofort zuklappen und wieder flach hinlegen
+  addEventListener('pageshow',e=>{
+    if(!e.persisted)return;
+    bk.classList.add('instant');p=0;leaves.forEach(l=>l.classList.remove('flipped'));edges();label();
+    ov.classList.remove('vis','on');ov.setAttribute('aria-hidden','true');b2d.classList.remove('gone');
+    root.classList.remove('bookopen');document.body.style.paddingRight='';busy=false;
+    bk.offsetWidth;bk.classList.remove('instant');
+  });
+  edges();label();
+}
 </script>
 </body>
 </html>
