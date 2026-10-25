@@ -1296,3 +1296,132 @@ SPIELE.push({id:'echo',name:'Echo-Kette',emoji:'🎵',mode:'coop',
     ui();
     return{msg(d){tipp(d.i|0,c.other)}};
   }});
+
+// ---------------------------------------------------------------------
+//  21 · Kritzel-Gedächtnis
+// ---------------------------------------------------------------------
+SPIELE.push({id:'kritzel',name:'Kritzel-Gedächtnis',emoji:'✏️',mode:'vs',
+  desc:'15 Wörter, je 2 Sekunden zum Kritzeln. Erkennst du danach noch, was du gemalt hast?',
+  how:'Ihr bekommt beide dieselben <b>15 Wörter</b> nacheinander, jedes nur <b>2 Sekunden</b> lang. Kritzel es so schnell du kannst, dann wird das Blatt leer und das nächste Wort kommt. Danach siehst du deine eigenen Zeichnungen in zufälliger Reihenfolge und schreibst ohne Zeitdruck dazu, was sie darstellen sollten. Jedes richtige Wort gibt einen Punkt (ein kleiner Tippfehler zählt noch). Die Auflösung mit den Bildern von euch beiden gibt es erst ganz am Ende.',
+  create(c){
+    const N=15,ZEIT=2000,W=300,H=300;
+    const worte=shuffle(MALWORTE.slice(),rngFrom(c.seed^0x5f3a)).slice(0,N);
+    const tipp=a=>{try{haptik(a)}catch(_){}};
+    const bilder=Array.from({length:N},()=>[]),antw=Array(N).fill('');
+    let phase='start',nr=-1,strich=null,fertig=[null,null];
+    const q=s=>c.el.querySelector(s);
+
+    // Zeichnungen sind Listen von Strichen, jeder Strich [x,y,x,y,…] in 0…300
+    const zeichne=(g,s)=>{
+      g.strokeStyle='#1c1c1e';g.lineWidth=7;g.lineCap='round';g.lineJoin='round';g.beginPath();
+      g.moveTo(s[0],s[1]);if(s.length===2)g.lineTo(s[0]+.1,s[1]);for(let i=2;i<s.length;i+=2)g.lineTo(s[i],s[i+1]);g.stroke();
+    };
+    function bild(st){
+      const cv=document.createElement('canvas');cv.width=W*2;cv.height=H*2;cv.className='kgb';
+      const g=cv.getContext('2d');g.scale(2,2);g.fillStyle='#fff';g.fillRect(0,0,W,H);(st||[]).forEach(s=>zeichne(g,s));
+      const d=document.createElement('div');d.className='kgbw'+((st||[]).length?'':' leer');d.appendChild(cv);return d;
+    }
+    const richtig=(a,w)=>{a=norm(a);const o=a.replace(/^(einen|eine|ein|der|die|das)/,'');return!!a&&(nah(a,norm(w))||nah(o,norm(w)))};
+    const nah=(a,w)=>{
+      if(a===w)return true;
+      if(w.length<5||Math.abs(a.length-w.length)>1)return false;
+      // höchstens ein Tippfehler (Levenshtein ≤ 1)
+      let i=0,j=0,f=0;
+      while(i<a.length&&j<w.length){if(a[i]===w[j]){i++;j++;continue}if(++f>1)return false;
+        if(a.length>w.length)i++;else if(a.length<w.length)j++;else{i++;j++}}
+      return f+(a.length-i)+(w.length-j)<=1;
+    };
+
+    // ---- 1. Zeichnen ----
+    c.el.innerHTML=`<div class="kg"><div class="kgtop"><span class="kgnr"></span><b class="kgwort"></b><button type="button" class="btn primary big kglos">Los geht’s</button></div><div class="kgbar"><i></i></div><div class="kgcv"></div></div>`;
+    const{g,cv,pos}=leinwand({el:q('.kgcv')},W,H);
+    const leeren=()=>{g.fillStyle='#fff';g.fillRect(0,0,W,H)};
+    const pt=e=>pos(e).map((v,i)=>Math.round(clamp(v,0,i?H:W)));
+    c.on(cv,'pointerdown',e=>{if(phase!=='mal')return;e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}
+      strich=pt(e);bilder[nr].push(strich);zeichne(g,strich)});
+    c.on(cv,'pointermove',e=>{if(!strich||phase!=='mal')return;const[x,y]=pt(e),l=strich.length;
+      if(Math.abs(x-strich[l-2])+Math.abs(y-strich[l-1])<2)return;
+      g.strokeStyle='#1c1c1e';g.lineWidth=7;g.lineCap='round';g.beginPath();g.moveTo(strich[l-2],strich[l-1]);g.lineTo(x,y);g.stroke();strich.push(x,y)});
+    const auf=()=>{strich=null};c.on(cv,'pointerup',auf);c.on(cv,'pointercancel',auf);
+    const bar=q('.kgbar i');
+    function naechstes(){
+      strich=null;nr++;leeren();
+      if(nr>=N){raten();return}
+      phase='mal';q('.kgnr').textContent=`${nr+1} / ${N}`;q('.kgwort').textContent=worte[nr];
+      bar.style.animation='none';void bar.offsetWidth;bar.style.animation=`kgbar ${ZEIT}ms linear forwards`;
+      cv.classList.add('malen');tipp('tick');
+      c.after(ZEIT,naechstes);
+    }
+    function countdown(n){
+      q('.kgnr').textContent='Gleich geht’s los';q('.kgwort').textContent=n;tipp('tap');
+      c.after(900,()=>n>1?countdown(n-1):naechstes());
+    }
+    leeren();q('.kgnr').textContent='15 Wörter · je 2 Sekunden';
+    c.status('Drück auf <b>Los geht’s</b>, wenn du bereit bist. Dann kritzeln, so schnell du kannst!');
+    c.on(q('.kglos'),'click',e=>{e.currentTarget.remove();
+      // Ganzes Blatt sichtbar machen, solange die Wörter laufen
+      c.status('Kritzel schnell!');countdown(3);
+      const kg=q('.kg'),nav=document.querySelector('nav');scrollTo({top:kg.getBoundingClientRect().top+scrollY-(nav?nav.offsetHeight:0)-8,behavior:'smooth'})});
+
+    // ---- 2. Eigene Zeichnungen wiedererkennen ----
+    let reihe,k=0;
+    function raten(){
+      phase='raten';reihe=shuffle([...Array(N).keys()],Math.random);
+      c.el.innerHTML=`<div class="kgr"><div class="kgnr"></div><div class="kgbild"></div>
+        <form class="kgf"><input maxlength="40" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="next" placeholder="Was sollte das sein?" aria-label="Was sollte das sein?"><button class="btn primary">Weiter</button></form>
+        <button type="button" class="btn sm kgzur">‹ Zurück</button></div>`;
+      const form=q('.kgf'),inp=form.querySelector('input');
+      c.on(form,'submit',e=>{e.preventDefault();antw[reihe[k]]=inp.value.trim().slice(0,40);
+        if(k<N-1){k++;zeige()}else{inp.blur();abgeben()}});
+      c.on(q('.kgzur'),'click',()=>{antw[reihe[k]]=inp.value.trim().slice(0,40);if(k>0){k--;zeige()}});
+      zeige();
+    }
+    function zeige(){
+      const wi=reihe[k],inp=q('.kgf input');
+      q('.kgnr').textContent=`Bild ${k+1} von ${N}`;
+      const b=q('.kgbild');b.innerHTML='';b.appendChild(bild(bilder[wi]));
+      inp.value=antw[wi];q('.kgf button').textContent=k<N-1?'Weiter':'Fertig';
+      inp.enterKeyHint=k<N-1?'next':'done';q('.kgzur').style.visibility=k?'':'hidden';
+      c.status('Was wolltest du da malen? Kein Zeitlimit.');
+      setTimeout(()=>{try{inp.focus({preventScroll:true})}catch(_){}},30);
+    }
+    function abgeben(){
+      phase='warten';fertig[c.me]={b:bilder,a:antw};c.send({fertig:fertig[c.me]});
+      if(fertig[c.other])auswerten();
+      else{c.el.innerHTML=`<div class="kgwarte">Fertig! Warte auf ${c.n(c.other)} …</div>`;c.status('Warte auf '+c.n(c.other)+' …')}
+    }
+
+    // ---- 3. Auflösung ----
+    function auswerten(){
+      phase='ende';
+      const pk=[0,1].map(p=>worte.filter((w,i)=>richtig(fertig[p].a[i]||'',w)).length);
+      const nm=p=>p===c.me?'Du':esc(c.names[p]);
+      c.el.innerHTML=`<div class="kge"><div class="kgsc">${[0,1].map(p=>`<div class="p${p}"><span>${nm(p)}</span><b>${pk[p]}</b><small>von ${N}</small></div>`).join('')}</div>
+        <div class="kgl"></div><button type="button" class="btn primary kgok">Weiter</button></div>`;
+      const l=q('.kgl');
+      worte.forEach((w,i)=>{
+        const z=document.createElement('div');z.className='kgw';z.innerHTML=`<h4>${esc(w)}</h4><div class="kgpaar"></div>`;
+        for(const p of[0,1]){
+          const a=fertig[p].a[i]||'',ok=richtig(a,w),f=document.createElement('figure');f.className='p'+p;
+          f.appendChild(bild(fertig[p].b[i]));
+          const cap=document.createElement('figcaption');cap.className=ok?'gut':'schlecht';
+          cap.innerHTML=`<i>${ok?'✓':'✗'}</i> ${a?esc(a):'<em>nichts</em>'}`;f.appendChild(cap);z.lastChild.appendChild(f);
+        }
+        l.appendChild(z);
+      });
+      const w=pk[0]===pk[1]?-1:pk[0]>pk[1]?0:1;
+      c.status(w<0?'Gleichstand!':w===c.me?'Du hast gewonnen!':c.n(w)+' hat gewonnen.');
+      tipp(w===c.me?'sieg':'tap');
+      c.on(q('.kgok'),'click',()=>c.end({w,delay:0,text:`${pk[c.me]} : ${pk[c.other]} erkannte Bilder.`}));
+      if(innerWidth<=700)scrollTo(0,0);
+    }
+
+    return{msg(d){
+      if(d.fertig&&!fertig[c.other]){
+        const b=Array.isArray(d.fertig.b)?d.fertig.b:[],a=Array.isArray(d.fertig.a)?d.fertig.a:[];
+        fertig[c.other]={b:worte.map((_,i)=>Array.isArray(b[i])?b[i].filter(s=>Array.isArray(s)&&s.length>=2).map(s=>s.map(Number)):[]),
+          a:worte.map((_,i)=>String(a[i]??'').slice(0,40))};
+        if(phase==='warten')auswerten();
+      }
+    }};
+  }});

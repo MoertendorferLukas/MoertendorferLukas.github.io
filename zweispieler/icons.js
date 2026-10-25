@@ -69,6 +69,11 @@ const ICONS=(()=>{
       <rect x="35" y="11" width="4" height="4" fill="${W}"/><rect x="44" y="17" width="6" height="2" fill="#1f9058"/>
       <path d="M4 54h56" stroke="${K}" stroke-width="3" stroke-linecap="round"/><rect x="50" y="40" width="5" height="14" rx="2" fill="${K}"/><rect x="46" y="44" width="4" height="3" rx="1" fill="${K}"/>`)},
     echo:{bg:'#fff0c7',svg:svg(`<path d="M30 6A26 26 0 006 30h24z" fill="${G}"/><path d="M34 6a26 26 0 0124 24H34z" fill="${R}"/><path d="M6 34a26 26 0 0024 24V34z" fill="${Y}"/><path d="M58 34a26 26 0 01-24 24V34z" fill="${B}"/>
-      <circle cx="32" cy="32" r="9" fill="${K}"/>`)}
+      <circle cx="32" cy="32" r="9" fill="${K}"/>`)},
+    kritzel:{bg:'#d9f0fb',svg:svg(`<rect x="6" y="8" width="40" height="46" rx="6" fill="${W}" transform="rotate(-6 26 31)"/>
+      <path d="M14 42l8-14 8 14z" fill="none" stroke="${K}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(-6 26 31)"/>
+      <path d="M13 22c4-4 8 2 12-2s6-2 8 0" fill="none" stroke="${B}" stroke-width="3.5" stroke-linecap="round" transform="rotate(-6 26 31)"/>
+      <circle cx="46" cy="44" r="13" fill="${R}"/><rect x="42" y="27" width="8" height="5" rx="2" fill="${R}"/>
+      <circle cx="46" cy="44" r="9" fill="${W}"/><path d="M46 44v-6M46 44l4 3" stroke="${K}" stroke-width="3" stroke-linecap="round"/>`)}
   };
 })();
