@@ -465,6 +465,18 @@ const BOMBE_SPALTEN=[
   ['λ','ϗ','∞','¿','✿','♫','∆']];
 const BOMBE_FH={rot:'#e2342b',blau:'#1740d8',gelb:'#f5c518',weiß:'#f4f2ec',schwarz:'#15151a',grün:'#1f9d55'};
 const BOMBE_ZIFFER={blau:4,gelb:5,rot:3,weiß:1};
+// Farbfolge: [Vokal ja/nein][Fehler 0/1/2][blinkende Farbe] → zu drückende Farbe
+const BOMBE_SIMON_F=['rot','blau','grün','gelb'];
+const BOMBE_SIMON=[[[1,0,3,2],[3,2,1,0],[2,0,3,1]],[[1,3,2,0],[0,1,3,2],[3,2,1,0]]];
+const BOMBE_WORTE=['ANKER','APFEL','BIRNE','BLITZ','BLUME','BRIEF','DACHS','DRAHT','EIMER','FEDER','FISCH','GABEL','GEIST','HONIG','INSEL','KATZE','KERZE','KRONE','LAMPE','MAUER','NEBEL','PIRAT','RADIO','REGEN','SONNE','STERN','TIGER','WOLKE','ZANGE','ZEBRA'];
+const BOMBE_LEVEL=[
+  {name:'Übungsbombe',mods:['draht','knopf'],zeit:300},
+  {name:'Der Klassiker',mods:['draht','knopf','symbol'],zeit:240},
+  {name:'Blinklichter',mods:['draht','simon','symbol'],zeit:240},
+  {name:'Wortsalat',mods:['passwort','knopf','gedaechtnis'],zeit:240},
+  {name:'Viererpack',mods:['draht','simon','passwort','gedaechtnis'],zeit:300},
+  {name:'Turbo',mods:['draht','knopf','symbol','simon','passwort','gedaechtnis'],zeit:360,turbo:true},
+  {name:'Endgegner',mods:['draht','knopf','symbol','simon','passwort','gedaechtnis'],zeit:270,turbo:true,max:2}];
 function bombeDraht(d,serie,batt){
   const n=d.length,anz=f=>d.filter(x=>x===f).length,letzt=f=>d.lastIndexOf(f),gerade=+serie.slice(-1)%2===0,vokal=/[AEIOU]/.test(serie);
   if(n===3){if(!anz('blau'))return 1;if(d[2]==='rot')return 2;if(anz('weiß')>1)return d.indexOf('weiß');return 0}
@@ -480,79 +492,174 @@ function bombeKnopfHalten(f,t,batt){
   if(batt>=3)return false;
   return true;
 }
-const BOMBE_HANDBUCH=`
-<div class="hb"><h4>Allgemein</h4><p>Die Bombe hat eine <b>Seriennummer</b> und eine Anzahl <b>Batterien</b>. Frag den Entschärfer danach, viele Regeln brauchen das. Drei Fehler und die Bombe explodiert.</p></div>
-<div class="hb"><h4>Modul 1 · Drähte</h4><p>Die Drähte werden von oben nach unten gezählt. Nimm die Regeln für die passende Anzahl und geh sie der Reihe nach durch. Die <b>erste</b> zutreffende Regel gilt. Es wird genau ein Draht geschnitten.</p>
+const BOMBE_HB={
+  draht:`<div class="hb"><h4>Drähte</h4><p>Die Drähte werden von oben nach unten gezählt. Nimm die Regeln für die passende Anzahl und geh sie der Reihe nach durch. Die <b>erste</b> zutreffende Regel gilt. Es wird genau ein Draht geschnitten.</p>
 <p><b>3 Drähte</b></p><ol><li>Kein blauer Draht dabei: schneide den <b>zweiten</b>.</li><li>Sonst, wenn der letzte Draht rot ist: schneide den <b>letzten</b>.</li><li>Sonst, wenn es mehr als einen weißen gibt: schneide den <b>ersten weißen</b>.</li><li>Sonst: schneide den <b>ersten</b>.</li></ol>
 <p><b>4 Drähte</b></p><ol><li>Seriennummer endet mit einer geraden Ziffer und es gibt mindestens zwei rote: schneide den <b>letzten roten</b>.</li><li>Sonst, wenn der erste Draht gelb ist: schneide den <b>dritten</b>.</li><li>Sonst, wenn es genau einen schwarzen gibt: schneide den <b>schwarzen</b>.</li><li>Sonst: schneide den <b>zweiten</b>.</li></ol>
 <p><b>5 Drähte</b></p><ol><li>Kein gelber Draht dabei: schneide den <b>vierten</b>.</li><li>Sonst, wenn es mindestens 2 Batterien gibt und der letzte Draht weiß ist: schneide den <b>ersten</b>.</li><li>Sonst, wenn es genau einen grünen gibt: schneide den <b>grünen</b>.</li><li>Sonst: schneide den <b>letzten</b>.</li></ol>
-<p><b>6 Drähte</b></p><ol><li>Seriennummer enthält einen Vokal (A, E, I, O, U): schneide den <b>dritten</b>.</li><li>Sonst, wenn es keinen roten gibt: schneide den <b>fünften</b>.</li><li>Sonst, wenn es mehr blaue als gelbe gibt: schneide den <b>letzten blauen</b>.</li><li>Sonst: schneide den <b>letzten</b>.</li></ol></div>
-<div class="hb"><h4>Modul 2 · Der Knopf</h4><p>Geh die Regeln der Reihe nach durch, die <b>erste</b> zutreffende gilt.</p>
+<p><b>6 Drähte</b></p><ol><li>Seriennummer enthält einen Vokal (A, E, I, O, U): schneide den <b>dritten</b>.</li><li>Sonst, wenn es keinen roten gibt: schneide den <b>fünften</b>.</li><li>Sonst, wenn es mehr blaue als gelbe gibt: schneide den <b>letzten blauen</b>.</li><li>Sonst: schneide den <b>letzten</b>.</li></ol></div>`,
+  knopf:`<div class="hb"><h4>Der Knopf</h4><p>Geh die Regeln der Reihe nach durch, die <b>erste</b> zutreffende gilt.</p>
 <ol><li>Blauer Knopf mit der Aufschrift „STOPP“: <b>halten</b>.</li><li>Mindestens 2 Batterien und Aufschrift „BUMM“: <b>kurz drücken</b>.</li><li>Weißer Knopf: <b>halten</b>.</li><li>Roter Knopf mit der Aufschrift „HALTEN“: <b>kurz drücken</b>.</li><li>Mindestens 3 Batterien: <b>kurz drücken</b>.</li><li>Sonst: <b>halten</b>.</li></ol>
 <p><b>Kurz drücken:</b> drücken und sofort loslassen.<br><b>Halten:</b> Gedrückt halten, bis rechts ein farbiger Streifen leuchtet. Loslassen, wenn irgendwo im Timer diese Ziffer steht:</p>
-<table class="hbt"><tr><th>Streifen</th><td>Blau</td><td>Gelb</td><td>Rot</td><td>Weiß</td></tr><tr><th>Ziffer</th><td>4</td><td>5</td><td>3</td><td>1</td></tr></table></div>
-<div class="hb"><h4>Modul 3 · Symbole</h4><p>Auf der Bombe sind vier Symbole. Genau eine Spalte hier enthält alle vier. Sie müssen in der Reihenfolge gedrückt werden, in der sie in dieser Spalte <b>von oben nach unten</b> stehen.</p>
-<div class="hbs">${BOMBE_SPALTEN.map(s=>`<div>${s.map(x=>`<span>${x}</span>`).join('')}</div>`).join('')}</div></div>`;
-
-SPIELE.push({id:'bombe',name:'Bombe entschärfen',emoji:'💣',mode:'coop',
-  desc:'Einer sieht die Bombe, der andere das Handbuch. Nur zusammen überlebt ihr.',
-  how:'Einer ist <b>Entschärfer</b> und sieht die Bombe, der andere ist <b>Experte</b> und hat das Handbuch. Der Entschärfer beschreibt, was er sieht, der Experte sagt, was zu tun ist. Redet über den Chat rechts (oder ruft euch an). Löst alle drei Module, bevor die 4 Minuten vorbei sind. Drei Fehler und es macht BUMM.',
-  create(c){
-    const r=c.rng,E=(c.seed>>>3)%2,ich=c.me===E?'ent':'exp',ZEIT=240;
-    const A='ABCDEFGHIJKLMNOPQRSTUVWXZ',Z='0123456789';
-    let serie='';for(let i=0;i<5;i++){const q=r()<.6?A:Z;serie+=q[ri(r,q.length)]}serie+=Z[ri(r,10)];
-    const batt=ri(r,4);
-    const FARBEN=Object.keys(BOMBE_FH),drahte=[];const nD=3+ri(r,4);for(let i=0;i<nD;i++)drahte.push(FARBEN[ri(r,FARBEN.length)]);
-    const richtigerDraht=bombeDraht(drahte,serie,batt);
+<table class="hbt"><tr><th>Streifen</th><td>Blau</td><td>Gelb</td><td>Rot</td><td>Weiß</td></tr><tr><th>Ziffer</th><td>4</td><td>5</td><td>3</td><td>1</td></tr></table></div>`,
+  symbol:`<div class="hb"><h4>Symbole</h4><p>Auf der Bombe sind vier Symbole. Genau eine Spalte hier enthält alle vier. Sie müssen in der Reihenfolge gedrückt werden, in der sie in dieser Spalte <b>von oben nach unten</b> stehen.</p>
+<div class="hbs">${BOMBE_SPALTEN.map(s=>`<div>${s.map(x=>`<span>${x}</span>`).join('')}</div>`).join('')}</div></div>`,
+  simon:`<div class="hb"><h4>Farbfolge</h4><p>Vier Farbfelder blinken eine Folge. Für jede blinkende Farbe muss eine <b>andere</b> Farbe gedrückt werden, und zwar für die ganze bisher geblinkte Folge. Danach wird die Folge um eine Farbe länger. Nach 3 bis 5 Stufen ist das Modul gelöst.</p>
+<p>Welche Farbe gedrückt wird, hängt davon ab, ob die <b>Seriennummer einen Vokal</b> hat und wie viele <b>Fehler</b> ihr gerade habt:</p>
+${['Seriennummer MIT Vokal','Seriennummer OHNE Vokal'].map((t,v)=>`<p><b>${t}</b></p><table class="hbt"><tr><th>Blinkt</th>${BOMBE_SIMON_F.map(f=>`<td>${f[0].toUpperCase()+f.slice(1)}</td>`).join('')}</tr>${[0,1,2].map(f=>`<tr><th>${f===2?'2+ Fehler':f+' Fehler'}</th>${BOMBE_SIMON[v][f].map(k=>`<td style="color:${BOMBE_FH[BOMBE_SIMON_F[k]]};font-weight:800">${BOMBE_SIMON_F[k][0].toUpperCase()+BOMBE_SIMON_F[k].slice(1)}</td>`).join('')}</tr>`).join('')}</table>`).join('')}</div>`,
+  passwort:`<div class="hb"><h4>Passwort</h4><p>Fünf Buchstabenrollen. Mit ▲ und ▼ lassen sich in jeder Spalte fünf Buchstaben durchblättern. Genau eines dieser Wörter lässt sich damit bilden. Einstellen und <b>SENDEN</b> drücken.</p>
+<p class="hbw">${BOMBE_WORTE.join(' ')}</p><p>Tipp: Lass dir die Buchstaben der ersten Spalte vorlesen, das schließt schon viele Wörter aus.</p></div>`,
+  gedaechtnis:`<div class="hb"><h4>Gedächtnis</h4><p>Eine große Zahl im Display, darunter vier Tasten mit den Zahlen 1 bis 4 (durcheinander). Das Modul hat <b>4 Stufen</b>. Merk dir in jeder Stufe, welche <b>Position</b> (1 = ganz links) und welche <b>Beschriftung</b> gedrückt wurde. Ein Fehler setzt das Modul auf Stufe 1 zurück.</p>
+<p><b>Stufe 1</b> · Display 1: Position 2 · 2: Position 2 · 3: Position 3 · 4: Position 4</p>
+<p><b>Stufe 2</b> · Display 1: Taste mit der Beschriftung „4“ · 2: gleiche Position wie in Stufe 1 · 3: Position 1 · 4: gleiche Position wie in Stufe 1</p>
+<p><b>Stufe 3</b> · Display 1: gleiche Beschriftung wie in Stufe 2 · 2: gleiche Beschriftung wie in Stufe 1 · 3: Position 3 · 4: Beschriftung „4“</p>
+<p><b>Stufe 4</b> · Display 1: gleiche Position wie in Stufe 1 · 2: Position 1 · 3: gleiche Position wie in Stufe 2 · 4: gleiche Position wie in Stufe 2</p></div>`};
+// Module der Bombe: html (Entschärfer-Ansicht) und init(el) mit der Spiellogik.
+// a: {loesen, falsch, fehler(), aus(), ok(), rest(), on, every, serie, batt, vokal}
+const BOMBE_MOD={
+  draht(r,a){
+    const FARBEN=Object.keys(BOMBE_FH),d=[],n=3+ri(r,4);for(let i=0;i<n;i++)d.push(FARBEN[ri(r,FARBEN.length)]);
+    const richtig=bombeDraht(d,a.serie,a.batt);
+    return{html:`<svg class="drw" viewBox="0 0 240 ${n*34+16}">${d.map((f,i)=>`<g data-i="${i}"><rect x="0" y="${8+i*34}" width="240" height="30" fill="transparent"/><line x1="16" y1="${23+i*34}" x2="224" y2="${23+i*34}" stroke="#000" stroke-width="13" stroke-linecap="round"/><line class="dr" x1="16" y1="${23+i*34}" x2="224" y2="${23+i*34}" stroke="${BOMBE_FH[f]}" stroke-width="9" stroke-linecap="round"/></g>`).join('')}</svg>`,
+      init(m){a.on(m,'click',e=>{const gr=e.target.closest('g[data-i]');if(!gr||a.aus()||a.ok()||gr.classList.contains('cut'))return;gr.classList.add('cut');if(+gr.dataset.i===richtig)a.loesen();else a.falsch()})}};
+  },
+  knopf(r,a){
     const kf=['rot','blau','gelb','weiß'][ri(r,4)],kt=['DRÜCKEN','HALTEN','STOPP','BUMM'][ri(r,4)],ks=['blau','gelb','rot','weiß'][ri(r,4)];
-    const halten=bombeKnopfHalten(kf,kt,batt);
+    const halten=bombeKnopfHalten(kf,kt,a.batt);
+    return{html:`<div class="knw"><button type="button" class="bkn" style="--k:${BOMBE_FH[kf]};color:${kf==='gelb'||kf==='weiß'?'#0a1633':'#fff'}">${kt}</button><span class="bstr"></span></div>`,
+      init(m){
+        const kn=m.querySelector('.bkn'),str=m.querySelector('.bstr');let haltT=null,gehalten=false;
+        a.on(kn,'pointerdown',e=>{e.preventDefault();if(a.aus()||a.ok())return;try{kn.setPointerCapture(e.pointerId)}catch(_){}gehalten=false;
+          haltT=setTimeout(()=>{gehalten=true;str.style.background=BOMBE_FH[ks];str.classList.add('an')},600)});
+        const los=()=>{if(haltT==null)return;clearTimeout(haltT);haltT=null;str.style.background='';str.classList.remove('an');if(a.aus()||a.ok())return;
+          if(!gehalten){if(!halten)a.loesen();else a.falsch()}
+          else if(halten&&a.uhr().includes(String(BOMBE_ZIFFER[ks])))a.loesen();else a.falsch()};
+        a.on(kn,'pointerup',los);a.on(kn,'pointercancel',los);
+      }};
+  },
+  symbol(r,a){
     let sp,sym;for(;;){sp=ri(r,5);sym=shuffle(BOMBE_SPALTEN[sp].slice(),r).slice(0,4);if(BOMBE_SPALTEN.filter(s=>sym.every(x=>s.includes(x))).length===1)break}
     const reihe=BOMBE_SPALTEN[sp].filter(x=>sym.includes(x)),anzeige=shuffle(sym.slice(),r);
-    let rest=ZEIT,fehler=0,ok=[false,false,false],aus=false;
-    const mmss=t=>{t=Math.max(0,Math.ceil(t));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
-    const lage=()=>`<div class="bstat"><span class="btimer">${mmss(rest)}</span><span class="bfehl">${'✖'.repeat(fehler)}${'·'.repeat(3-fehler)}</span><span>Module: ${ok.filter(Boolean).length}/3</span></div>`;
-    if(ich==='exp'){
-      c.el.innerHTML=`<div class="bexp"><div class="brolle">📖 Du bist der <b>Experte</b>. ${c.n(c.other)} sieht die Bombe. Frag nach, was drauf ist, und sag, was zu tun ist!</div><div class="blage">${lage()}</div><div class="hbuch">${BOMBE_HANDBUCH}</div></div>`;
-      const lg=c.el.querySelector('.blage');
-      c.status('Lies das Handbuch und lotse über den Chat.');
-      return{msg(d){
-        if(d.st){rest=d.st.t;fehler=d.st.f;ok=d.st.ok;lg.innerHTML=lage()}
-        if(d.ende){aus=true;c.end({coop:true,win:d.ende.win,text:d.ende.text})}
+    return{html:`<div class="bsym">${anzeige.map(s=>`<button type="button" data-s="${s}">${s}</button>`).join('')}</div>`,
+      init(m){let nx=0;a.on(m,'click',e=>{const b=e.target.closest('button[data-s]');if(!b||a.aus()||a.ok()||b.classList.contains('an'))return;
+        if(b.dataset.s===reihe[nx]){b.classList.add('an');nx++;if(nx===4)a.loesen()}else a.falsch()})}};
+  },
+  simon(r,a){
+    const len=3+ri(r,3),seq=[];for(let i=0;i<len;i++)seq.push(ri(r,4));
+    return{html:`<div class="bsim">${BOMBE_SIMON_F.map((f,i)=>`<button type="button" data-i="${i}" style="--k:${BOMBE_FH[f]}" aria-label="${f}"></button>`).join('')}</div>`,
+      init(m){
+        const kn=[...m.querySelectorAll('button')];let st=0,pos=0,start=performance.now()+1200,druck=-1,druckBis=0;
+        a.every(80,()=>{const t=performance.now();let an=-1;
+          if(t<druckBis)an=druck;
+          else if(!a.ok()&&!a.aus()&&t>start){const cyc=(st+1)*650+1600,tt=(t-start)%cyc,i=Math.floor(tt/650);if(i<=st&&tt%650<400)an=seq[i]}
+          kn.forEach((b,j)=>b.classList.toggle('an',j===an))});
+        a.on(m,'pointerdown',e=>{const b=e.target.closest('button[data-i]');if(!b||a.aus()||a.ok())return;e.preventDefault();
+          const k=+b.dataset.i,t=performance.now();druck=k;druckBis=t+220;start=t+2600;
+          const soll=BOMBE_SIMON[a.vokal?0:1][Math.min(2,a.fehler())][seq[pos]];
+          if(k===soll){pos++;if(pos>st){st++;pos=0;start=t+900;if(st===len)a.loesen()}}else{pos=0;a.falsch()}});
       }};
+  },
+  passwort(r,a){
+    const AB='ABCDEFGHIKLMNOPRSTUWZ';let wort,sp;
+    for(;;){wort=BOMBE_WORTE[ri(r,BOMBE_WORTE.length)];
+      sp=[...wort].map(ch=>{const s=new Set([ch]);while(s.size<5)s.add(AB[ri(r,AB.length)]);return shuffle([...s],r)});
+      if(BOMBE_WORTE.filter(w=>[...w].every((ch,i)=>sp[i].includes(ch))).length===1)break}
+    return{html:`<div class="bpw"><div class="bpwr">${sp.map((s,i)=>`<div data-i="${i}"><button type="button" data-d="-1" aria-label="Hoch">▲</button><b>${s[0]}</b><button type="button" data-d="1" aria-label="Runter">▼</button></div>`).join('')}</div><button type="button" class="bpwok">SENDEN</button></div>`,
+      init(m){const idx=[0,0,0,0,0];
+        a.on(m,'click',e=>{const b=e.target.closest('button');if(!b||a.aus()||a.ok())return;
+          if(b.dataset.d){const col=b.parentElement,i=+col.dataset.i;idx[i]=(idx[i]+ +b.dataset.d+5)%5;col.querySelector('b').textContent=sp[i][idx[i]]}
+          else if(idx.map((k,i)=>sp[i][k]).join('')===wort)a.loesen();else a.falsch()})}};
+  },
+  gedaechtnis(r,a){
+    return{html:`<div class="bmem"><div class="bmemd">–</div><div class="bmemk"></div><div class="bmems"></div></div>`,
+      init(m){
+        let st=0,anz,lab;const h=[];
+        const neu=()=>{anz=1+ri(Math.random,4);lab=shuffle([1,2,3,4],Math.random);m.querySelector('.bmemd').textContent=anz;
+          m.querySelector('.bmemk').innerHTML=lab.map((l,i)=>`<button type="button" data-p="${i}">${l}</button>`).join('');
+          m.querySelector('.bmems').innerHTML=[0,1,2,3].map(i=>`<i class="${i<st?'an':''}"></i>`).join('')};
+        const soll=()=>{const L=l=>lab.indexOf(l);
+          if(st===0)return[1,1,2,3][anz-1];
+          if(st===1)return[L(4),h[0].p,0,h[0].p][anz-1];
+          if(st===2)return[L(h[1].l),L(h[0].l),2,L(4)][anz-1];
+          return[h[0].p,0,h[1].p,h[1].p][anz-1]};
+        a.on(m,'click',e=>{const b=e.target.closest('button[data-p]');if(!b||a.aus()||a.ok())return;const p=+b.dataset.p;
+          if(p===soll()){h.push({p,l:lab[p]});st++;if(st===4){m.querySelector('.bmems').innerHTML='<i class="an"></i>'.repeat(4);m.querySelector('.bmemk').innerHTML='';m.querySelector('.bmemd').textContent='✓';a.loesen()}else neu()}
+          else{st=0;h.length=0;a.falsch();neu()}});
+        neu();
+      }};
+  }};
+const BOMBE_NAME={draht:'Drähte',knopf:'Knopf',symbol:'Symbole',simon:'Farbfolge',passwort:'Passwort',gedaechtnis:'Gedächtnis'};
+
+SPIELE.push({id:'bombe',name:'Bombe entschärfen',emoji:'💣',mode:'coop',
+  desc:'Einer sieht die Bombe, der andere das Handbuch. 7 Level, von der Übungsbombe bis zum Endgegner.',
+  how:'Einer ist <b>Entschärfer</b> und sieht die Bombe, der andere ist <b>Experte</b> und hat das Handbuch. Der Entschärfer beschreibt, was er sieht, der Experte sagt, was zu tun ist. Redet über den Chat rechts (oder ruft euch an). Löst alle Module, bevor die Zeit abläuft. Zu viele Fehler und es macht BUMM. Es gibt <b>7 Level</b> mit immer mehr Modulen (Drähte, Knopf, Symbole, Farbfolge, Passwort, Gedächtnis). Ab Level 6 läuft der Timer mit jedem Fehler schneller. Nach jeder Bombe tauscht ihr die Rollen.',
+  create(c){
+    const MAXLV=BOMBE_LEVEL.length;
+    let best=0;try{best=+localStorage.getItem('lm2p-bombe-lv')||0}catch(_){}
+    let n=0,lv=-1,lokal=[],netz=null;
+    const aufraeumen=()=>{lokal.forEach(id=>{clearInterval(id);clearTimeout(id)});lokal=[];netz=null};
+    const mmss=t=>{t=Math.max(0,Math.ceil(t));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
+    // Level-Auswahl: der Host startet, der Gast fragt an
+    const waehle=l=>{if(c.host)starte(l);else c.send({will:l})};
+    function starte(l){n++;c.send({start:l,n});bauen(l,n)}
+    function auswahl(){
+      aufraeumen();lv=-1;
+      c.el.innerHTML=`<div class="bwahl"><h4>Welche Bombe?</h4><div class="bwl">${BOMBE_LEVEL.map((L,i)=>`<button type="button" data-l="${i}" class="${i<best?'fertig':''}"><b>${i+1}</b><span>${L.name}</span><small>${L.mods.length} Module · ${mmss(L.zeit)}${L.turbo?' · Turbo':''}${L.max?' · nur '+L.max+' Fehler':''}</small>${i<best?'<i>✓</i>':''}</button>`).join('')}</div><p class="small">Wer ein Level anklickt, startet es für euch beide. Nach jeder Bombe tauscht ihr die Rollen.</p></div>`;
+      c.on(c.el.querySelector('.bwl'),'click',e=>{const b=e.target.closest('button[data-l]');if(b)waehle(+b.dataset.l)});
+      c.status('Sucht euch ein Level aus. Neu dabei? Fangt mit der Übungsbombe an!');
     }
-    // Entschärfer
-    c.el.innerHTML=`<div class="bomb"><div class="brolle">💣 Du bist der <b>Entschärfer</b>. Beschreib ${c.n(c.other)} genau, was du siehst. Nur dein Partner hat das Handbuch!</div>
-      <div class="bcase"><div class="btop"><div class="bt btimer">${mmss(rest)}</div><div class="bt bfehl">···</div><div class="bser">SERIENNR. <b>${serie}</b></div><div class="bbat">${batt?'🔋'.repeat(batt):'keine Batterien'}</div></div>
-      <div class="bmods">
-        <div class="bmod" data-m="0"><i class="led"></i><svg class="drw" viewBox="0 0 240 ${nD*34+16}">${drahte.map((f,i)=>`<g data-i="${i}"><rect x="0" y="${8+i*34}" width="240" height="30" fill="transparent"/><line x1="16" y1="${23+i*34}" x2="224" y2="${23+i*34}" stroke="#000" stroke-width="13" stroke-linecap="round"/><line class="dr" x1="16" y1="${23+i*34}" x2="224" y2="${23+i*34}" stroke="${BOMBE_FH[f]}" stroke-width="9" stroke-linecap="round"/></g>`).join('')}</svg></div>
-        <div class="bmod" data-m="1"><i class="led"></i><div class="knw"><button type="button" class="bkn" style="--k:${BOMBE_FH[kf]};color:${kf==='gelb'||kf==='weiß'?'#0a1633':'#fff'}">${kt}</button><span class="bstr"></span></div></div>
-        <div class="bmod" data-m="2"><i class="led"></i><div class="bsym">${anzeige.map(s=>`<button type="button" data-s="${s}">${s}</button>`).join('')}</div></div>
-      </div></div></div>`;
-    const caseEl=c.el.querySelector('.bcase'),mods=c.el.querySelectorAll('.bmod');
-    const sendeLage=()=>c.send({st:{t:rest,f:fehler,ok}});
-    const zeichne=()=>{c.el.querySelector('.btimer').textContent=mmss(rest);c.el.querySelector('.bfehl').textContent='✖'.repeat(fehler)+'·'.repeat(3-fehler);mods.forEach((m,i)=>m.classList.toggle('ok',ok[i]))};
-    function ende(win,text){if(aus)return;aus=true;zeichne();sendeLage();caseEl.classList.add(win?'gerettet':'bumm');c.send({ende:{win,text}});c.end({coop:true,win,text,delay:1600})}
-    const loesen=m=>{if(ok[m])return;ok[m]=true;zeichne();sendeLage();if(ok.every(Boolean))ende(true,`Entschärft mit ${mmss(rest)} auf der Uhr und ${fehler} Fehler${fehler===1?'':'n'}.`)};
-    const falsch=()=>{fehler++;zeichne();sendeLage();caseEl.classList.remove('wackel');void caseEl.offsetWidth;caseEl.classList.add('wackel');if(fehler>=3)ende(false,'Drei Fehler. BUMM! 💥')};
-    const start=performance.now();
-    c.every(200,()=>{if(aus)return;const vor=Math.ceil(rest);rest=ZEIT-(performance.now()-start)/1000;if(Math.ceil(rest)!==vor){zeichne();sendeLage()}if(rest<=0){rest=0;ende(false,'Die Zeit ist abgelaufen. BUMM! 💥')}});
-    // Drähte
-    c.on(mods[0],'click',e=>{const gr=e.target.closest('g[data-i]');if(!gr||aus||ok[0]||gr.classList.contains('cut'))return;gr.classList.add('cut');if(+gr.dataset.i===richtigerDraht)loesen(0);else falsch()});
-    // Knopf
-    const kn=mods[1].querySelector('.bkn'),str=mods[1].querySelector('.bstr');let haltT=null,gehalten=false;
-    c.on(kn,'pointerdown',e=>{e.preventDefault();if(aus||ok[1])return;try{kn.setPointerCapture(e.pointerId)}catch(_){}gehalten=false;
-      haltT=c.after(600,()=>{gehalten=true;str.style.background=BOMBE_FH[ks];str.classList.add('an')})});
-    const loslassen=()=>{if(haltT==null)return;clearTimeout(haltT);haltT=null;str.style.background='';str.classList.remove('an');if(aus||ok[1])return;
-      if(!gehalten){if(!halten)loesen(1);else falsch()}
-      else if(halten&&mmss(rest).includes(String(BOMBE_ZIFFER[ks])))loesen(1);else falsch()};
-    c.on(kn,'pointerup',loslassen);c.on(kn,'pointercancel',loslassen);
-    // Symbole
-    let naechstes=0;
-    c.on(mods[2],'click',e=>{const b=e.target.closest('button[data-s]');if(!b||aus||ok[2]||b.classList.contains('an'))return;
-      if(b.dataset.s===reihe[naechstes]){b.classList.add('an');naechstes++;if(naechstes===4)loesen(2)}else falsch()});
-    c.status('Die Zeit läuft! Beschreib deinem Experten die Bombe.');
-    sendeLage();
-    return{msg(){}};
+    function ergebnis(win,text){
+      if(win&&lv+1>best){best=lv+1;try{localStorage.setItem('lm2p-bombe-lv',best)}catch(_){}}
+      if(win&&lv===MAXLV-1){c.end({coop:true,win:true,text:'Alle 7 Bomben entschärft! '+text,delay:1600});return}
+      const box=document.createElement('div');box.className='bres '+(win?'gut':'schlecht');
+      box.innerHTML=`<h4>${win?'Entschärft! 🎉':'BUMM! 💥'}</h4><p>${esc(text)}</p><div>${win?`<button type="button" class="btn primary" data-l="${lv+1}">Weiter: Level ${lv+2} →</button>`:`<button type="button" class="btn primary" data-l="${lv}">↻ Nochmal versuchen</button>`}<button type="button" class="btn" data-m="1">Level wählen</button></div>`;
+      c.el.prepend(box);
+      c.on(box,'click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.m){c.send({menu:1});auswahl()}else waehle(+b.dataset.l)});
+      c.status(win?'Geschafft! Weiter geht’s, diesmal mit getauschten Rollen.':'Das ging schief. Nochmal, diesmal mit getauschten Rollen?');
+      box.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }
+    function bauen(l,nr){
+      aufraeumen();lv=l;const L=BOMBE_LEVEL[l],r=rngFrom(c.seed+l*7919+nr*104729),E=((c.seed>>>3)+nr)%2,ich=c.me===E?'ent':'exp',MAXF=L.max||3;
+      const A='ABCDEFGHIJKLMNOPQRSTUVWXZ',Z='0123456789';
+      let serie='';for(let i=0;i<5;i++){const q=r()<.6?A:Z;serie+=q[ri(r,q.length)]}serie+=Z[ri(r,10)];
+      const batt=ri(r,4);
+      let rest=L.zeit,fehler=0,aus=false;const ok=L.mods.map(()=>false);
+      const kopf=`<div class="blv">Level ${l+1} · ${esc(L.name)}${L.turbo?' · ⚡ Turbo':''}</div>`;
+      const lage=()=>`<div class="bstat"><span class="btimer">${mmss(rest)}</span><span class="bfehl">${'✖'.repeat(fehler)}${'·'.repeat(Math.max(0,MAXF-fehler))}</span><span>Module: ${ok.filter(Boolean).length}/${ok.length}</span><span class="small">${L.mods.map((k,i)=>(ok[i]?'✅ ':'')+BOMBE_NAME[k]).join(' · ')}</span></div>`;
+      if(ich==='exp'){
+        c.el.innerHTML=`<div class="bexp">${kopf}<div class="brolle">📖 Du bist der <b>Experte</b>. ${c.n(c.other)} sieht die Bombe. Frag nach, was drauf ist, und sag, was zu tun ist!</div><div class="blage">${lage()}</div>
+          <div class="hbuch"><div class="hb"><h4>Allgemein</h4><p>Die Bombe hat eine <b>Seriennummer</b> und eine Anzahl <b>Batterien</b>. Frag den Entschärfer danach, viele Regeln brauchen das. ${MAXF} Fehler und die Bombe explodiert.${L.turbo?' <b>Turbo:</b> Mit jedem Fehler läuft der Timer schneller!':''}</p><p>Auf dieser Bombe: <b>${L.mods.map(k=>BOMBE_NAME[k]).join(', ')}</b>.</p></div>${[...new Set(L.mods)].map(k=>BOMBE_HB[k]).join('')}</div></div>`;
+        const lg=c.el.querySelector('.blage');
+        c.status('Lies das Handbuch und lotse über den Chat.');
+        netz=d=>{if(d.n!==nr)return;if(d.st){rest=d.st.t;fehler=d.st.f;d.st.ok.forEach((v,i)=>ok[i]=v);lg.innerHTML=lage()}if(d.ende&&!aus){aus=true;ergebnis(d.ende.win,d.ende.text)}};
+        return;
+      }
+      const api={serie,batt,vokal:/[AEIOU]/.test(serie),fehler:()=>fehler,aus:()=>aus,uhr:()=>mmss(rest),on:c.on,every:(ms,f)=>{const id=c.every(ms,f);lokal.push(id);return id}};
+      const mods=L.mods.map((k,i)=>BOMBE_MOD[k](r,{...api,ok:()=>ok[i],loesen:()=>loesen(i),falsch:()=>falsch()}));
+      c.el.innerHTML=`<div class="bomb">${kopf}<div class="brolle">💣 Du bist der <b>Entschärfer</b>. Beschreib ${c.n(c.other)} genau, was du siehst. Nur dein Partner hat das Handbuch!</div>
+        <div class="bcase"><div class="btop"><div class="bt btimer">${mmss(rest)}</div><div class="bt bfehl"></div><div class="bser">SERIENNR. <b>${serie}</b></div><div class="bbat">${batt?'🔋'.repeat(batt):'keine Batterien'}</div></div>
+        <div class="bmods">${mods.map((m,i)=>`<div class="bmod" data-m="${i}"><i class="led"></i><span class="bmn">${BOMBE_NAME[L.mods[i]]}</span>${m.html}</div>`).join('')}</div></div></div>`;
+      const caseEl=c.el.querySelector('.bcase'),modEl=c.el.querySelectorAll('.bmod');
+      const sendeLage=()=>c.send({n:nr,st:{t:rest,f:fehler,ok}});
+      const zeichne=()=>{c.el.querySelector('.btimer').textContent=mmss(rest);c.el.querySelector('.bfehl').textContent='✖'.repeat(fehler)+'·'.repeat(Math.max(0,MAXF-fehler));modEl.forEach((m,i)=>m.classList.toggle('ok',ok[i]))};
+      function ende(win,text){if(aus)return;aus=true;zeichne();sendeLage();caseEl.classList.add(win?'gerettet':'bumm');c.send({n:nr,ende:{win,text}});lokal.push(c.after(1200,()=>ergebnis(win,text)))}
+      function loesen(i){if(ok[i])return;ok[i]=true;zeichne();sendeLage();if(ok.every(Boolean))ende(true,`Level ${l+1} entschärft mit ${mmss(rest)} auf der Uhr und ${fehler} Fehler${fehler===1?'':'n'}.`)}
+      function falsch(){fehler++;zeichne();sendeLage();caseEl.classList.remove('wackel');void caseEl.offsetWidth;caseEl.classList.add('wackel');if(fehler>=MAXF)ende(false,`${MAXF} Fehler. Die Bombe ist explodiert.`)}
+      mods.forEach((m,i)=>m.init(modEl[i]));
+      let alt=performance.now();
+      api.every(100,()=>{if(aus)return;const t=performance.now(),vor=Math.ceil(rest);rest-=(t-alt)/1000*(L.turbo?1+fehler*.25:1);alt=t;
+        if(Math.ceil(rest)!==vor){zeichne();sendeLage()}if(rest<=0){rest=0;ende(false,'Die Zeit ist abgelaufen.')}});
+      zeichne();
+      c.status('Die Zeit läuft! Beschreib deinem Experten die Bombe.');
+      sendeLage();
+    }
+    auswahl();
+    return{msg(d){
+      if(d.will!=null&&c.host)starte(clamp(d.will|0,0,MAXLV-1));
+      else if(d.start!=null&&!c.host){n=d.n;bauen(clamp(d.start|0,0,MAXLV-1),d.n)}
+      else if(d.menu)auswahl();
+      else if(netz)netz(d);
+    }};
   }});
 
 // ---------------------------------------------------------------------
@@ -859,4 +966,333 @@ SPIELE.push({id:'malen',name:'Montagsmaler',emoji:'🎨',mode:'coop',
       if(c.host){if(d.rate)hostRaten(String(d.rate).slice(0,40))}
       else if(d.m)anwenden(d.m);
     }};
+  }});
+
+// ---------------------------------------------------------------------
+//  15 · Reversi
+// ---------------------------------------------------------------------
+SPIELE.push({id:'reversi',name:'Reversi',emoji:'⚫',mode:'vs',
+  desc:'Steine einklemmen und umdrehen. Das Brett kippt oft in letzter Sekunde.',
+  how:'Setz deinen Stein so, dass du gegnerische Steine zwischen ihm und einem deiner Steine einklemmst (waagrecht, senkrecht oder schräg). Alle eingeklemmten Steine werden zu deinen. Die hellen Punkte zeigen, wo du setzen darfst. Wer nicht ziehen kann, muss aussetzen. Am Ende gewinnt, wer mehr Steine hat.',
+  create(c){
+    const N=8,b=Array(N*N).fill(-1);b[27]=b[36]=0;b[28]=b[35]=1;let dran=c.seed%2,aus=false,hinweis='';
+    c.el.innerHTML='<div class="rv"></div>';const g=c.el.firstChild;
+    const D=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]],drin=(x,y)=>x>=0&&y>=0&&x<N&&y<N;
+    const flips=(i,p)=>{if(b[i]>=0)return[];const x=i%N,y=(i/N)|0,r=[];
+      for(const[dx,dy]of D){const l=[];let nx=x+dx,ny=y+dy;while(drin(nx,ny)&&b[ny*N+nx]===1-p){l.push(ny*N+nx);nx+=dx;ny+=dy}if(l.length&&drin(nx,ny)&&b[ny*N+nx]===p)r.push(...l)}return r};
+    const zuege=p=>b.map((_,i)=>i).filter(i=>flips(i,p).length);
+    const zahl=p=>b.filter(v=>v===p).length;
+    function zeichne(neu,gedreht){
+      const ok=!aus&&dran===c.me?new Set(zuege(c.me)):new Set();
+      g.innerHTML=b.map((v,i)=>`<div data-i="${i}" class="${ok.has(i)?'ok':''}">${v>=0?`<i class="rs p${v}${i===neu?' neu':''}${gedreht.includes(i)?' flip':''}"></i>`:''}</div>`).join('');
+      g.classList.toggle('mein',dran===c.me&&!aus);
+      if(!aus)c.status(`${hinweis}${c.dran(dran)} · Steine: ${c.n(0)} ${zahl(0)} : ${zahl(1)} ${c.n(1)}`);
+    }
+    function zug(i,p){
+      const f=flips(i,p);if(!f.length||aus||dran!==p)return false;
+      b[i]=p;f.forEach(j=>b[j]=p);hinweis='';
+      if(zuege(1-p).length)dran=1-p;
+      else if(zuege(p).length)hinweis=`${c.n(1-p)} kann nicht ziehen und muss aussetzen. `;
+      else aus=true;
+      zeichne(i,f);
+      if(aus){const x=zahl(0),y=zahl(1);c.status(`Keiner kann mehr ziehen · ${c.n(0)} ${x} : ${y} ${c.n(1)}`);c.end({w:x===y?-1:x>y?0:1,text:`${x} : ${y} Steine`})}
+      return true;
+    }
+    c.on(g,'click',e=>{const z=e.target.closest('[data-i]');if(!z||aus||dran!==c.me)return;const i=+z.dataset.i;if(zug(i,c.me))c.send({i})});
+    zeichne(-1,[]);
+    return{msg(d){zug(d.i,c.other)}};
+  }});
+
+// ---------------------------------------------------------------------
+//  16 · Mäxchen
+// ---------------------------------------------------------------------
+const MAEX_W=['31','32','41','42','43','51','52','53','54','61','62','63','64','65','11','22','33','44','55','66','21'];
+const maexName=w=>w==='21'?'Mäxchen':w[0]===w[1]?w[0]+'er-Pasch':w;
+const WUERFEL=['','⚀','⚁','⚂','⚃','⚄','⚅'];
+SPIELE.push({id:'maexchen',name:'Mäxchen',emoji:'🎲',mode:'vs',
+  desc:'Würfeln, ansagen, bluffen. Glaubst du deinem Gegenüber oder deckst du auf?',
+  how:'Wer dran ist, würfelt verdeckt mit zwei Würfeln und sagt einen Wert an, der <b>höher</b> sein muss als die letzte Ansage. Lügen ist erlaubt! Der andere glaubt es (und muss dann selbst höher würfeln) oder deckt auf. Gelogen? Dann verliert der Lügner ein Leben, sonst der Zweifler. Die höhere Zahl kommt immer vorne (5 und 3 ist 53). Reihenfolge: 31 ist am niedrigsten, dann bis 65, dann die Päsche (11 bis 66), und ganz oben steht <b>Mäxchen</b> (21). Beim Mäxchen geht es um 2 Leben. Jeder hat 5 Leben.',
+  create(c){
+    const LEBEN=5;let leben=[LEBEN,LEBEN],dran=c.seed%2,letzte=null,wurf=null,phase='wuerfeln',ansage=null,echt=null,aus=false,info='';
+    c.el.innerHTML=`<div class="mx"><div class="mxl"></div><div class="mxb"><div class="mxw"></div><div class="mxa"></div></div><div class="mxi"></div><div class="mxk"></div></div>`;
+    const q=s=>c.el.querySelector(s);
+    const rang=w=>MAEX_W.indexOf(w);
+    const wert=(a,b)=>{const h=Math.max(a,b),n=Math.min(a,b);return''+h+n};
+    const ich=()=>dran===c.me;
+    function ui(){
+      q('.mxl').innerHTML=[0,1].map(p=>`<span>${c.n(p)} ${'❤️'.repeat(Math.max(0,leben[p]))}${'🖤'.repeat(LEBEN-Math.max(0,leben[p]))}</span>`).join('');
+      let w='';
+      if(phase==='auf')w=echt.split('').map(x=>WUERFEL[x]).join('');
+      else if(ich()&&wurf)w=wurf.map(x=>WUERFEL[x]).join('');
+      else w=`<span class="vd${phase==='wuerfeln'?' leer':''}">?</span><span class="vd${phase==='wuerfeln'?' leer':''}">?</span>`;
+      q('.mxw').innerHTML=w;
+      q('.mxa').innerHTML=ansage?`Ansage: <b>${maexName(ansage)}</b>`:letzte?`Zu schlagen: <b>${maexName(letzte)}</b>`:'Neue Runde, alles ist erlaubt.';
+      q('.mxi').innerHTML=info;
+      const k=q('.mxk');
+      if(aus){k.innerHTML='';return}
+      if(phase==='wuerfeln'&&ich())k.innerHTML='<button type="button" class="btn primary big" data-a="w">🎲 Würfeln</button>';
+      else if(phase==='ansagen'&&ich()){
+        const echtW=wert(wurf[0],wurf[1]);
+        k.innerHTML='<p>Was sagst du an?</p><div class="mxg">'+MAEX_W.filter(x=>letzte==null||rang(x)>rang(letzte)).map(x=>`<button type="button" data-v="${x}" class="${x===echtW?'wahr':''}">${maexName(x)}</button>`).join('')+'</div>';
+      }
+      else if(phase==='reagieren'&&!ich())k.innerHTML=(ansage==='21'?'':'<button type="button" class="btn" data-a="g">👍 Glaub ich</button>')+'<button type="button" class="btn primary" data-a="z">🔍 Aufdecken!</button>';
+      else k.innerHTML='';
+      c.status(phase==='wuerfeln'?(ich()?'<b>Du bist dran:</b> würfeln!':c.n(dran)+' würfelt …'):phase==='ansagen'?(ich()?'Sag einen Wert an. Grün ist das, was du wirklich hast.':c.n(dran)+' überlegt sich eine Ansage …'):phase==='reagieren'?(ich()?'Glaubt '+c.n(1-dran)+' dir?':`${c.n(dran)} sagt <b>${maexName(ansage)}</b>. Glaubst du das?`+(ansage==='21'?' (Mäxchen musst du aufdecken.)':'')):'');
+    }
+    function anwenden(d,p){
+      if(aus)return;
+      if(d.an&&phase==='ansagen'&&p===dran){ansage=d.an;echt=d.w;phase='reagieren';info=''}
+      else if(d.glaub&&phase==='reagieren'&&p!==dran){letzte=ansage;ansage=null;wurf=null;dran=1-dran;phase='wuerfeln';info=`${c.n(p)} glaubt es. Jetzt muss es höher werden.`}
+      else if(d.zweifel&&phase==='reagieren'&&p!==dran){
+        phase='auf';const luege=rang(echt)<rang(ansage),verl=luege?dran:p,schaden=ansage==='21'?2:1;
+        leben[verl]-=schaden;
+        info=`Aufgedeckt: <b>${maexName(echt)}</b>. ${luege?`${c.n(dran)} hat geblufft!`:'Es stimmt!'} ${c.n(verl)} verliert ${schaden===2?'zwei Leben':'ein Leben'}.`;
+        ui();
+        if(leben[verl]<=0){aus=true;ui();c.end({w:1-verl,text:`${maexName(ansage)} angesagt, ${maexName(echt)} gewürfelt.`,delay:2200});return}
+        c.after(2800,()=>{dran=verl;letzte=null;ansage=null;wurf=null;echt=null;phase='wuerfeln';info=`${c.n(verl)} fängt die neue Runde an.`;ui()});
+      }
+      ui();
+    }
+    c.on(q('.mxk'),'click',e=>{const b=e.target.closest('button');if(!b||aus)return;
+      if(b.dataset.a==='w'&&phase==='wuerfeln'&&ich()){wurf=[1+ri(Math.random,6),1+ri(Math.random,6)];phase='ansagen';c.send({gew:1});ui();return}
+      let d=null;
+      if(b.dataset.v)d={an:b.dataset.v,w:wert(wurf[0],wurf[1])};
+      else if(b.dataset.a==='g')d={glaub:1};
+      else if(b.dataset.a==='z')d={zweifel:1};
+      if(d){c.send(d);anwenden(d,c.me)}});
+    ui();
+    return{msg(d){if(d.gew&&phase==='wuerfeln'&&dran===c.other){phase='ansagen';ui()}else anwenden(d,c.other)}};
+  }});
+
+// ---------------------------------------------------------------------
+//  17 · Maulwurf-Duell
+// ---------------------------------------------------------------------
+SPIELE.push({id:'maulwurf',name:'Maulwurf-Duell',emoji:'🔨',mode:'vs',
+  desc:'Neun Löcher, ein Hammer pro Person. Wer zuerst draufhaut, kriegt den Punkt.',
+  how:'Haut auf alles, was aus den Löchern schaut, aber schneller als der andere! 🐹 gibt 1 Punkt, 🌟 gibt 3 Punkte, wer die 💣 erwischt, verliert 2 Punkte. Auf dem Computer gehen auch die Tasten 1 bis 9 (wie auf dem Ziffernblock). Nach 40 Sekunden gewinnt, wer mehr Punkte hat.',
+  create(c){
+    const ZEIT=40,TYP=['','🐹','🌟','💣'],PKT=[0,1,3,-2];
+    let st={h:Array(9).fill(null),s:[0,0],t:ZEIT,cd:3,e:null},aus=false;
+    c.el.innerHTML=`<div class="mw"><div class="mwtop"><span class="mws"></span><span class="mwt"></span></div><div class="mwg">${[...Array(9)].map((_,i)=>`<button type="button" data-i="${i}"><span></span></button>`).join('')}</div></div>`;
+    const kn=[...c.el.querySelectorAll('.mwg button')];
+    function ui(ev){
+      c.el.querySelector('.mws').innerHTML=`${c.n(0)} <b>${st.s[0]} : ${st.s[1]}</b> ${c.n(1)}`;
+      c.el.querySelector('.mwt').textContent=st.cd>0?'Gleich geht’s los: '+st.cd:`⏱ ${st.t}s`;
+      kn.forEach((b,i)=>{const h=st.h[i];b.querySelector('span').textContent=h?TYP[h[1]]:'';b.classList.toggle('raus',!!h)});
+      (ev||[]).forEach(([i,p,t])=>{const b=kn[i];b.style.setProperty('--hf',FARBE[p]);b.dataset.pk=(PKT[t]>0?'+':'')+PKT[t];b.classList.remove('treff');void b.offsetWidth;b.classList.add('treff')});
+    }
+    const hau=i=>{if(aus||st.cd>0)return;const h=st.h[i];if(!h)return;kn[i].classList.add('klopf');setTimeout(()=>kn[i].classList.remove('klopf'),120);if(c.host)hostHau(0,i,h[0]);else c.send({hau:i,id:h[0]})};
+    c.on(c.el.querySelector('.mwg'),'pointerdown',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();hau(+b.dataset.i)});
+    const TASTE={'7':0,'8':1,'9':2,'4':3,'5':4,'6':5,'1':6,'2':7,'3':8};
+    c.key((e,dn)=>{if(dn&&!e.repeat&&TASTE[e.key]!=null){e.preventDefault();hau(TASTE[e.key])}});
+    let ev=[];
+    const sende=()=>{c.send({st,ev});ui(ev);ev=[]};
+    let lebt=Array(9).fill(0),nid=1;
+    function hostHau(p,i,id){const h=st.h[i];if(!h||h[0]!==id||aus)return;st.s[p]+=PKT[h[1]];st.h[i]=null;ev.push([i,p,h[1]]);sende()}
+    if(c.host){
+      const cdf=()=>{st.cd--;sende();if(st.cd>0)c.after(800,cdf);else start()};c.after(800,cdf);
+      function start(){
+        const t0=performance.now();let naechst=0;
+        c.every(50,()=>{if(aus)return;const t=performance.now(),el=(t-t0)/1000;let neu=false;
+          const nt=Math.max(0,ZEIT-Math.floor(el));if(nt!==st.t){st.t=nt;neu=true}
+          for(let i=0;i<9;i++)if(st.h[i]&&t>lebt[i]){st.h[i]=null;neu=true}
+          if(t>naechst){const frei=st.h.map((h,i)=>h?-1:i).filter(i=>i>=0);
+            if(frei.length){const i=frei[ri(Math.random,frei.length)],z=Math.random(),typ=z<.12?2:z<.27?3:1;
+              st.h[i]=[nid++,typ];lebt[i]=t+Math.max(520,1100-el*12)*(typ===2?.75:1);neu=true}
+            naechst=t+Math.max(260,720-el*11)*(.6+Math.random()*.8)}
+          if(st.t<=0){st.h.fill(null);st.e=1;aus=true;neu=true}
+          if(neu)sende();
+          if(aus)fertig();
+        });
+      }
+    }
+    function fertig(){const[a,b]=st.s;c.end({w:a===b?-1:a>b?0:1,text:`${a} : ${b} Punkte`})}
+    ui();
+    return{msg(d){
+      if(c.host){if(d.hau!=null)hostHau(1,d.hau,d.id)}
+      else if(d.st){st=d.st;ui(d.ev);if(st.e&&!aus){aus=true;fertig()}}
+    }};
+  }});
+
+// ---------------------------------------------------------------------
+//  18 · Codewörter
+// ---------------------------------------------------------------------
+SPIELE.push({id:'codewort',name:'Codewörter',emoji:'🕵️',mode:'coop',
+  desc:'Findet gemeinsam alle Agenten mit nur einem Wort als Hinweis. Aber Vorsicht vor den Attentätern.',
+  how:'Auf dem Tisch liegen 25 Wörter. Jeder von euch sieht eine eigene Geheimkarte: <b>grün umrandet</b> sind die Agenten, die dein Partner finden muss, <b>schwarz</b> die Attentäter. Wer dran ist, gibt <b>ein Wort und eine Zahl</b> als Hinweis („Tier 2“). Der andere tippt Wörter an: Agent? Weiter raten! Unbeteiligter? Zug vorbei. Attentäter? Verloren! Danach wechselt ihr. Findet alle 15 Agenten in 9 Zügen. Im Chat bitte keine weiteren Tipps.',
+  create(c){
+    const r=rngFrom(c.seed),ZUEGE=9;
+    const worte=shuffle(MALWORTE.slice(),r).slice(0,25),ix=shuffle([...Array(25).keys()],r);
+    // key[p][i]: 'g' Agent, 's' Attentäter, '' unbeteiligt (aus Sicht von Spieler p)
+    const key=[Array(25).fill(''),Array(25).fill('')];
+    ix.slice(0,3).forEach(i=>key[0][i]=key[1][i]='g');
+    ix.slice(3,8).forEach(i=>key[0][i]='g');ix.slice(8,13).forEach(i=>key[1][i]='g');
+    key[0][ix[13]]='g';key[1][ix[13]]='s';key[1][ix[14]]='g';key[0][ix[14]]='s';
+    key[0][ix[15]]=key[1][ix[15]]='s';key[0][ix[16]]='s';key[1][ix[17]]='s';
+    const gefunden=new Set(),neutral=[new Set(),new Set()];
+    let geber=c.seed%2,zug=1,hinweis=null,geraten=0,aus=false,info='';
+    c.el.innerHTML=`<div class="cw"><div class="cwtop"><span class="cwz"></span><span class="cwa"></span></div><div class="cwh"></div><div class="cwg"></div><div class="cwk"></div></div>`;
+    const q=s=>c.el.querySelector(s);
+    const offen=p=>key[p].some((k,i)=>k==='g'&&!gefunden.has(i));
+    const total=()=>gefunden.size;
+    function ui(){
+      q('.cwz').textContent=`Zug ${Math.min(zug,ZUEGE)} von ${ZUEGE}`;
+      q('.cwa').textContent=`Agenten: ${total()} / 15`;
+      const rat=!aus&&hinweis&&geber!==c.me;
+      q('.cwg').innerHTML=worte.map((w,i)=>{const k=key[c.me][i],cls=['cwc'];
+        if(gefunden.has(i))cls.push('gef');else{if(k==='g')cls.push('mg');if(k==='s')cls.push('ms');if(neutral[geber].has(i)&&!aus)cls.push('nx')}
+        if(neutral[0].has(i)||neutral[1].has(i))cls.push('nt');
+        return`<button type="button" data-i="${i}" class="${cls.join(' ')}"${rat&&!gefunden.has(i)&&!neutral[geber].has(i)?'':' disabled'}>${esc(w)}</button>`}).join('');
+      q('.cwh').innerHTML=info+(hinweis?` Hinweis von ${c.n(geber)}: <b class="cwhw">${esc(hinweis.w)} ${hinweis.z}</b>`:'');
+      const k=q('.cwk');
+      if(aus)k.innerHTML='';
+      else if(geber===c.me&&!hinweis)k.innerHTML=`<form class="cwf"><input maxlength="24" autocomplete="off" placeholder="Ein Wort …" aria-label="Hinweiswort"><select aria-label="Anzahl">${[1,2,3,4,5,6,7,8,9].map(z=>`<option>${z}</option>`).join('')}</select><button class="btn primary sm">Hinweis geben</button></form><p class="small">Grün umrandet: die Agenten, die ${c.n(c.other)} finden soll.</p>`;
+      else if(geber!==c.me&&hinweis)k.innerHTML=geraten?'<button type="button" class="btn sm" data-a="stopp">Zug beenden</button>':'';
+      else k.innerHTML='';
+      if(!aus)c.status(geber===c.me?(hinweis?c.n(c.other)+' rät …':'<b>Gib einen Hinweis!</b> Ein Wort und eine Zahl.'):(hinweis?'<b>Tipp die passenden Wörter an!</b>':c.n(geber)+' überlegt sich einen Hinweis …'));
+    }
+    function zugEnde(){
+      hinweis=null;geraten=0;zug++;
+      if(!offen(0)&&!offen(1))return;
+      if(zug>ZUEGE){aus=true;ui();c.end({coop:true,win:false,text:`Die Zeit ist um. ${total()} von 15 Agenten gefunden.`});return}
+      if(offen(1-geber))geber=1-geber;
+    }
+    function anwenden(d,p){
+      if(aus)return;
+      if(d.hw&&p===geber&&!hinweis){hinweis={w:String(d.hw).slice(0,24),z:clamp(d.z|0,1,9)};info=''}
+      else if(d.tipp!=null&&p!==geber&&hinweis){
+        const i=d.tipp|0;if(gefunden.has(i)||neutral[geber].has(i))return;const k=key[geber][i];geraten++;
+        if(k==='s'){aus=true;info=`💀 <b>${esc(worte[i])}</b> war ein Attentäter!`;ui();q(`[data-i="${i}"]`).classList.add('tot');c.end({coop:true,win:false,text:`„${worte[i]}“ war ein Attentäter. ${total()} von 15 Agenten gefunden.`,delay:1800});return}
+        if(k==='g'){gefunden.add(i);info=`✅ ${esc(worte[i])} ist ein Agent!`;
+          if(total()===15){aus=true;ui();c.end({coop:true,win:true,text:`Alle 15 Agenten in ${zug} Zügen gefunden!`});return}
+          if(!offen(geber)){info+=' Alle Agenten dieser Karte gefunden.';zugEnde()}}
+        else{neutral[geber].add(i);info=`😐 ${esc(worte[i])} ist unbeteiligt. Zug vorbei.`;zugEnde()}
+      }
+      else if(d.stopp&&p!==geber&&hinweis){info='Zug beendet.';zugEnde()}
+      ui();
+    }
+    const tu=d=>{c.send(d);anwenden(d,c.me)};
+    c.on(c.el,'submit',e=>{e.preventDefault();const f=e.target,w=f.querySelector('input').value.trim();
+      if(!w||/\s/.test(w)){f.querySelector('input').placeholder='Genau ein Wort!';f.querySelector('input').value='';return}
+      if(worte.some(x=>norm(x)===norm(w))){f.querySelector('input').value='';f.querySelector('input').placeholder='Kein Wort vom Tisch!';return}
+      tu({hw:w,z:+f.querySelector('select').value})});
+    c.on(c.el,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.i!=null)tu({tipp:+b.dataset.i});else if(b.dataset.a==='stopp')tu({stopp:1})});
+    ui();
+    return{msg(d){anwenden(d,c.other)}};
+  }});
+
+// ---------------------------------------------------------------------
+//  19 · Doppel-Dino
+// ---------------------------------------------------------------------
+SPIELE.push({id:'doppeldino',name:'Doppel-Dino',emoji:'🦖',mode:'coop',
+  desc:'Ein Dino, zwei Gehirne: Einer springt, der andere duckt sich. Wie weit kommt ihr?',
+  how:'Ihr steuert <b>zusammen einen Dino</b>. Einer ist fürs <b>Springen</b> zuständig (über Kakteen), der andere fürs <b>Ducken</b> (unter Flugsauriern durch). Deine Aufgabe steht oben. Taste: Leertaste oder ↑/↓, am Handy aufs Spielfeld tippen (zum Ducken gedrückt halten). Alle 300 Meter wird getauscht! Ihr habt 3 Leben.',
+  create(c){
+    const W=800,H=300,BODEN=250,DX=110;const{g,cv}=leinwand(c,W,H);
+    let st={y:0,du:0,o:[],s:0,l:3,r:c.seed%2,inv:0,e:0,tausch:0},aus=false,mein=false;
+    const schick=v=>{if(v===mein)return;mein=v;if(c.host)ein[0]=v;else c.send({k:v?1:0})};
+    const ein=[false,false];
+    c.key((e,dn)=>{if([' ','arrowup','arrowdown','w','s'].includes(e.key.toLowerCase())){e.preventDefault();schick(dn)}});
+    c.on(cv,'pointerdown',e=>{e.preventDefault();schick(true)});
+    const los=()=>schick(false);c.on(cv,'pointerup',los);c.on(cv,'pointercancel',los);c.on(cv,'pointerleave',los);
+    if(c.host){
+      let vy=0,dist=0,tempo=330,spawn=1.2,alt=performance.now(),objs=[],letzteRolle=0;
+      c.every(1000/60,()=>{
+        const t=performance.now(),dt=Math.min(.05,(t-alt)/1000);alt=t;if(aus)return;
+        const springer=st.r,ducker=1-st.r;
+        if(ein[springer]&&st.y===0){vy=690}
+        st.du=ein[ducker]&&st.y===0?1:0;
+        if(st.y>0||vy>0){vy-=2000*dt;st.y=Math.max(0,st.y+vy*dt);if(st.y===0)vy=0}
+        tempo=Math.min(720,330+dist*.12);dist+=tempo*dt/10;st.s=Math.floor(dist);
+        const rolle=Math.floor(dist/300);if(rolle!==letzteRolle){letzteRolle=rolle;st.r=1-st.r;st.tausch=2.2;ein[0]=ein[1]=false}
+        st.tausch=Math.max(0,st.tausch-dt);
+        spawn-=dt;
+        if(spawn<=0){const vogel=dist>40&&Math.random()<.42;objs.push({x:W+30,t:vogel?1:0,w:vogel?44:20+ri(Math.random,3)*12});spawn=Math.max(.75,1.6-dist*.0008)+Math.random()*.8;if(st.tausch>0)spawn+=.8}
+        for(const o of objs)o.x-=tempo*dt;
+        objs=objs.filter(o=>o.x>-60);
+        st.inv=Math.max(0,st.inv-dt);
+        const dh=st.du?28:52,dy0=st.y,dy1=st.y+dh;
+        for(const o of objs){
+          if(o.hit||o.x>DX+36||o.x+o.w<DX+6)continue;
+          const[a,b]=o.t?[34,64]:[0,46];
+          if(dy0<b&&dy1>a&&st.inv<=0){o.hit=1;st.l--;st.inv=1.3}
+        }
+        if(st.l<=0){st.l=0;st.e=1;aus=true}
+        st.o=objs.map(o=>[Math.round(o.x),o.t,o.w]);
+        c.send({st:{...st,y:Math.round(st.y)}});
+        if(aus)ende();
+      });
+    }
+    function ende(){
+      let best=0;try{best=+localStorage.getItem('lm2p-dino-best')||0}catch(_){}
+      const neu=st.s>best;if(neu)try{localStorage.setItem('lm2p-dino-best',st.s)}catch(_){}
+      c.end({coop:true,win:null,text:`Ihr seid ${st.s} Meter weit gekommen.`+(neu?' Neuer Rekord!':` Rekord auf diesem Gerät: ${best} m.`)});
+    }
+    let altRolle=-1,boden=0,altT=performance.now();
+    c.frame(()=>{
+      const t=performance.now(),dt=Math.min(.05,(t-altT)/1000);altT=t;
+      if(st.r!==altRolle){altRolle=st.r;c.status(`Du bist für das <b>${st.r===c.me?'⬆️ Springen':'⬇️ Ducken'}</b> zuständig. Leertaste oder aufs Spielfeld tippen.`)}
+      if(!aus)boden=(boden+dt*(330+st.s*.12))%40;
+      g.fillStyle='#dfe6ff';g.fillRect(0,0,W,H);
+      g.fillStyle='#0a1633';g.fillRect(0,BODEN,W,4);
+      g.fillStyle='rgba(10,22,51,.3)';for(let x=-boden;x<W;x+=40)g.fillRect(x,BODEN+14,14,3);
+      g.textAlign='center';g.textBaseline='alphabetic';
+      for(const[x,typ,w]of st.o){
+        if(typ){g.font='44px sans-serif';g.save();g.translate(x+w/2,BODEN-34);g.scale(-1,1);g.fillText('🦅',0,0);g.restore()}
+        else{g.fillStyle='#1f9d55';g.fillRect(x,BODEN-46,w,46);g.fillRect(x-8,BODEN-34,8,6);g.fillRect(x+w,BODEN-28,8,6);g.strokeStyle='#0a1633';g.lineWidth=3;g.strokeRect(x,BODEN-46,w,46)}
+      }
+      if(!(st.inv>0&&Math.floor(t/100)%2)){
+        g.save();g.translate(DX+20,BODEN-st.y);g.scale(-1,st.du?.55:1);g.font='56px sans-serif';g.fillText('🦖',0,0);g.restore();
+      }
+      g.fillStyle='#0a1633';g.font='900 30px "Big Shoulders Display",Impact,sans-serif';g.textAlign='left';g.textBaseline='top';g.fillText(st.s+' M',14,12);
+      g.textAlign='right';g.font='24px sans-serif';g.fillText('❤️'.repeat(st.l)+'🖤'.repeat(3-st.l),W-12,12);
+      g.textAlign='center';g.font='700 15px "JetBrains Mono",monospace';
+      g.fillStyle=FARBE[st.r];g.fillText(`⬆️ SPRINGEN: ${st.r===c.me?'DU':c.names[st.r].toUpperCase().slice(0,12)}`,W/2-150,16);
+      g.fillStyle=FARBE[1-st.r];g.fillText(`⬇️ DUCKEN: ${1-st.r===c.me?'DU':c.names[1-st.r].toUpperCase().slice(0,12)}`,W/2+150,16);
+      if(st.tausch>0){g.fillStyle='rgba(10,22,51,.8)';g.fillRect(W/2-190,H/2-50,380,64);g.fillStyle='#fff';g.font='900 40px "Big Shoulders Display",Impact,sans-serif';g.textBaseline='middle';g.fillText('ROLLENTAUSCH!',W/2,H/2-18)}
+    });
+    return{msg(d){
+      if(c.host){if(d.k!=null)ein[1]=!!d.k}
+      else if(d.st){st=d.st;if(st.e&&!aus){aus=true;ende()}}
+    }};
+  }});
+
+// ---------------------------------------------------------------------
+//  20 · Echo-Kette
+// ---------------------------------------------------------------------
+SPIELE.push({id:'echo',name:'Echo-Kette',emoji:'🎵',mode:'coop',
+  desc:'Abwechselnd die Ton-Kette nachspielen und einen Ton dranhängen. Wie lang wird sie?',
+  how:'Vier bunte Tasten mit vier Tönen. Wer dran ist, spielt die <b>ganze bisherige Kette</b> nach und hängt dann <b>einen neuen Ton</b> an. Dann ist der andere dran. Der Partner sieht und hört jeden Tastendruck mit, also gut aufpassen! Ein falscher Ton und die Kette reißt. Tasten: 1 bis 4 oder Klick.',
+  create(c){
+    const F=['#1f9d55','#e2342b','#f5c518','#1740d8'],TON=[392,330,262,196];
+    let seq=[],pos=0,dran=c.seed%2,aus=false;
+    c.el.innerHTML=`<div class="ek"><div class="ekl"></div><div class="ekg">${F.map((f,i)=>`<button type="button" data-i="${i}" style="--k:${f}" aria-label="Ton ${i+1}"><span>${i+1}</span></button>`).join('')}</div><div class="ekp"></div></div>`;
+    const kn=[...c.el.querySelectorAll('.ekg button')];
+    let ac=null;
+    const ton=i=>{try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),v=ac.createGain();o.type='triangle';o.frequency.value=TON[i];v.gain.setValueAtTime(.25,ac.currentTime);v.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.35);o.connect(v);v.connect(ac.destination);o.start();o.stop(ac.currentTime+.36)}catch(_){}};
+    const blink=i=>{ton(i);const b=kn[i];b.classList.remove('an');void b.offsetWidth;b.classList.add('an')};
+    function ui(){
+      c.el.querySelector('.ekl').innerHTML=`Kette: <b>${seq.length}</b>`;
+      c.el.querySelector('.ekp').innerHTML=seq.length&&!aus?`${'●'.repeat(Math.min(pos,seq.length))}${'○'.repeat(Math.max(0,seq.length-pos))}${pos>=seq.length?' + neuer Ton':''}`:'';
+      c.el.querySelector('.ekg').classList.toggle('mein',dran===c.me&&!aus);
+      if(!aus)c.status(dran===c.me?(seq.length?(pos<seq.length?`<b>Du bist dran:</b> Spiel die Kette nach (${pos}/${seq.length}).`:'<b>Jetzt einen neuen Ton anhängen!</b>'):'<b>Du fängst an:</b> Drück einen Ton.'):`${c.n(dran)} spielt. Gut zuhören!`);
+    }
+    function tipp(i,p){
+      if(aus||p!==dran)return;blink(i);
+      if(pos<seq.length){
+        if(seq[pos]!==i){aus=true;kn[i].classList.add('falsch');kn[seq[pos]].classList.add('richtig');ui();
+          let best=0;try{best=+localStorage.getItem('lm2p-echo-best')||0}catch(_){}
+          const neu=seq.length>best;if(neu)try{localStorage.setItem('lm2p-echo-best',seq.length)}catch(_){}
+          c.status(`${p===c.me?'Du hast':esc(c.names[p])+' hat'} sich verspielt.`);
+          c.end({coop:true,win:null,text:`Eure Kette war ${seq.length} Töne lang.`+(neu?' Neuer Rekord!':` Rekord auf diesem Gerät: ${best}.`),delay:1800});return}
+        pos++;
+      }
+      else{seq.push(i);pos=0;dran=1-dran}
+      ui();
+    }
+    const druck=i=>{if(aus||dran!==c.me)return;c.send({i});tipp(i,c.me)};
+    c.on(c.el.querySelector('.ekg'),'pointerdown',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();druck(+b.dataset.i)});
+    c.key((e,dn)=>{const k='1234'.indexOf(e.key);if(dn&&!e.repeat&&k>=0){e.preventDefault();druck(k)}});
+    ui();
+    return{msg(d){tipp(d.i|0,c.other)}};
   }});
