@@ -1301,10 +1301,10 @@ SPIELE.push({id:'echo',name:'Echo-Kette',emoji:'🎵',mode:'coop',
 //  21 · Kritzel-Gedächtnis
 // ---------------------------------------------------------------------
 SPIELE.push({id:'kritzel',name:'Kritzel-Gedächtnis',emoji:'✏️',mode:'vs',
-  desc:'15 Wörter, je 2 Sekunden zum Kritzeln. Erkennst du danach noch, was du gemalt hast?',
-  how:'Ihr bekommt beide dieselben <b>15 Wörter</b> nacheinander, jedes nur <b>2 Sekunden</b> lang. Kritzel es so schnell du kannst, dann wird das Blatt leer und das nächste Wort kommt. Danach siehst du deine eigenen Zeichnungen in zufälliger Reihenfolge und schreibst ohne Zeitdruck dazu, was sie darstellen sollten. Jedes richtige Wort gibt einen Punkt (ein kleiner Tippfehler zählt noch). Die Auflösung mit den Bildern von euch beiden gibt es erst ganz am Ende.',
+  desc:'15 Wörter, jedes kurz lesen und dann 2 Sekunden kritzeln. Erkennst du danach noch, was du gemalt hast?',
+  how:'Ihr bekommt beide dieselben <b>15 Wörter</b> nacheinander. Erst siehst du das Wort 1 Sekunde lang, dann hast du <b>2 Sekunden</b>, um es zu kritzeln. Danach wird das Blatt leer und das nächste Wort kommt. Danach siehst du deine eigenen Zeichnungen in zufälliger Reihenfolge und schreibst ohne Zeitdruck dazu, was sie darstellen sollten. Jedes richtige Wort gibt einen Punkt (ein kleiner Tippfehler zählt noch). Die Auflösung mit den Bildern von euch beiden gibt es erst ganz am Ende.',
   create(c){
-    const N=15,ZEIT=2000,W=300,H=300;
+    const N=15,LESEN=1000,ZEIT=2000,W=300,H=300;
     const worte=shuffle(MALWORTE.slice(),rngFrom(c.seed^0x5f3a)).slice(0,N);
     const tipp=a=>{try{haptik(a)}catch(_){}};
     const bilder=Array.from({length:N},()=>[]),antw=Array(N).fill('');
@@ -1347,16 +1347,21 @@ SPIELE.push({id:'kritzel',name:'Kritzel-Gedächtnis',emoji:'✏️',mode:'vs',
     function naechstes(){
       strich=null;nr++;leeren();
       if(nr>=N){raten();return}
-      phase='mal';q('.kgnr').textContent=`${nr+1} / ${N}`;q('.kgwort').textContent=worte[nr];
-      bar.style.animation='none';void bar.offsetWidth;bar.style.animation=`kgbar ${ZEIT}ms linear forwards`;
-      cv.classList.add('malen');tipp('tick');
-      c.after(ZEIT,naechstes);
+      // erst 1 Sekunde nur das Wort lesen, dann 2 Sekunden zeichnen
+      phase='lesen';q('.kgnr').textContent=`${nr+1} / ${N}`;q('.kgwort').textContent=worte[nr];
+      bar.style.animation='none';cv.classList.remove('malen');q('.kg').classList.add('lesen');tipp('tap');
+      c.after(LESEN,()=>{
+        phase='mal';q('.kg').classList.remove('lesen');
+        void bar.offsetWidth;bar.style.animation=`kgbar ${ZEIT}ms linear forwards`;
+        cv.classList.add('malen');tipp('tick');
+        c.after(ZEIT,naechstes);
+      });
     }
     function countdown(n){
       q('.kgnr').textContent='Gleich geht’s los';q('.kgwort').textContent=n;tipp('tap');
       c.after(900,()=>n>1?countdown(n-1):naechstes());
     }
-    leeren();q('.kgnr').textContent='15 Wörter · je 2 Sekunden';
+    leeren();q('.kgnr').textContent='15 Wörter · 1 s lesen, 2 s kritzeln';
     c.status('Drück auf <b>Los geht’s</b>, wenn du bereit bist. Dann kritzeln, so schnell du kannst!');
     c.on(q('.kglos'),'click',e=>{e.currentTarget.remove();
       // Ganzes Blatt sichtbar machen, solange die Wörter laufen
