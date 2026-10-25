@@ -1,0 +1,862 @@
+'use strict';
+// =====================================================================
+//  2-Spieler-Spiele
+//  Jedes Spiel bekommt einen Kontext c (siehe makeCtx in zweiSpieler.html):
+//  c.el, c.me (0 = Raum-Ersteller, 1 = Gast), c.other, c.host, c.seed, c.rng,
+//  c.names, c.send(d), c.status(html), c.every/after/frame/on/key, c.end(r),
+//  c.n(p) (Name farbig, "Du" für mich), c.dran(p)
+//  create(c) gibt {msg(d)} zurück: msg bekommt alles, was der andere schickt.
+// =====================================================================
+
+const FARBE=['#1740d8','#e2342b'];
+const esc=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+function rngFrom(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const ri=(r,n)=>Math.floor(r()*n);
+function shuffle(a,r){for(let i=a.length-1;i>0;i--){const j=ri(r,i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+const norm=s=>String(s).toLowerCase().trim().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]/g,'');
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+// Canvas mit fester logischer Größe, skaliert per CSS
+function leinwand(c,W,H){
+  const cv=document.createElement('canvas');cv.width=W*2;cv.height=H*2;cv.className='cv';
+  cv.style.aspectRatio=W+'/'+H;cv.style.maxWidth='calc(64vh * '+(W/H).toFixed(3)+')';
+  c.el.appendChild(cv);const g=cv.getContext('2d');g.scale(2,2);
+  return{cv,g,pos(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H]}};
+}
+// Steuerkreuz für Touch-Geräte
+function steuerkreuz(c,f){
+  const p=document.createElement('div');p.className='pad';
+  p.innerHTML='<button type="button" data-d="0,-1" aria-label="Hoch">▲</button><button type="button" data-d="-1,0" aria-label="Links">◀</button><button type="button" data-d="1,0" aria-label="Rechts">▶</button><button type="button" data-d="0,1" aria-label="Runter">▼</button>';
+  c.el.appendChild(p);
+  c.on(p,'pointerdown',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();f(b.dataset.d.split(',').map(Number))});
+  return p;
+}
+// Wischgesten
+function wischen(c,el,f){
+  let s=null;
+  c.on(el,'pointerdown',e=>{s=[e.clientX,e.clientY]});
+  c.on(el,'pointerup',e=>{if(!s)return;const dx=e.clientX-s[0],dy=e.clientY-s[1];s=null;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;f(Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)])});
+}
+const PFEIL={arrowup:[0,-1],arrowdown:[0,1],arrowleft:[-1,0],arrowright:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]};
+const richtung=e=>PFEIL[e.key.toLowerCase()];
+
+const SPIELE=[];
+
+// ---------------------------------------------------------------------
+//  1 · Vier gewinnt
+// ---------------------------------------------------------------------
+SPIELE.push({id:'vier',name:'Vier gewinnt',emoji:'🔴',mode:'vs',
+  desc:'Der Klassiker: Wer zuerst vier Steine in eine Reihe bringt, gewinnt.',
+  how:'Klick auf eine Spalte, um deinen Stein hineinfallen zu lassen. Vier in einer Reihe (waagrecht, senkrecht oder schräg) gewinnt.',
+  create(c){
+    const W=7,H=6,b=Array(W*H).fill(-1);let dran=c.seed%2,aus=false;
+    c.el.innerHTML='<div class="c4"></div>';const g=c.el.firstChild;
+    for(let i=0;i<W*H;i++){const d=document.createElement('div');d.className='c4c';d.dataset.x=i%W;g.appendChild(d)}
+    const zelle=(x,y)=>g.children[y*W+x];
+    const info=()=>{c.status(c.dran(dran));g.classList.toggle('mein',dran===c.me&&!aus)};
+    const reihe=(x,y,p)=>{
+      for(const[dx,dy]of[[1,0],[0,1],[1,1],[1,-1]]){
+        const l=[[x,y]];
+        for(const s of[1,-1])for(let i=1;;i++){const nx=x+dx*i*s,ny=y+dy*i*s;if(nx<0||ny<0||nx>=W||ny>=H||b[ny*W+nx]!==p)break;l.push([nx,ny])}
+        if(l.length>=4)return l;
+      }
+      return null;
+    };
+    const zug=(x,p)=>{
+      let y=H-1;while(y>=0&&b[y*W+x]>=0)y--;
+      if(y<0)return false;
+      b[y*W+x]=p;zelle(x,y).innerHTML=`<i class="st p${p}" style="--f:${y+1}"></i>`;
+      const l=reihe(x,y,p);
+      if(l){aus=true;l.forEach(([a,bb])=>zelle(a,bb).classList.add('win'));g.classList.remove('mein');
+        c.status(p===c.me?'Vier in einer Reihe!':c.n(p)+' hat vier in einer Reihe.');c.end({w:p})}
+      else if(b.every(v=>v>=0)){aus=true;c.end({w:-1,text:'Das Brett ist voll.'})}
+      else{dran=1-dran;info()}
+      return true;
+    };
+    c.on(g,'click',e=>{const z=e.target.closest('.c4c');if(!z||aus||dran!==c.me)return;const x=+z.dataset.x;if(zug(x,c.me))c.send({x})});
+    c.on(g,'pointerover',e=>{const z=e.target.closest('.c4c');for(const k of g.children)k.classList.toggle('hov',!!z&&k.dataset.x===z.dataset.x)});
+    c.on(g,'pointerleave',()=>{for(const k of g.children)k.classList.remove('hov')});
+    info();
+    return{msg(d){if(!aus)zug(d.x,c.other)}};
+  }});
+
+// ---------------------------------------------------------------------
+//  2 · Schiffe versenken
+// ---------------------------------------------------------------------
+SPIELE.push({id:'schiffe',name:'Schiffe versenken',emoji:'🚢',mode:'vs',
+  desc:'Versteckte Flotten, ein Raster, gute Nerven. Treffer heißt: nochmal schießen.',
+  how:'Lass deine Flotte so lange neu verteilen, bis sie dir gefällt, und drück <b>Bereit!</b>. Dann schießt ihr abwechselnd aufs gegnerische Meer. Bei einem Treffer darfst du gleich nochmal. Schiffe berühren sich nie, auch nicht schräg. Wer zuerst alle gegnerischen Schiffe versenkt, gewinnt.',
+  create(c){
+    const N=8,L=[4,3,3,2,2];
+    let flotte,feld;
+    const bereit=[false,false];let dran=c.seed%2,wartet=false,aus=false,versenkt=0;
+    const beschossen=new Set();
+    const gegner=Array(N*N).fill(0); // 0 unbekannt, 1 Wasser, 2 Treffer, 3 versenkt
+    const nachbarn=i=>{const x=i%N,y=(i/N)|0,r=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const ax=x+dx,ay=y+dy;if(ax>=0&&ay>=0&&ax<N&&ay<N)r.push(ay*N+ax)}return r};
+    function verteilen(){
+      for(;;){
+        const f=Array(N*N).fill(-1),fl=[];let ok=true;
+        for(let s=0;s<L.length&&ok;s++){
+          let gesetzt=false;
+          for(let t=0;t<200&&!gesetzt;t++){
+            const h=Math.random()<.5,x=ri(Math.random,h?N-L[s]+1:N),y=ri(Math.random,h?N:N-L[s]+1),z=[];
+            for(let k=0;k<L[s];k++)z.push((y+(h?0:k))*N+x+(h?k:0));
+            if(z.every(i=>nachbarn(i).every(j=>f[j]<0))){z.forEach(i=>f[i]=s);fl.push({z,tr:0});gesetzt=true}
+          }
+          if(!gesetzt)ok=false;
+        }
+        if(ok){feld=f;flotte=fl;return}
+      }
+    }
+    verteilen();
+    c.el.innerHTML=`<div class="bs"><div class="bsw"><h4>Gegnerisches Meer <span class="bsr"></span></h4><div class="bsg gegner"></div></div>
+      <div class="bsw klein"><h4>Deine Flotte</h4><div class="bsg mein"></div>
+      <div class="bsk"><button type="button" class="btn sm" data-a="neu">🎲 Neu verteilen</button><button type="button" class="btn sm primary" data-a="ok">Bereit!</button></div></div></div>`;
+    const gG=c.el.querySelector('.gegner'),gM=c.el.querySelector('.mein'),knopf=c.el.querySelector('.bsk');
+    for(let i=0;i<N*N;i++){gG.appendChild(document.createElement('div'));gM.appendChild(document.createElement('div'))}
+    const spiel=()=>bereit[0]&&bereit[1];
+    function zeichneMein(){[...gM.children].forEach((d,i)=>{const s=feld[i];let k=s>=0?'schiff':'';if(beschossen.has(i))k+=s>=0?(flotte[s].tr===flotte[s].z.length?' sunk':' hit'):' miss';d.className=k})}
+    function zeichneGegner(){
+      [...gG.children].forEach((d,i)=>d.className=['','miss','hit','sunk'][gegner[i]]);
+      gG.classList.toggle('zielen',spiel()&&dran===c.me&&!wartet&&!aus);
+      c.el.querySelector('.bsr').textContent=`· ${L.length-versenkt} von ${L.length} Schiffen übrig`;
+    }
+    function info(){
+      zeichneGegner();if(aus)return;
+      if(!bereit[c.me])c.status('Stell deine Flotte auf und drück <b>Bereit!</b>');
+      else if(!bereit[c.other])c.status('Warte auf '+c.n(c.other)+' …');
+      else c.status(dran===c.me?(wartet?'Schuss unterwegs …':'Du bist dran: <b>Schieß aufs gegnerische Meer!</b>'):c.n(c.other)+' zielt auf deine Flotte …');
+    }
+    c.on(knopf,'click',e=>{const a=e.target.closest('button')?.dataset.a;if(!a||bereit[c.me])return;
+      if(a==='neu'){verteilen();zeichneMein()}else{bereit[c.me]=true;knopf.remove();c.send({bereit:1});info()}});
+    c.on(gG,'click',e=>{const d=e.target.closest('.gegner>div');if(!d)return;const i=[...gG.children].indexOf(d);
+      if(!spiel()||dran!==c.me||wartet||aus||gegner[i])return;wartet=true;c.send({schuss:i});info()});
+    zeichneMein();info();
+    return{msg(d){
+      if(d.bereit){bereit[c.other]=true;info()}
+      else if(d.schuss!=null){
+        const i=d.schuss,s=feld[i],tr=s>=0;let weg=null,alle=false;
+        if(!beschossen.has(i)&&tr)flotte[s].tr++;
+        beschossen.add(i);
+        if(tr){if(flotte[s].tr===flotte[s].z.length)weg=flotte[s].z;alle=flotte.every(f=>f.tr===f.z.length)}
+        c.send({erg:{i,tr,weg,alle}});zeichneMein();
+        if(alle){aus=true;info();c.status(c.n(c.other)+' hat deine ganze Flotte versenkt.');c.end({w:c.other})}
+        else{dran=tr?c.other:c.me;info()}
+      }
+      else if(d.erg){
+        const{i,tr,weg,alle}=d.erg;gegner[i]=tr?2:1;
+        if(weg){versenkt++;weg.forEach(k=>nachbarn(k).forEach(j=>{if(!gegner[j])gegner[j]=1}));weg.forEach(k=>gegner[k]=3)}
+        wartet=false;
+        if(alle){aus=true;info();c.status('Alle Schiffe versenkt!');c.end({w:c.me})}
+        else{dran=tr?c.me:c.other;info()}
+      }
+    }};
+  }});
+
+// ---------------------------------------------------------------------
+//  3 · Pong
+// ---------------------------------------------------------------------
+SPIELE.push({id:'pong',name:'Pong',emoji:'🏓',mode:'vs',
+  desc:'Retro-Tennis in Echtzeit. Der Ball wird mit jedem Treffer schneller.',
+  how:'Bewege deinen Schläger mit ↑ und ↓ (oder W und S), mit der Maus oder per Finger. Triffst du den Ball mit dem Rand des Schlägers, fliegt er schräger. Wer zuerst 7 Punkte hat, gewinnt.',
+  create(c){
+    const W=800,H=500,PH=90,PW=14,R=9,ZIEL=7;const{g,cv,pos}=leinwand(c,W,H);
+    const st={p:[H/2,H/2],b:[W/2,H/2],s:[0,0],h:0};let aus=false,blitz=0,altH=0;
+    const ein=[{d:0,y:null},{d:0,y:null}],mein={d:0,y:null},tast={hoch:false,runter:false};
+    const schick=()=>{if(c.host)ein[0]={...mein};else c.send({in:mein})};
+    c.key((e,dn)=>{const k=e.key.toLowerCase();if(k==='arrowup'||k==='w')tast.hoch=dn;else if(k==='arrowdown'||k==='s')tast.runter=dn;else return;
+      e.preventDefault();mein.d=(tast.runter?1:0)-(tast.hoch?1:0);mein.y=null;schick()});
+    let letzt=0;
+    c.on(cv,'pointermove',e=>{if(e.pointerType!=='mouse'&&!e.buttons)return;mein.y=pos(e)[1];mein.d=0;const t=performance.now();if(t-letzt>30){letzt=t;schick()}});
+    c.on(cv,'pointerdown',e=>{mein.y=pos(e)[1];mein.d=0;schick()});
+    if(c.host){
+      let ball={x:W/2,y:H/2,vx:0,vy:0},pause=1.4,auf=c.seed%2?1:-1,alt=performance.now();
+      const los=()=>{const a=Math.random()*.8-.4;ball.vx=Math.cos(a)*330*auf;ball.vy=Math.sin(a)*330};
+      c.every(1000/60,()=>{
+        const t=performance.now(),dt=Math.min(.05,(t-alt)/1000);alt=t;if(aus)return;
+        for(let p=0;p<2;p++){const e=ein[p];if(e.y!=null){const df=e.y-st.p[p];st.p[p]+=Math.sign(df)*Math.min(Math.abs(df),900*dt)}else st.p[p]+=e.d*520*dt;st.p[p]=clamp(st.p[p],PH/2,H-PH/2)}
+        if(pause>0){pause-=dt;if(pause<=0)los()}
+        else{
+          ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;
+          if(ball.y<R){ball.y=R;ball.vy=Math.abs(ball.vy)}
+          if(ball.y>H-R){ball.y=H-R;ball.vy=-Math.abs(ball.vy)}
+          for(let p=0;p<2;p++){
+            const px=p?W-30-PW:30,richtig=p?ball.vx>0:ball.vx<0;
+            if(richtig&&ball.x+R>px&&ball.x-R<px+PW&&Math.abs(ball.y-st.p[p])<PH/2+R){
+              const rel=clamp((ball.y-st.p[p])/(PH/2),-1,1),sp=Math.min(950,Math.hypot(ball.vx,ball.vy)*1.06),a=rel*1.05;
+              ball.vx=Math.cos(a)*sp*(p?-1:1);ball.vy=Math.sin(a)*sp;ball.x=p?px-R:px+PW+R;st.h++;
+            }
+          }
+          if(ball.x<-R||ball.x>W+R){
+            const sc=ball.x<0?1:0;st.s[sc]++;auf=sc===1?-1:1;
+            ball={x:W/2,y:H/2,vx:0,vy:0};pause=1;
+            if(st.s[sc]>=ZIEL){aus=true;st.e=sc;c.end({w:sc,text:`${st.s[0]} : ${st.s[1]}`})}
+          }
+        }
+        st.b=[ball.x,ball.y];
+        c.send({st:{p:st.p.map(Math.round),b:st.b.map(Math.round),s:st.s,h:st.h,e:st.e}});
+      });
+    }
+    c.frame(()=>{
+      if(st.h!==altH){altH=st.h;blitz=1}blitz*=.88;
+      g.fillStyle='#0a1633';g.fillRect(0,0,W,H);
+      g.fillStyle='rgba(255,255,255,.16)';for(let y=10;y<H;y+=28)g.fillRect(W/2-2,y,4,14);
+      g.font='800 64px "Big Shoulders Display",Impact,sans-serif';g.textAlign='center';g.textBaseline='top';
+      for(let p=0;p<2;p++){g.fillStyle=FARBE[p];g.globalAlpha=.9;g.fillText(st.s[p],W/2+(p?80:-80),18);g.globalAlpha=1}
+      g.font='700 13px "JetBrains Mono",monospace';g.fillStyle='rgba(255,255,255,.55)';
+      for(let p=0;p<2;p++)g.fillText((p===c.me?'DU':c.names[p]).toUpperCase().slice(0,14),p?W-110:110,H-26);
+      for(let p=0;p<2;p++){const px=p?W-30-PW:30;g.fillStyle=FARBE[p];g.fillRect(px,st.p[p]-PH/2,PW,PH);g.fillStyle='#fff';g.globalAlpha=.35;g.fillRect(px+(p?0:PW-3),st.p[p]-PH/2,3,PH);g.globalAlpha=1}
+      g.fillStyle='#fff';g.shadowColor='#9db6ff';g.shadowBlur=10+blitz*30;g.beginPath();g.arc(st.b[0],st.b[1],R,0,7);g.fill();g.shadowBlur=0;
+    });
+    return{msg(d){
+      if(c.host){if(d.in)ein[1]=d.in}
+      else if(d.st){Object.assign(st,d.st);if(d.st.e!=null&&!aus){aus=true;c.end({w:d.st.e,text:`${st.s[0]} : ${st.s[1]}`})}}
+    }};
+  }});
+
+// ---------------------------------------------------------------------
+//  4 · Lichtrenner
+// ---------------------------------------------------------------------
+SPIELE.push({id:'tron',name:'Lichtrenner',emoji:'🏍️',mode:'vs',
+  desc:'Ihr zieht leuchtende Spuren übers Feld. Wer zuerst irgendwo reinkracht, verliert.',
+  how:'Lenke mit den Pfeiltasten oder WASD, am Handy durch Wischen oder mit dem Steuerkreuz. Du fährst immer weiter und hinterlässt eine Lichtspur. Krachst du in eine Wand oder eine Spur, geht die Runde an den anderen. Wer zuerst 3 Runden gewinnt, gewinnt.',
+  create(c){
+    const GW=60,GH=38,Z=13,W=GW*Z,H=GH*Z,ZIEL=3;const{g,cv}=leinwand(c,W,H);
+    const gr=new Uint8Array(GW*GH);let kopf=[[0,0],[0,0]],crash=[false,false],siege=[0,0],text='',aus=false;
+    function anwenden(m){
+      if(m.r){gr.fill(0);kopf=m.r.k;crash=[false,false];siege=m.r.s;kopf.forEach((k,p)=>gr[k[1]*GW+k[0]]=p+1);text=''}
+      if(m.cd!=null)text=m.cd;
+      if(m.t){m.t.k.forEach((k,p)=>{if(!m.t.c[p]){gr[k[1]*GW+k[0]]=p+1;kopf[p]=k}});crash=m.t.c;text=''}
+      if(m.rs){siege=m.rs.s;const w=m.rs.w;
+        text=w<0?'Beide gecrasht!':(w===c.me?'Runde für dich!':'Runde für '+c.names[w]+'!');
+        c.status(`Runden: ${c.n(0)} ${siege[0]} : ${siege[1]} ${c.n(1)}`);
+        if(w>=0&&siege[w]>=ZIEL&&!aus){aus=true;c.end({w,text:`${siege[0]} : ${siege[1]} Runden`})}}
+    }
+    // Host steuert alles
+    let dir=[[1,0],[-1,0]],queue=[[],[]],laeuft=false;
+    const lenken=(p,d)=>{const q=queue[p],last=q.length?q[q.length-1]:dir[p];
+      if(q.length>=3||(d[0]===-last[0]&&d[1]===-last[1])||(d[0]===last[0]&&d[1]===last[1]))return;q.push(d)};
+    const send=m=>{anwenden(m);c.send({m})};
+    if(c.host){
+      const runde=()=>{dir=[[1,0],[-1,0]];queue=[[],[]];laeuft=false;send({r:{k:[[12,GH>>1],[GW-13,GH>>1]],s:siege}});
+        let n=3;const cd=()=>{if(n>0){send({cd:String(n)});n--;c.after(700,cd)}else{send({cd:'LOS!'});laeuft=true}};cd()};
+      c.every(70,()=>{
+        if(!laeuft)return;
+        const nk=[0,1].map(p=>{if(queue[p].length)dir[p]=queue[p].shift();return[kopf[p][0]+dir[p][0],kopf[p][1]+dir[p][1]]});
+        const cr=nk.map(([x,y])=>x<0||y<0||x>=GW||y>=GH||gr[y*GW+x]>0);
+        if(nk[0][0]===nk[1][0]&&nk[0][1]===nk[1][1])cr[0]=cr[1]=true;
+        send({t:{k:nk,c:cr}});
+        if(cr[0]||cr[1]){laeuft=false;const w=cr[0]&&cr[1]?-1:cr[0]?1:0;if(w>=0)siege[w]++;
+          send({rs:{w,s:siege.slice()}});if(w<0||siege[w]<ZIEL)c.after(1800,runde)}
+      });
+      c.after(400,runde);
+    }
+    const ich=d=>{if(c.host)lenken(0,d);else c.send({d})};
+    c.key((e,dn)=>{const d=dn&&richtung(e);if(!d)return;e.preventDefault();ich(d)});
+    wischen(c,cv,ich);steuerkreuz(c,ich);
+    c.status(`Du fährst <b style="color:${FARBE[c.me]}">${c.me?'rechts':'links'}</b> los. Erster mit 3 Runden gewinnt.`);
+    c.frame(t=>{
+      g.fillStyle='#0a1633';g.fillRect(0,0,W,H);
+      g.strokeStyle='rgba(157,182,255,.07)';g.lineWidth=1;g.beginPath();
+      for(let x=0;x<=GW;x+=2){g.moveTo(x*Z,0);g.lineTo(x*Z,H)}for(let y=0;y<=GH;y+=2){g.moveTo(0,y*Z);g.lineTo(W,y*Z)}g.stroke();
+      for(let i=0;i<gr.length;i++)if(gr[i]){g.fillStyle=FARBE[gr[i]-1];g.fillRect((i%GW)*Z+1,((i/GW)|0)*Z+1,Z-2,Z-2)}
+      kopf.forEach((k,p)=>{g.shadowColor=FARBE[p];g.shadowBlur=16;g.fillStyle=crash[p]?'#ffd400':'#fff';g.fillRect(k[0]*Z,k[1]*Z,Z,Z);g.shadowBlur=0;
+        if(crash[p]){g.font='30px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('💥',k[0]*Z+Z/2,k[1]*Z+Z/2)}});
+      g.font='700 12px "JetBrains Mono",monospace';g.textAlign='left';g.textBaseline='top';
+      [0,1].forEach(p=>{g.fillStyle=FARBE[p];g.fillText(`${p===c.me?'DU':c.names[p].toUpperCase()} ${'■'.repeat(siege[p])}${'□'.repeat(ZIEL-siege[p])}`,p?W-200:10,8)});
+      if(text){g.font='900 64px "Big Shoulders Display",Impact,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#fff';g.fillText(text,W/2,H/2)}
+    });
+    return{msg(d){if(c.host){if(d.d)lenken(1,d.d)}else if(d.m)anwenden(d.m)}};
+  }});
+
+// ---------------------------------------------------------------------
+//  5 · Schnellziehen
+// ---------------------------------------------------------------------
+SPIELE.push({id:'duell',name:'Schnellziehen',emoji:'🤠',mode:'vs',
+  desc:'Western-Duell der Reflexe. Wer zu früh zieht oder auf eine Falle reinfällt, verliert.',
+  how:'Warte, bis groß <b>ZIEH!</b> erscheint, dann so schnell wie möglich klicken, tippen oder die Leertaste drücken. Wer zu früh drückt oder auf ein falsches Wort reinfällt (zum Beispiel „ZIEGE!“), schenkt dem anderen den Punkt. Gemessen wird die Reaktionszeit auf dem eigenen Bildschirm, also ist es auch bei langsamer Verbindung fair. Wer zuerst 5 Punkte hat, gewinnt.',
+  create(c){
+    const ZIEL=5,FALLEN=['ZIEGE!','ZIEL!','ZIELEN …','ZIEHHARMONIKA','ZIERFISCH','ZIEH … NOCH NICHT','ZWIEBEL!','ZISCH!'];
+    c.el.innerHTML='<div class="duell warte"><div class="dpunkte"></div><div class="dschild">Mach dich bereit …</div><div class="dinfo">Klick, tipp oder Leertaste</div></div>';
+    const box=c.el.firstChild,schild=box.querySelector('.dschild'),info=box.querySelector('.dinfo'),pk=box.querySelector('.dpunkte');
+    let phase='pause',t0=0,getan=true,punkte=[0,0];
+    const zeige=(txt,k)=>{schild.textContent=txt;box.className='duell '+k};
+    const zeigePunkte=()=>pk.innerHTML=`${c.n(0)} <b>${punkte[0]} : ${punkte[1]}</b> ${c.n(1)}`;
+    zeigePunkte();
+    function anwenden(m){
+      if(m.neu){phase='warte';getan=false;zeige('Warte …','warte');info.textContent='Finger bereit halten …';c.status('Noch nicht drücken!')}
+      if(m.falle&&phase==='warte'){phase='falle';zeige(m.falle,'falle')}
+      if(m.weg&&phase==='falle'){phase='warte';zeige('Warte …','warte')}
+      if(m.los){phase='los';t0=performance.now();zeige('ZIEH!','los')}
+      if(m.erg){
+        phase='pause';const{w,rt,foul}=m.erg;punkte=m.erg.p;zeigePunkte();
+        const ms=p=>rt[p]==null?'—':rt[p]+' ms';
+        if(w<0){zeige('Keiner hat gezogen','warte');info.textContent='Die Runde zählt nicht.'}
+        else{
+          zeige(w===c.me?'TREFFER!':'ERWISCHT …',w===c.me?'sieg':'nieder');
+          if(foul!=null)info.innerHTML=(foul===c.me?'Du hast zu früh gezogen.':esc(c.names[foul])+' hat zu früh gezogen.')+(w===c.me?' Punkt für dich!':' Punkt für '+esc(c.names[w])+'.');
+          else info.innerHTML=`Du: ${ms(c.me)} · ${esc(c.names[c.other])}: ${ms(c.other)}`;
+        }
+        c.status('Nächste Runde kommt gleich …');
+        if(w>=0&&punkte[w]>=ZIEL)c.end({w,text:`${punkte[0]} : ${punkte[1]}`});
+      }
+    }
+    const send=m=>{anwenden(m);c.send({m})};
+    let akt=[null,null],entschieden=true;
+    function entscheiden(foulW,foulP){
+      if(entschieden)return;entschieden=true;
+      let w;
+      if(foulW!=null)w=foulW;
+      else{const a=akt[0]?.rt??Infinity,b=akt[1]?.rt??Infinity;w=a===Infinity&&b===Infinity?-1:a<b?0:b<a?1:ri(Math.random,2)}
+      if(w>=0)punkte[w]++;
+      send({erg:{w,p:punkte.slice(),rt:akt.map(a=>a&&a.rt!=null?a.rt:null),foul:foulP??null}});
+      if(w<0||punkte[w]<ZIEL)c.after(2800,runde);
+    }
+    function hostAktion(p,a){
+      if(entschieden||akt[p])return;akt[p]=a;
+      if(a.foul)entscheiden(1-p,p);
+      else if(akt[1-p])entscheiden();
+    }
+    function runde(){
+      akt=[null,null];entschieden=false;send({neu:1});
+      let t=1500+Math.random()*3000;
+      if(Math.random()<.45){const ft=t;c.after(ft,()=>{if(!entschieden)send({falle:FALLEN[ri(Math.random,FALLEN.length)]})});
+        c.after(ft+900,()=>{if(!entschieden)send({weg:1})});t=ft+900+700+Math.random()*2500}
+      c.after(t,()=>{if(entschieden)return;send({los:1});c.after(2500,()=>entscheiden())});
+    }
+    const aktion=()=>{
+      if(getan||phase==='pause')return;getan=true;let a;
+      if(phase==='los'){a={rt:Math.round(performance.now()-t0)};info.textContent=`Deine Zeit: ${a.rt} ms`}
+      else{a={foul:1};info.textContent=phase==='falle'?'Reingefallen!':'Zu früh!'}
+      box.classList.add('gedrueckt');
+      if(c.host)hostAktion(0,a);else c.send({a});
+    };
+    c.on(box,'pointerdown',e=>{e.preventDefault();aktion()});
+    c.key((e,dn)=>{if(dn&&(e.key===' '||e.key==='Enter')){e.preventDefault();if(!e.repeat)aktion()}});
+    c.status('Gleich geht es los …');
+    if(c.host)c.after(1500,runde);
+    return{msg(d){if(c.host){if(d.a)hostAktion(1,d.a)}else if(d.m)anwenden(d.m)}};
+  }});
+
+// ---------------------------------------------------------------------
+//  6 · Schnick Schnack Schnuck
+// ---------------------------------------------------------------------
+SPIELE.push({id:'ssp',name:'Schnick Schnack Schnuck',emoji:'✌️',mode:'vs',
+  desc:'Schere, Stein, Papier mit einem Dino-Joker, der einmal alles frisst.',
+  how:'Wählt gleichzeitig Schere, Stein oder Papier. Schere schlägt Papier, Papier schlägt Stein, Stein schlägt Schere. Jeder hat <b>einmal pro Spiel</b> den 🦖 Dino-Joker: Der frisst alles, außer einen anderen Dino. Wer zuerst 4 Runden gewinnt, gewinnt.',
+  create(c){
+    const ZIEL=4,SYM={schere:'✌️',stein:'✊',papier:'✋',dino:'🦖'},SCHL={schere:'papier',papier:'stein',stein:'schere'};
+    let r=0,wahl=[null,null],punkte=[0,0],joker=[true,true],aus=false,zeigt=false;const vorrat={};
+    c.el.innerHTML=`<div class="ssp"><div class="sspf"><div class="ssph"><span class="hand l">❔</span><small></small></div><div class="sspvs">VS</div><div class="ssph"><span class="hand r">❔</span><small></small></div></div>
+      <div class="sspmsg"></div><div class="sspk">${Object.keys(SYM).map(k=>`<button type="button" data-k="${k}"><span>${SYM[k]}</span>${k==='dino'?'Dino-Joker':k[0].toUpperCase()+k.slice(1)}</button>`).join('')}</div></div>`;
+    const hand=[c.el.querySelector('.hand.l'),c.el.querySelector('.hand.r')],sm=c.el.querySelectorAll('.ssph small'),msg=c.el.querySelector('.sspmsg'),kn=c.el.querySelector('.sspk');
+    // links bin immer ich
+    const seite=p=>p===c.me?0:1;
+    function ui(){
+      sm[0].innerHTML=`Du · <b>${punkte[c.me]}</b>`;sm[1].innerHTML=`${esc(c.names[c.other])} · <b>${punkte[c.other]}</b>`;
+      kn.querySelectorAll('button').forEach(b=>{b.disabled=aus||zeigt||!!wahl[c.me]||(b.dataset.k==='dino'&&!joker[c.me]);b.classList.toggle('sel',wahl[c.me]===b.dataset.k)});
+      if(!zeigt){hand[0].textContent=wahl[c.me]?SYM[wahl[c.me]]:'❔';hand[1].textContent=wahl[c.other]?'✔️':'❔';hand.forEach(h=>h.classList.remove('gew','verl'))}
+      if(!aus&&!zeigt)c.status(wahl[c.me]?(wahl[c.other]?'':'Warte auf '+c.n(c.other)+' …'):`Runde ${r+1}: <b>Wähl deine Hand!</b>`+(joker[c.other]?'':' ('+c.n(c.other)+' hat den Dino schon verbraucht.)'));
+    }
+    function pruefen(){
+      if(!wahl[0]||!wahl[1])return;
+      zeigt=true;const[a,b]=wahl;
+      const w=a===b?-1:a==='dino'?0:b==='dino'?1:SCHL[a]===b?0:1;
+      wahl.forEach((k,p)=>{if(k==='dino')joker[p]=false});
+      if(w>=0)punkte[w]++;
+      hand[0].textContent=SYM[wahl[c.me]];hand[1].textContent=SYM[wahl[c.other]];
+      hand.forEach(h=>h.classList.add('auf'));
+      if(w>=0){hand[seite(w)].classList.add('gew');hand[1-seite(w)].classList.add('verl')}
+      msg.textContent=w<0?'Unentschieden!':w===c.me?'Runde für dich!':'Runde für '+c.names[w]+'!';
+      ui();c.status('');
+      if(w>=0&&punkte[w]>=ZIEL){aus=true;ui();c.end({w,text:`${punkte[0]} : ${punkte[1]}`,delay:1600});return}
+      c.after(1900,()=>{r++;wahl=[null,null];wahl[c.other]=vorrat[r]||null;zeigt=false;msg.textContent='';hand.forEach(h=>h.classList.remove('auf'));ui();pruefen()});
+    }
+    c.on(kn,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;wahl[c.me]=b.dataset.k;c.send({r,k:b.dataset.k});ui();pruefen()});
+    ui();
+    return{msg(d){vorrat[d.r]=d.k;if(d.r===r&&!zeigt){wahl[c.other]=d.k;ui();pruefen()}}};
+  }});
+
+// ---------------------------------------------------------------------
+//  7 · Tauziehen
+// ---------------------------------------------------------------------
+SPIELE.push({id:'tau',name:'Tauziehen',emoji:'🪢',mode:'vs',
+  desc:'Abwechselnd hämmern, bis der andere über die Linie fliegt.',
+  how:'Drücke <b>abwechselnd</b> ← und → (oder A und D), am Handy abwechselnd die zwei großen Knöpfe. Jeder richtige Wechsel ist ein Zug am Seil. Zieh die Markierung ganz auf deine Seite! Nach 30 Sekunden gewinnt, wer vorne liegt.',
+  create(c){
+    c.el.innerHTML=`<div class="tau"><div class="taubig">3</div><div class="taut"><div class="taul l"></div><div class="taul r"></div><div class="taurope"><span class="dn l">🦖</span><span class="knot"></span><span class="dn r">🦕</span></div></div>
+      <div class="tauzeit">30</div><div class="taukn"><button type="button" data-s="l">◀</button><button type="button" data-s="r">▶</button></div></div>`;
+    const big=c.el.querySelector('.taubig'),rope=c.el.querySelector('.taurope'),zeitEl=c.el.querySelector('.tauzeit'),kn=c.el.querySelector('.taukn');
+    let pos=0,phase='count',letzte=null,aus=false;
+    c.status(`Du bist <b style="color:${FARBE[c.me]}">${c.me?'rechts':'links'}</b> und ziehst nach ${c.me?'rechts':'links'}.`);
+    const zeichnen=()=>{rope.style.transform=`translateX(${pos*.42}%)`};
+    function anwenden(m){
+      if(m.pos!=null){pos=m.pos;zeichnen();rope.classList.remove('ruck');void rope.offsetWidth;rope.classList.add('ruck')}
+      if(m.cd!=null){big.textContent=m.cd;big.style.display=''}
+      if(m.los){phase='los';big.textContent='ZIEH!';c.after(600,()=>big.style.display='none')}
+      if(m.zeit!=null)zeitEl.textContent=m.zeit;
+      if(m.ende){phase='aus';aus=true;big.style.display='';big.textContent=m.ende.w<0?'Gleichstand!':m.ende.w===c.me?'Gewonnen!':'Verloren!';
+        c.end({w:m.ende.w,text:m.ende.w<0?'Das Seil steht genau in der Mitte.':'Über die Linie gezogen!'})}
+    }
+    const send=m=>{anwenden(m);c.send({m})};
+    const ziehen=p=>{if(phase!=='los'||aus)return;pos=clamp(pos+(p?2:-2),-100,100);dirty=true;if(Math.abs(pos)>=100)fertig(p)};
+    let dirty=false;
+    function fertig(w){if(aus)return;send({pos});send({ende:{w}})}
+    const zug=s=>{if(phase!=='los'||s===letzte)return;letzte=s;if(c.host)ziehen(0);else c.send({z:1})};
+    c.key((e,dn)=>{if(!dn||e.repeat)return;const k=e.key.toLowerCase();
+      if(k==='arrowleft'||k==='a'){e.preventDefault();zug('l')}else if(k==='arrowright'||k==='d'){e.preventDefault();zug('r')}});
+    c.on(kn,'pointerdown',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();zug(b.dataset.s)});
+    if(c.host){
+      let n=3;const cd=()=>{if(n>0){send({cd:n});n--;c.after(800,cd)}else{send({los:1});start()}};c.after(600,cd);
+      function start(){let t=30;c.every(1000,()=>{if(aus)return;t--;send({zeit:t});if(t<=0)fertig(pos<0?0:pos>0?1:-1)})}
+      c.every(50,()=>{if(dirty&&!aus){dirty=false;send({pos})}});
+    }
+    zeichnen();
+    return{msg(d){if(c.host){if(d.z)ziehen(1)}else if(d.m)anwenden(d.m)}};
+  }});
+
+// ---------------------------------------------------------------------
+//  8 · Käsekästchen
+// ---------------------------------------------------------------------
+SPIELE.push({id:'kaestchen',name:'Käsekästchen',emoji:'🔲',mode:'vs',
+  desc:'Striche ziehen, Kästchen schließen, Punkte sammeln. Wer schließt, darf nochmal.',
+  how:'Zieht abwechselnd einen Strich zwischen zwei benachbarten Punkten. Wer den vierten Strich um ein Kästchen setzt, bekommt es und ist gleich nochmal dran. Am Ende gewinnt, wer mehr Kästchen hat.',
+  create(c){
+    const N=5,S=60,O=16,G=N*S+O*2;
+    const h=Array((N+1)*N).fill(-1),v=Array(N*(N+1)).fill(-1),box=Array(N*N).fill(-1);let dran=c.seed%2,aus=false;
+    let svg=`<svg class="dots" viewBox="0 0 ${G} ${G}">`;
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++)svg+=`<rect class="b" data-i="${y*N+x}" x="${O+x*S+4}" y="${O+y*S+4}" width="${S-8}" height="${S-8}"/>`;
+    const kante=(k,i,x1,y1,x2,y2)=>`<g class="e" data-k="${k}" data-i="${i}"><line class="hit" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><line class="vis" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/></g>`;
+    for(let y=0;y<=N;y++)for(let x=0;x<N;x++)svg+=kante('h',y*N+x,O+x*S,O+y*S,O+(x+1)*S,O+y*S);
+    for(let y=0;y<N;y++)for(let x=0;x<=N;x++)svg+=kante('v',y*(N+1)+x,O+x*S,O+y*S,O+x*S,O+(y+1)*S);
+    for(let y=0;y<=N;y++)for(let x=0;x<=N;x++)svg+=`<circle cx="${O+x*S}" cy="${O+y*S}" r="6"/>`;
+    c.el.innerHTML=svg+'</svg>';
+    const el=c.el.firstChild;
+    const voll=i=>{const x=i%N,y=(i/N)|0;return h[y*N+x]>=0&&h[(y+1)*N+x]>=0&&v[y*(N+1)+x]>=0&&v[y*(N+1)+x+1]>=0};
+    const zahl=p=>box.filter(b=>b===p).length;
+    const info=()=>{el.classList.toggle('mein',dran===c.me&&!aus);c.status(`${c.dran(dran)} · Kästchen: ${c.n(0)} ${zahl(0)} : ${zahl(1)} ${c.n(1)}`)};
+    function zug(k,i,p){
+      const arr=k==='h'?h:v;if(arr[i]>=0)return false;arr[i]=p;
+      el.querySelector(`.e[data-k="${k}"][data-i="${i}"]`).classList.add('p'+p,'gesetzt');
+      const kand=[];
+      if(k==='h'){const y=(i/N)|0,x=i%N;if(y>0)kand.push((y-1)*N+x);if(y<N)kand.push(y*N+x)}
+      else{const y=(i/(N+1))|0,x=i%(N+1);if(x>0)kand.push(y*N+x-1);if(x<N)kand.push(y*N+x)}
+      let zu=false;
+      kand.forEach(b=>{if(box[b]<0&&voll(b)){box[b]=p;zu=true;el.querySelector(`.b[data-i="${b}"]`).classList.add('p'+p)}});
+      if(!zu)dran=1-dran;
+      if(box.every(b=>b>=0)){aus=true;info();const a=zahl(0),b=zahl(1);c.end({w:a===b?-1:a>b?0:1,text:`${a} : ${b} Kästchen`})}
+      else info();
+      return true;
+    }
+    c.on(el,'click',e=>{const k=e.target.closest('.e');if(!k||aus||dran!==c.me)return;if(zug(k.dataset.k,+k.dataset.i,c.me))c.send({k:k.dataset.k,i:+k.dataset.i})});
+    info();
+    return{msg(d){if(!aus)zug(d.k,d.i,c.other)}};
+  }});
+
+// ---------------------------------------------------------------------
+//  9 · Bombe entschärfen
+// ---------------------------------------------------------------------
+const BOMBE_SPALTEN=[
+  ['Ω','★','☾','ψ','♞','∞','¶'],
+  ['§','Ω','✿','♣','☾','λ','Ж'],
+  ['♫','¶','Ж','★','Ѯ','¿','✂'],
+  ['∆','♣','ψ','✂','§','ϗ','Ѯ'],
+  ['λ','ϗ','∞','¿','✿','♫','∆']];
+const BOMBE_FH={rot:'#e2342b',blau:'#1740d8',gelb:'#f5c518',weiß:'#f4f2ec',schwarz:'#15151a',grün:'#1f9d55'};
+const BOMBE_ZIFFER={blau:4,gelb:5,rot:3,weiß:1};
+function bombeDraht(d,serie,batt){
+  const n=d.length,anz=f=>d.filter(x=>x===f).length,letzt=f=>d.lastIndexOf(f),gerade=+serie.slice(-1)%2===0,vokal=/[AEIOU]/.test(serie);
+  if(n===3){if(!anz('blau'))return 1;if(d[2]==='rot')return 2;if(anz('weiß')>1)return d.indexOf('weiß');return 0}
+  if(n===4){if(gerade&&anz('rot')>=2)return letzt('rot');if(d[0]==='gelb')return 2;if(anz('schwarz')===1)return d.indexOf('schwarz');return 1}
+  if(n===5){if(!anz('gelb'))return 3;if(batt>=2&&d[4]==='weiß')return 0;if(anz('grün')===1)return d.indexOf('grün');return 4}
+  if(vokal)return 2;if(!anz('rot'))return 4;if(anz('blau')>anz('gelb'))return letzt('blau');return 5;
+}
+function bombeKnopfHalten(f,t,batt){
+  if(f==='blau'&&t==='STOPP')return true;
+  if(batt>=2&&t==='BUMM')return false;
+  if(f==='weiß')return true;
+  if(t==='HALTEN'&&f==='rot')return false;
+  if(batt>=3)return false;
+  return true;
+}
+const BOMBE_HANDBUCH=`
+<div class="hb"><h4>Allgemein</h4><p>Die Bombe hat eine <b>Seriennummer</b> und eine Anzahl <b>Batterien</b>. Frag den Entschärfer danach, viele Regeln brauchen das. Drei Fehler und die Bombe explodiert.</p></div>
+<div class="hb"><h4>Modul 1 · Drähte</h4><p>Die Drähte werden von oben nach unten gezählt. Nimm die Regeln für die passende Anzahl und geh sie der Reihe nach durch. Die <b>erste</b> zutreffende Regel gilt. Es wird genau ein Draht geschnitten.</p>
+<p><b>3 Drähte</b></p><ol><li>Kein blauer Draht dabei: schneide den <b>zweiten</b>.</li><li>Sonst, wenn der letzte Draht rot ist: schneide den <b>letzten</b>.</li><li>Sonst, wenn es mehr als einen weißen gibt: schneide den <b>ersten weißen</b>.</li><li>Sonst: schneide den <b>ersten</b>.</li></ol>
+<p><b>4 Drähte</b></p><ol><li>Seriennummer endet mit einer geraden Ziffer und es gibt mindestens zwei rote: schneide den <b>letzten roten</b>.</li><li>Sonst, wenn der erste Draht gelb ist: schneide den <b>dritten</b>.</li><li>Sonst, wenn es genau einen schwarzen gibt: schneide den <b>schwarzen</b>.</li><li>Sonst: schneide den <b>zweiten</b>.</li></ol>
+<p><b>5 Drähte</b></p><ol><li>Kein gelber Draht dabei: schneide den <b>vierten</b>.</li><li>Sonst, wenn es mindestens 2 Batterien gibt und der letzte Draht weiß ist: schneide den <b>ersten</b>.</li><li>Sonst, wenn es genau einen grünen gibt: schneide den <b>grünen</b>.</li><li>Sonst: schneide den <b>letzten</b>.</li></ol>
+<p><b>6 Drähte</b></p><ol><li>Seriennummer enthält einen Vokal (A, E, I, O, U): schneide den <b>dritten</b>.</li><li>Sonst, wenn es keinen roten gibt: schneide den <b>fünften</b>.</li><li>Sonst, wenn es mehr blaue als gelbe gibt: schneide den <b>letzten blauen</b>.</li><li>Sonst: schneide den <b>letzten</b>.</li></ol></div>
+<div class="hb"><h4>Modul 2 · Der Knopf</h4><p>Geh die Regeln der Reihe nach durch, die <b>erste</b> zutreffende gilt.</p>
+<ol><li>Blauer Knopf mit der Aufschrift „STOPP“: <b>halten</b>.</li><li>Mindestens 2 Batterien und Aufschrift „BUMM“: <b>kurz drücken</b>.</li><li>Weißer Knopf: <b>halten</b>.</li><li>Roter Knopf mit der Aufschrift „HALTEN“: <b>kurz drücken</b>.</li><li>Mindestens 3 Batterien: <b>kurz drücken</b>.</li><li>Sonst: <b>halten</b>.</li></ol>
+<p><b>Kurz drücken:</b> drücken und sofort loslassen.<br><b>Halten:</b> Gedrückt halten, bis rechts ein farbiger Streifen leuchtet. Loslassen, wenn irgendwo im Timer diese Ziffer steht:</p>
+<table class="hbt"><tr><th>Streifen</th><td>Blau</td><td>Gelb</td><td>Rot</td><td>Weiß</td></tr><tr><th>Ziffer</th><td>4</td><td>5</td><td>3</td><td>1</td></tr></table></div>
+<div class="hb"><h4>Modul 3 · Symbole</h4><p>Auf der Bombe sind vier Symbole. Genau eine Spalte hier enthält alle vier. Sie müssen in der Reihenfolge gedrückt werden, in der sie in dieser Spalte <b>von oben nach unten</b> stehen.</p>
+<div class="hbs">${BOMBE_SPALTEN.map(s=>`<div>${s.map(x=>`<span>${x}</span>`).join('')}</div>`).join('')}</div></div>`;
+
+SPIELE.push({id:'bombe',name:'Bombe entschärfen',emoji:'💣',mode:'coop',
+  desc:'Einer sieht die Bombe, der andere das Handbuch. Nur zusammen überlebt ihr.',
+  how:'Einer ist <b>Entschärfer</b> und sieht die Bombe, der andere ist <b>Experte</b> und hat das Handbuch. Der Entschärfer beschreibt, was er sieht, der Experte sagt, was zu tun ist. Redet über den Chat rechts (oder ruft euch an). Löst alle drei Module, bevor die 4 Minuten vorbei sind. Drei Fehler und es macht BUMM.',
+  create(c){
+    const r=c.rng,E=(c.seed>>>3)%2,ich=c.me===E?'ent':'exp',ZEIT=240;
+    const A='ABCDEFGHIJKLMNOPQRSTUVWXZ',Z='0123456789';
+    let serie='';for(let i=0;i<5;i++){const q=r()<.6?A:Z;serie+=q[ri(r,q.length)]}serie+=Z[ri(r,10)];
+    const batt=ri(r,4);
+    const FARBEN=Object.keys(BOMBE_FH),drahte=[];const nD=3+ri(r,4);for(let i=0;i<nD;i++)drahte.push(FARBEN[ri(r,FARBEN.length)]);
+    const richtigerDraht=bombeDraht(drahte,serie,batt);
+    const kf=['rot','blau','gelb','weiß'][ri(r,4)],kt=['DRÜCKEN','HALTEN','STOPP','BUMM'][ri(r,4)],ks=['blau','gelb','rot','weiß'][ri(r,4)];
+    const halten=bombeKnopfHalten(kf,kt,batt);
+    let sp,sym;for(;;){sp=ri(r,5);sym=shuffle(BOMBE_SPALTEN[sp].slice(),r).slice(0,4);if(BOMBE_SPALTEN.filter(s=>sym.every(x=>s.includes(x))).length===1)break}
+    const reihe=BOMBE_SPALTEN[sp].filter(x=>sym.includes(x)),anzeige=shuffle(sym.slice(),r);
+    let rest=ZEIT,fehler=0,ok=[false,false,false],aus=false;
+    const mmss=t=>{t=Math.max(0,Math.ceil(t));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
+    const lage=()=>`<div class="bstat"><span class="btimer">${mmss(rest)}</span><span class="bfehl">${'✖'.repeat(fehler)}${'·'.repeat(3-fehler)}</span><span>Module: ${ok.filter(Boolean).length}/3</span></div>`;
+    if(ich==='exp'){
+      c.el.innerHTML=`<div class="bexp"><div class="brolle">📖 Du bist der <b>Experte</b>. ${c.n(c.other)} sieht die Bombe. Frag nach, was drauf ist, und sag, was zu tun ist!</div><div class="blage">${lage()}</div><div class="hbuch">${BOMBE_HANDBUCH}</div></div>`;
+      const lg=c.el.querySelector('.blage');
+      c.status('Lies das Handbuch und lotse über den Chat.');
+      return{msg(d){
+        if(d.st){rest=d.st.t;fehler=d.st.f;ok=d.st.ok;lg.innerHTML=lage()}
+        if(d.ende){aus=true;c.end({coop:true,win:d.ende.win,text:d.ende.text})}
+      }};
+    }
+    // Entschärfer
+    c.el.innerHTML=`<div class="bomb"><div class="brolle">💣 Du bist der <b>Entschärfer</b>. Beschreib ${c.n(c.other)} genau, was du siehst. Nur dein Partner hat das Handbuch!</div>
+      <div class="bcase"><div class="btop"><div class="bt btimer">${mmss(rest)}</div><div class="bt bfehl">···</div><div class="bser">SERIENNR. <b>${serie}</b></div><div class="bbat">${batt?'🔋'.repeat(batt):'keine Batterien'}</div></div>
+      <div class="bmods">
+        <div class="bmod" data-m="0"><i class="led"></i><svg class="drw" viewBox="0 0 240 ${nD*34+16}">${drahte.map((f,i)=>`<g data-i="${i}"><rect x="0" y="${8+i*34}" width="240" height="30" fill="transparent"/><line x1="16" y1="${23+i*34}" x2="224" y2="${23+i*34}" stroke="#000" stroke-width="13" stroke-linecap="round"/><line class="dr" x1="16" y1="${23+i*34}" x2="224" y2="${23+i*34}" stroke="${BOMBE_FH[f]}" stroke-width="9" stroke-linecap="round"/></g>`).join('')}</svg></div>
+        <div class="bmod" data-m="1"><i class="led"></i><div class="knw"><button type="button" class="bkn" style="--k:${BOMBE_FH[kf]};color:${kf==='gelb'||kf==='weiß'?'#0a1633':'#fff'}">${kt}</button><span class="bstr"></span></div></div>
+        <div class="bmod" data-m="2"><i class="led"></i><div class="bsym">${anzeige.map(s=>`<button type="button" data-s="${s}">${s}</button>`).join('')}</div></div>
+      </div></div></div>`;
+    const caseEl=c.el.querySelector('.bcase'),mods=c.el.querySelectorAll('.bmod');
+    const sendeLage=()=>c.send({st:{t:rest,f:fehler,ok}});
+    const zeichne=()=>{c.el.querySelector('.btimer').textContent=mmss(rest);c.el.querySelector('.bfehl').textContent='✖'.repeat(fehler)+'·'.repeat(3-fehler);mods.forEach((m,i)=>m.classList.toggle('ok',ok[i]))};
+    function ende(win,text){if(aus)return;aus=true;zeichne();sendeLage();caseEl.classList.add(win?'gerettet':'bumm');c.send({ende:{win,text}});c.end({coop:true,win,text,delay:1600})}
+    const loesen=m=>{if(ok[m])return;ok[m]=true;zeichne();sendeLage();if(ok.every(Boolean))ende(true,`Entschärft mit ${mmss(rest)} auf der Uhr und ${fehler} Fehler${fehler===1?'':'n'}.`)};
+    const falsch=()=>{fehler++;zeichne();sendeLage();caseEl.classList.remove('wackel');void caseEl.offsetWidth;caseEl.classList.add('wackel');if(fehler>=3)ende(false,'Drei Fehler. BUMM! 💥')};
+    const start=performance.now();
+    c.every(200,()=>{if(aus)return;const vor=Math.ceil(rest);rest=ZEIT-(performance.now()-start)/1000;if(Math.ceil(rest)!==vor){zeichne();sendeLage()}if(rest<=0){rest=0;ende(false,'Die Zeit ist abgelaufen. BUMM! 💥')}});
+    // Drähte
+    c.on(mods[0],'click',e=>{const gr=e.target.closest('g[data-i]');if(!gr||aus||ok[0]||gr.classList.contains('cut'))return;gr.classList.add('cut');if(+gr.dataset.i===richtigerDraht)loesen(0);else falsch()});
+    // Knopf
+    const kn=mods[1].querySelector('.bkn'),str=mods[1].querySelector('.bstr');let haltT=null,gehalten=false;
+    c.on(kn,'pointerdown',e=>{e.preventDefault();if(aus||ok[1])return;try{kn.setPointerCapture(e.pointerId)}catch(_){}gehalten=false;
+      haltT=c.after(600,()=>{gehalten=true;str.style.background=BOMBE_FH[ks];str.classList.add('an')})});
+    const loslassen=()=>{if(haltT==null)return;clearTimeout(haltT);haltT=null;str.style.background='';str.classList.remove('an');if(aus||ok[1])return;
+      if(!gehalten){if(!halten)loesen(1);else falsch()}
+      else if(halten&&mmss(rest).includes(String(BOMBE_ZIFFER[ks])))loesen(1);else falsch()};
+    c.on(kn,'pointerup',loslassen);c.on(kn,'pointercancel',loslassen);
+    // Symbole
+    let naechstes=0;
+    c.on(mods[2],'click',e=>{const b=e.target.closest('button[data-s]');if(!b||aus||ok[2]||b.classList.contains('an'))return;
+      if(b.dataset.s===reihe[naechstes]){b.classList.add('an');naechstes++;if(naechstes===4)loesen(2)}else falsch()});
+    c.status('Die Zeit läuft! Beschreib deinem Experten die Bombe.');
+    sendeLage();
+    return{msg(){}};
+  }});
+
+// ---------------------------------------------------------------------
+//  10 · Blind-Labyrinth
+// ---------------------------------------------------------------------
+SPIELE.push({id:'labyrinth',name:'Blind-Labyrinth',emoji:'🌀',mode:'coop',
+  desc:'Einer läuft blind durchs Labyrinth, der andere lotst ihn vorbei an Fallen.',
+  how:'Der <b>Läufer</b> sieht keine Wände, nur die, gegen die er schon gelaufen ist. Der <b>Lotse</b> sieht das ganze Labyrinth, das Ziel und die Fallen und gibt im Chat Anweisungen („3 runter, dann rechts!“). Tritt der Läufer in eine Falle, muss er zurück zum Start. Nach jedem Level tauscht ihr die Rollen. Schafft alle 3 Level so schnell wie möglich!',
+  create(c){
+    const GR=[6,8,10],FA=[2,4,6],W=520,P=20;const{g,cv}=leinwand(c,W,W);
+    let lv=0,n,E,Sd,fallen,ziel,laeufer,pos,spur,gesehen,fallenGes,stoesse=0,fallenZahl=0,pause=false,wackel=0,aus=false;const t0=performance.now();
+    function bau(){
+      n=GR[lv];const r=rngFrom(c.seed+lv*7919);E=Array(n*n).fill(true);Sd=Array(n*n).fill(true);
+      const bes=new Uint8Array(n*n),st=[0];bes[0]=1;
+      while(st.length){const i=st[st.length-1],x=i%n,y=(i/n)|0,nb=[];
+        if(x>0&&!bes[i-1])nb.push(i-1);if(x<n-1&&!bes[i+1])nb.push(i+1);if(y>0&&!bes[i-n])nb.push(i-n);if(y<n-1&&!bes[i+n])nb.push(i+n);
+        if(!nb.length){st.pop();continue}
+        const j=nb[ri(r,nb.length)];if(j===i+1)E[i]=false;else if(j===i-1)E[j]=false;else if(j===i+n)Sd[i]=false;else Sd[j]=false;bes[j]=1;st.push(j)}
+      ziel=n*n-1;
+      const vor=new Int32Array(n*n).fill(-1),q=[0];vor[0]=0;
+      while(q.length){const i=q.shift();for(const j of nachbarn(i))if(vor[j]<0){vor[j]=i;q.push(j)}}
+      const weg=new Set();for(let i=ziel;i!==0;i=vor[i])weg.add(i);weg.add(0);
+      const kand=shuffle([...Array(n*n).keys()].filter(i=>!weg.has(i)),r);fallen=new Set(kand.slice(0,FA[lv]));
+      laeufer=(c.seed+lv)%2;pos=0;spur=new Set([0]);gesehen=new Set();fallenGes=new Set();pause=false;info();
+    }
+    function offen(i,d){const x=i%n,y=(i/n)|0;
+      if(d[0]===1)return x<n-1&&!E[i];if(d[0]===-1)return x>0&&!E[i-1];if(d[1]===1)return y<n-1&&!Sd[i];return y>0&&!Sd[i-n]}
+    function nachbarn(i){const r=[];for(const d of[[1,0],[-1,0],[0,1],[0,-1]])if(offen(i,d))r.push(i+d[0]+d[1]*n);return r}
+    const wandKey=(i,d)=>d[0]===1?'e'+i:d[0]===-1?'e'+(i-1):d[1]===1?'s'+i:'s'+(i-n);
+    function info(){
+      const rolle=laeufer===c.me?`Du bist <b>Läufer</b>. Du siehst die Wände nicht. Hör auf ${c.n(c.other)}!`:`Du bist <b>Lotse</b>. Sag ${c.n(c.other)} im Chat, wo es langgeht.`;
+      c.status(`Level ${lv+1}/3 · ${rolle} · Stöße: ${stoesse} · Fallen: ${fallenZahl}`);
+    }
+    function anwenden(m){
+      if(m.w){gesehen.add(m.w);stoesse++;wackel=1;info()}
+      if(m.p!=null){pos=m.p;spur.add(pos)}
+      if(m.f!=null){fallenGes.add(m.f);fallenZahl++;wackel=1;pos=0;info()}
+      if(m.ziel){pause=true;
+        if(lv<2)c.after(2000,()=>{lv++;bau()});
+        else if(!aus){aus=true;const s=Math.round((performance.now()-t0)/1000);c.end({coop:true,win:true,text:`Alle 3 Level in ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')} Minuten · ${stoesse} Stöße · ${fallenZahl} Fallen`})}}
+    }
+    function gehe(d){
+      if(laeufer!==c.me||pause||aus)return;
+      const x=pos%n,y=(pos/n)|0,nx=x+d[0],ny=y+d[1];
+      let m;
+      if(nx<0||ny<0||nx>=n||ny>=n){wackel=1;return}
+      if(!offen(pos,d))m={w:wandKey(pos,d)};
+      else{const j=ny*n+nx;m=fallen.has(j)?{p:j,f:j}:{p:j};if(j===ziel)m.ziel=1}
+      anwenden(m);c.send(m);
+    }
+    c.key((e,dn)=>{const d=dn&&richtung(e);if(!d)return;e.preventDefault();gehe(d)});
+    wischen(c,cv,gehe);steuerkreuz(c,gehe);
+    bau();
+    c.frame(()=>{
+      const cs=(W-P*2)/n,lotse=laeufer!==c.me,X=i=>P+(i%n)*cs,Y=i=>P+((i/n)|0)*cs;
+      wackel*=.85;const sx=(Math.random()-.5)*wackel*10;
+      g.setTransform(2,0,0,2,0,0);g.fillStyle='#f4f2ec';g.fillRect(0,0,W,W);g.translate(sx,0);
+      g.fillStyle='#fff';g.fillRect(P,P,W-P*2,W-P*2);
+      spur.forEach(i=>{g.fillStyle='rgba(23,64,216,.12)';g.fillRect(X(i),Y(i),cs,cs)});
+      const loch=i=>{g.fillStyle='#0a1633';g.beginPath();g.ellipse(X(i)+cs/2,Y(i)+cs/2,cs*.32,cs*.22,0,0,7);g.fill();g.strokeStyle='#e2342b';g.lineWidth=3;g.stroke()};
+      if(lotse)fallen.forEach(loch);
+      fallenGes.forEach(i=>{g.fillStyle='rgba(226,52,43,.25)';g.fillRect(X(i),Y(i),cs,cs);loch(i)});
+      if(lotse){g.font=`${cs*.6}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText('🏁',X(ziel)+cs/2,Y(ziel)+cs/2)}
+      g.lineCap='round';
+      if(lotse){g.strokeStyle='#0a1633';g.lineWidth=4;g.beginPath();
+        for(let i=0;i<n*n;i++){const x=i%n,y=(i/n)|0;if(x<n-1&&E[i]){g.moveTo(X(i)+cs,Y(i));g.lineTo(X(i)+cs,Y(i)+cs)}if(y<n-1&&Sd[i]){g.moveTo(X(i),Y(i)+cs);g.lineTo(X(i)+cs,Y(i)+cs)}}g.stroke()}
+      else{g.fillStyle='rgba(10,22,51,.25)';for(let y=0;y<=n;y++)for(let x=0;x<=n;x++)g.fillRect(P+x*cs-2,P+y*cs-2,4,4)}
+      g.strokeStyle='#e2342b';g.lineWidth=6;g.beginPath();
+      gesehen.forEach(k=>{const i=+k.slice(1);if(k[0]==='e'){g.moveTo(X(i)+cs,Y(i));g.lineTo(X(i)+cs,Y(i)+cs)}else{g.moveTo(X(i),Y(i)+cs);g.lineTo(X(i)+cs,Y(i)+cs)}});g.stroke();
+      g.strokeStyle='#0a1633';g.lineWidth=6;g.strokeRect(P,P,W-P*2,W-P*2);
+      g.fillStyle=FARBE[laeufer];g.beginPath();g.arc(X(pos)+cs/2,Y(pos)+cs/2,cs*.3,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=3;g.stroke();
+      if(pause){g.fillStyle='rgba(10,22,51,.75)';g.fillRect(P,W/2-40,W-P*2,80);g.fillStyle='#fff';g.font='900 44px "Big Shoulders Display",Impact,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(lv<2?'LEVEL GESCHAFFT! ROLLENTAUSCH …':'ZIEL ERREICHT!',W/2,W/2)}
+    });
+    return{msg(d){anwenden(d)}};
+  }});
+
+// ---------------------------------------------------------------------
+//  11 · Gedankenleser
+// ---------------------------------------------------------------------
+SPIELE.push({id:'gedanken',name:'Gedankenleser',emoji:'🧠',mode:'coop',
+  desc:'Sagt gleichzeitig dasselbe Wort. Klingt leicht? Ist es nicht.',
+  how:'Jeder tippt heimlich ein Wort ein, dann werden beide gleichzeitig aufgedeckt. Sind sie gleich, habt ihr gewonnen! Wenn nicht, sucht ihr in der nächsten Runde ein Wort, das zu <b>beiden</b> letzten Wörtern passt (zum Beispiel „Meer“ und „Sand“ → „Strand“). Ihr habt 10 Versuche. Schon benutzte Wörter sind tabu. Im Chat nichts absprechen!',
+  create(c){
+    const MAX=10;let r=0,wahl=[null,null],aus=false;const vorrat={},verlauf=[],benutzt=new Set();
+    c.el.innerHTML=`<div class="gl"><div class="glv"></div><div class="glauf"></div><form class="glf"><input maxlength="30" autocomplete="off" placeholder="Dein Wort …" aria-label="Dein Wort"><button class="btn primary sm">Abgeben</button></form><div class="glh"></div></div>`;
+    const v=c.el.querySelector('.glv'),auf=c.el.querySelector('.glauf'),f=c.el.querySelector('.glf'),inp=f.querySelector('input'),hint=c.el.querySelector('.glh');
+    function ui(){
+      v.innerHTML=verlauf.map((p,i)=>`<div><em>${i+1}</em><span style="color:${FARBE[c.me]}">${esc(p[c.me])}</span><i>≠</i><span style="color:${FARBE[c.other]}">${esc(p[c.other])}</span></div>`).join('');
+      inp.disabled=aus||!!wahl[c.me];f.querySelector('button').disabled=inp.disabled;
+      if(aus)return;
+      const letzte=verlauf[verlauf.length-1];
+      c.status(`Versuch ${r+1} von ${MAX} · `+(wahl[c.me]?(wahl[c.other]?'':'Warte auf '+c.n(c.other)+' …'):letzte?`Was verbindet <b>${esc(letzte[0])}</b> und <b>${esc(letzte[1])}</b>?`:'Erstes Wort: einfach irgendwas!')+(wahl[c.other]&&!wahl[c.me]?' ('+c.n(c.other)+' hat schon gewählt)':''));
+    }
+    function pruefen(){
+      if(!wahl[0]||!wahl[1])return;
+      const[a,b]=wahl;verlauf.push([a,b]);benutzt.add(norm(a));benutzt.add(norm(b));
+      auf.innerHTML=`<span style="background:${FARBE[c.me]}">${esc(wahl[c.me])}</span><span style="background:${FARBE[c.other]}">${esc(wahl[c.other])}</span>`;
+      auf.classList.remove('neu');void auf.offsetWidth;auf.classList.add('neu');
+      if(norm(a)===norm(b)){aus=true;verlauf.pop();ui();auf.classList.add('match');c.status('Gedanken gelesen!');c.end({coop:true,win:true,text:`Nach ${r+1} Versuch${r?'en':''}: „${a}“`});return}
+      r++;
+      if(r>=MAX){aus=true;ui();c.end({coop:true,win:false,text:'Zehn Versuche, keine Gedankenübertragung. Nochmal?'});return}
+      wahl=[null,null];wahl[c.other]=vorrat[r]||null;hint.textContent='';ui();inp.focus();
+    }
+    c.on(f,'submit',e=>{e.preventDefault();const w=inp.value.trim();if(!w||aus||wahl[c.me])return;
+      if(!norm(w)){hint.textContent='Bitte ein richtiges Wort.';return}
+      if(benutzt.has(norm(w))){hint.textContent='Das Wort war schon dran, nimm ein anderes!';return}
+      hint.textContent='';wahl[c.me]=w;inp.value='';c.send({r,w});ui();pruefen()});
+    ui();setTimeout(()=>inp.focus(),50);
+    return{msg(d){vorrat[d.r]=d.w;if(d.r===r&&!aus){wahl[c.other]=d.w;ui();pruefen()}}};
+  }});
+
+// ---------------------------------------------------------------------
+//  12 · Dino-Eier retten
+// ---------------------------------------------------------------------
+SPIELE.push({id:'eier',name:'Dino-Eier retten',emoji:'🥚',mode:'coop',
+  desc:'Fangt die fallenden Dino-Eier zusammen, aber jede Farbe nur mit dem passenden Nest.',
+  how:'Bewege dein Nest mit ← und → (oder A und D), mit der Maus oder per Finger. <b>Blaue Eier</b> fängt nur das blaue Nest, <b>rote</b> nur das rote, <b>goldene</b> beide (+5 Punkte). Ein Ei, das ins falsche Nest fällt, springt wieder raus. Fällt ein Ei auf den Boden, verliert ihr ein Leben. <b>Meteore</b> nicht fangen! Ihr habt zusammen 5 Leben.',
+  create(c){
+    const W=800,H=500,NW=110,NY=440;const{g,cv,pos}=leinwand(c,W,H);
+    const st={n:[W*.33,W*.67],o:[],p:0,l:5,e:null};let aus=false;const fx=[];
+    const ein=[{d:0,x:null},{d:0,x:null}],mein={d:0,x:null},tast={l:false,r:false};
+    const schick=()=>{if(c.host)ein[0]={...mein};else c.send({in:mein})};
+    c.key((e,dn)=>{const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')tast.l=dn;else if(k==='arrowright'||k==='d')tast.r=dn;else return;e.preventDefault();mein.d=(tast.r?1:0)-(tast.l?1:0);mein.x=null;schick()});
+    let letzt=0;
+    c.on(cv,'pointermove',e=>{if(e.pointerType!=='mouse'&&!e.buttons)return;mein.x=pos(e)[0];mein.d=0;const t=performance.now();if(t-letzt>30){letzt=t;schick()}});
+    c.on(cv,'pointerdown',e=>{mein.x=pos(e)[0];mein.d=0;schick()});
+    const effekt=ev=>ev.forEach(([x,y,k])=>{for(let i=0;i<14;i++)fx.push({x,y,vx:(Math.random()-.5)*300,vy:-Math.random()*260,l:1,k})});
+    if(c.host){
+      let objs=[],zeit=0,spawn=1,alt=performance.now();
+      c.every(1000/60,()=>{
+        const t=performance.now(),dt=Math.min(.05,(t-alt)/1000);alt=t;if(aus)return;zeit+=dt;const ev=[];
+        for(let p=0;p<2;p++){const e=ein[p];if(e.x!=null){const df=e.x-st.n[p];st.n[p]+=Math.sign(df)*Math.min(Math.abs(df),1000*dt)}else st.n[p]+=e.d*560*dt;st.n[p]=clamp(st.n[p],NW/2,W-NW/2)}
+        spawn-=dt;
+        if(spawn<=0){spawn=Math.max(.38,1.25-zeit*.012)*(.7+Math.random()*.6);
+          const z=Math.random();const typ=zeit>8&&z<.16?3:z<.24?2:Math.random()<.5?0:1;
+          objs.push({x:40+Math.random()*(W-80),y:-20,v:110+Math.min(220,zeit*3.2)+Math.random()*60,a:0,t:typ})}
+        for(const o of objs){
+          o.v+=o.a*dt;o.y+=o.v*dt;
+          if(o.v>0&&o.y>NY-14&&o.y<NY+16&&!o.weg){
+            for(let p=0;p<2;p++)if(!o.weg&&Math.abs(o.x-st.n[p])<NW/2){
+              if(o.t===3){st.l--;ev.push([o.x,NY,3]);o.weg=1}
+              else if(o.t===2){st.p+=5;ev.push([o.x,NY,2]);o.weg=1}
+              else if(o.t===p){st.p++;ev.push([o.x,NY,p]);o.weg=1}
+              else{o.v=-260;o.a=620;o.x=clamp(o.x+(o.x<st.n[p]?-30:30),20,W-20)}
+            }
+          }
+          if(!o.weg&&o.y>H+10){o.weg=1;if(o.t<2){st.l--;ev.push([o.x,H-8,4])}}
+        }
+        objs=objs.filter(o=>!o.weg);
+        st.o=objs.map(o=>[Math.round(o.x),Math.round(o.y),o.t]);
+        if(st.l<=0&&!aus){st.l=0;aus=true;st.e=1;ende()}
+        effekt(ev);
+        c.send({st:{n:st.n.map(Math.round),o:st.o,p:st.p,l:st.l,e:st.e},ev});
+      });
+    }
+    function ende(){
+      let best=0;try{best=+localStorage.getItem('lm2p-eier-best')||0}catch(_){}
+      const neu=st.p>best;if(neu)try{localStorage.setItem('lm2p-eier-best',st.p)}catch(_){}
+      c.end({coop:true,win:null,text:`Ihr habt ${st.p} Punkte gesammelt.`+(neu?' Neuer Rekord!':` Rekord auf diesem Gerät: ${best}.`)});
+    }
+    c.status(`Dein Nest ist <b style="color:${FARBE[c.me]}">${c.me?'rot':'blau'}</b>. Fang deine Farbe und die goldenen Eier!`);
+    const ei=(x,y,f)=>{g.fillStyle=f;g.beginPath();g.ellipse(x,y,13,17,0,0,7);g.fill();g.strokeStyle='#0a1633';g.lineWidth=3;g.stroke();g.fillStyle='rgba(255,255,255,.5)';g.beginPath();g.ellipse(x-4,y-6,3,5,-.4,0,7);g.fill()};
+    let altT=performance.now();
+    c.frame(()=>{
+      const t=performance.now(),dt=Math.min(.05,(t-altT)/1000);altT=t;
+      const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#9db6ff');gr.addColorStop(1,'#f4f2ec');g.fillStyle=gr;g.fillRect(0,0,W,H);
+      g.fillStyle='#0a1633';g.fillRect(0,H-22,W,22);
+      for(const o of st.o){const[x,y,k]=o;
+        if(k===3){g.fillStyle='rgba(255,140,0,.5)';g.beginPath();g.moveTo(x-12,y-6);g.lineTo(x,y-50);g.lineTo(x+12,y-6);g.fill();g.fillStyle='#3a2f2a';g.beginPath();g.arc(x,y,15,0,7);g.fill();g.fillStyle='#ff7a00';g.beginPath();g.arc(x-4,y-3,4,0,7);g.fill()}
+        else ei(x,y,k===2?'#f5c518':FARBE[k])}
+      for(let p=0;p<2;p++){const x=st.n[p];g.fillStyle=FARBE[p];g.beginPath();g.moveTo(x-NW/2,NY-6);g.quadraticCurveTo(x,NY+46,x+NW/2,NY-6);g.closePath();g.fill();g.strokeStyle='#0a1633';g.lineWidth=4;g.stroke();
+        g.fillStyle='#fff';g.font='700 12px "JetBrains Mono",monospace';g.textAlign='center';g.textBaseline='middle';g.fillText(p===c.me?'DU':c.names[p].toUpperCase().slice(0,10),x,NY+12)}
+      for(const f of fx){f.vy+=600*dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.l-=dt*1.4;g.globalAlpha=Math.max(0,f.l);g.fillStyle=f.k===3?'#ff7a00':f.k===4?'#fff3c4':f.k===2?'#f5c518':FARBE[f.k];g.fillRect(f.x,f.y,6,6)}
+      g.globalAlpha=1;for(let i=fx.length-1;i>=0;i--)if(fx[i].l<=0)fx.splice(i,1);
+      g.fillStyle='#0a1633';g.font='900 34px "Big Shoulders Display",Impact,sans-serif';g.textAlign='left';g.textBaseline='top';g.fillText(st.p+' PUNKTE',16,12);
+      g.textAlign='right';g.font='26px sans-serif';g.fillText('❤️'.repeat(Math.max(0,st.l))+'🖤'.repeat(5-Math.max(0,st.l)),W-14,14);
+    });
+    return{msg(d){
+      if(c.host){if(d.in)ein[1]=d.in}
+      else if(d.st){Object.assign(st,d.st);effekt(d.ev||[]);if(d.st.e&&!aus){aus=true;ende()}}
+    }};
+  }});
+
+// ---------------------------------------------------------------------
+//  13 · Zahlengefühl
+// ---------------------------------------------------------------------
+SPIELE.push({id:'zahlen',name:'Zahlengefühl',emoji:'🔢',mode:'coop',
+  desc:'Legt eure Karten aufsteigend ab, ohne zu verraten, welche Zahlen ihr habt.',
+  how:'Jeder bekommt Karten mit Zahlen von 1 bis 100. Gemeinsam müsst ihr <b>alle Karten aufsteigend</b> ablegen. Es gibt keine Reihenfolge, wer dran ist: Wer glaubt, die niedrigste Karte zu haben, legt sie einfach. Aber <b>keine Zahlen im Chat verraten!</b> Nur Gefühl und Timing. Wird zu früh gelegt, verliert ihr ein Leben. In Level 1 hat jeder 1 Karte, in Level 2 zwei und so weiter. Schafft ihr Level 8?',
+  create(c){
+    const MAX=8;let st={lv:1,l:3,h:[[],[]],stapel:[],bereit:[false,false],phase:'bereit',ev:null};let aus=false;
+    c.el.innerHTML=`<div class="zg"><div class="zgtop"><span class="zglv"></span><span class="zgl"></span></div><div class="zgo"></div><div class="zgst"><div class="zgk gross">–</div><div class="zgalt"></div></div><div class="zgev"></div><div class="zgh"></div><div class="zgb"></div></div>`;
+    const q=s=>c.el.querySelector(s);
+    function ui(){
+      q('.zglv').textContent=`Level ${st.lv} / ${MAX}`;q('.zgl').textContent='❤️'.repeat(st.l);
+      const o=st.h[c.other].length;q('.zgo').innerHTML=`${c.n(c.other)}: `+(o?'<span class="zgr"></span>'.repeat(o):'keine Karten mehr');
+      const top=st.stapel[st.stapel.length-1];q('.zgk').textContent=top??'–';
+      q('.zgalt').textContent=st.stapel.slice(-6,-1).join(' · ');
+      const ev=st.ev;let et='';
+      if(ev&&ev.t==='zufrueh'){et=`${ev.p===c.me?'Du hast':esc(c.names[ev.p])+' hat'} die ${ev.k} gelegt, aber ${1-ev.p===c.me?'du hattest':esc(c.names[1-ev.p])+' hatte'} noch ${ev.weg.join(', ')}. Ein Leben weg!`}
+      else if(ev&&ev.t==='level')et=`Level geschafft!${ev.bonus?' Bonus: +1 Leben ❤️':''}`;
+      q('.zgev').innerHTML=et;q('.zgev').className='zgev'+(ev&&ev.t==='zufrueh'?' schlecht':ev?' gut':'');
+      const h=st.h[c.me];
+      q('.zgh').innerHTML=h.map((k,i)=>`<span class="zgk${i?' klein':''}">${k}</span>`).join('')||'<em>Alle deine Karten liegen.</em>';
+      const b=q('.zgb');
+      if(st.phase==='bereit')b.innerHTML=st.bereit[c.me]?`<p>Warte auf ${c.n(c.other)} …</p>`:'<button type="button" class="btn primary" data-a="bereit">Bereit, Konzentration!</button>';
+      else if(st.phase==='spiel')b.innerHTML=h.length?`<button type="button" class="btn primary big" data-a="lege">${h[0]} ablegen</button>`:'';
+      else b.innerHTML='';
+      if(!aus)c.status(st.phase==='bereit'?'Schaut euch eure Karten an. Wenn beide bereit sind, geht es los.':st.phase==='spiel'?'Legt die Karten in aufsteigender Reihenfolge. Keine Zahlen verraten!':'');
+    }
+    const aktion=a=>{if(c.host)hostAktion(0,a);else c.send({a})};
+    c.on(q('.zgb'),'click',e=>{const b=e.target.closest('button');if(!b)return;b.disabled=true;aktion({[b.dataset.a]:1})});
+    c.key((e,dn)=>{if(dn&&e.key===' '&&!e.repeat&&st.phase==='spiel'){e.preventDefault();aktion({lege:1})}});
+    const send=()=>{c.send({st});ui()};
+    function geben(){const z=shuffle([...Array(100)].map((_,i)=>i+1),Math.random);st.h=[z.slice(0,st.lv).sort((a,b)=>a-b),z.slice(st.lv,st.lv*2).sort((a,b)=>a-b)];st.stapel=[];st.bereit=[false,false];st.phase='bereit'}
+    function hostAktion(p,a){
+      if(aus)return;
+      if(a.bereit&&st.phase==='bereit'){st.bereit[p]=true;if(st.bereit[0]&&st.bereit[1]){st.phase='spiel';st.ev=null}send()}
+      if(a.lege&&st.phase==='spiel'&&st.h[p].length){
+        const k=st.h[p].shift(),weg=st.h[1-p].filter(x=>x<k);st.stapel.push(k);
+        if(weg.length){st.l--;st.h[1-p]=st.h[1-p].filter(x=>x>k);st.ev={t:'zufrueh',p,k,weg}}else st.ev=null;
+        if(st.l<=0){st.phase='aus';send();fertig(false);return}
+        if(!st.h[0].length&&!st.h[1].length){
+          if(st.lv>=MAX){st.phase='aus';send();fertig(true);return}
+          const bonus=(st.lv===2||st.lv===5)&&st.l<5;if(bonus)st.l++;
+          st.phase='pause';st.ev={t:'level',bonus};send();
+          c.after(2200,()=>{st.lv++;geben();send()});return;
+        }
+        send();
+      }
+    }
+    function fertig(win){if(aus)return;aus=true;ui();c.end({coop:true,win,text:win?'Alle 8 Level geschafft. Ihr seid ein eingespieltes Team!':`Ihr habt es bis Level ${st.lv} geschafft.`})}
+    if(c.host){geben();send()}
+    ui();
+    return{msg(d){
+      if(c.host){if(d.a)hostAktion(1,d.a)}
+      else if(d.st){st=d.st;ui();if(st.phase==='aus'&&!aus){aus=true;const win=st.l>0;c.end({coop:true,win,text:win?'Alle 8 Level geschafft. Ihr seid ein eingespieltes Team!':`Ihr habt es bis Level ${st.lv} geschafft.`})}}
+    }};
+  }});
+
+// ---------------------------------------------------------------------
+//  14 · Montagsmaler
+// ---------------------------------------------------------------------
+const MALWORTE=['Haus','Baum','Sonne','Katze','Hund','Auto','Fahrrad','Pizza','Brille','Rakete','Schneemann','Regenbogen','Gitarre','Elefant','Giraffe','Schlange','Fisch','Blume','Wolke','Blitz','Berg','Insel','Burg','Krone','Schlüssel','Uhr','Handy','Computer','Lampe','Stuhl','Bett','Zahnbürste','Banane','Apfel','Erdbeere','Eis','Kuchen','Ballon','Drache','Dino','Pirat','Schatz','Schiff','Anker','Flugzeug','Hubschrauber','Zug','Brücke','Leuchtturm','Zelt','Lagerfeuer','Mond','Stern','Vulkan','Kaktus','Pinguin','Eule','Spinne','Schmetterling','Schnecke','Biene','Hai','Krake','Roboter','Geist','Hexe','Zauberer','Ritter','Schwert','Ampel','Fußball','Pokal','Kamera','Brief','Herz','Regenschirm','Schneeflocke','Tannenbaum','Geschenk','Kerze','Hamburger','Pommes','Brezel','Kaffee','Hut','Schuh','Socke','Zahn','Auge','Nase','Hand','Skateboard','Schaukel','Bagger','Kuh','Schwein','Maus','Käse','Tomate','Karotte','Pilz','Wal','Frosch','Igel','Tisch','Fenster','Tür','Treppe','Sofa','Badewanne','Toilette','Gabel','Topf','Flasche','Glühbirne','Batterie','Mikrofon','Kopfhörer','Trompete','Trommel','Zebra','Löwe','Affe','Bär','Hase','Ente','Huhn','Ei','Nest','Feder','Kompass','Landkarte','Rucksack','Koffer','Laterne','Wurm'];
+SPIELE.push({id:'malen',name:'Montagsmaler',emoji:'🎨',mode:'coop',
+  desc:'Einer malt, der andere rät. Zusammen sammelt ihr so viele Punkte wie möglich.',
+  how:'Abwechselnd malt einer einen Begriff, den nur er sieht, und der andere tippt Vermutungen ein. Je schneller richtig geraten wird, desto mehr Punkte bekommt ihr <b>gemeinsam</b>. 6 Runden mit je 80 Sekunden. Buchstaben und Zahlen malen ist verboten!',
+  create(c){
+    const W=800,H=500,RUNDEN=6,ZEIT=80,FARBEN=['#0a1633','#e2342b','#1740d8','#1f9d55','#f5c518','#ff7a00','#8b4513','#ffffff'],GROESSE=[4,10,26];
+    const worte=shuffle(MALWORTE.slice(),rngFrom(c.seed));
+    let rd=-1,maler=0,t=ZEIT,phase='',punkte=0,richtig=0,aus=false,farbe=0,groesse=0;
+    c.el.innerHTML=`<div class="mm"><div class="mmtop"><span class="mmwort"></span><span class="mmzeit"></span><span class="mmpkt"></span></div><div class="mmcv"></div>
+      <div class="mmtools">${FARBEN.map((f,i)=>`<button type="button" data-f="${i}" style="background:${f}" aria-label="Farbe ${i+1}"></button>`).join('')}<span class="sep"></span>${GROESSE.map((s,i)=>`<button type="button" data-g="${i}" aria-label="Pinsel ${i+1}"><i style="width:${Math.max(4,s*.6)}px;height:${Math.max(4,s*.6)}px"></i></button>`).join('')}<button type="button" class="btn sm" data-x="1">🗑 Löschen</button></div>
+      <form class="mmf"><input maxlength="40" autocomplete="off" placeholder="Was wird gemalt?" aria-label="Deine Vermutung"><button class="btn primary sm">Raten</button></form><div class="mmlog"></div></div>`;
+    const q=s=>c.el.querySelector(s);
+    const holder=q('.mmcv');const{g,cv,pos}=leinwand({el:holder},W,H);
+    const tools=q('.mmtools'),form=q('.mmf'),inp=form.querySelector('input'),log=q('.mmlog');
+    const leeren=()=>{g.fillStyle='#fff';g.fillRect(0,0,W,H)};
+    const strich=s=>{const[x0,y0,x1,y1,f,gr]=s;g.strokeStyle=FARBEN[f];g.lineWidth=GROESSE[gr];g.lineCap='round';g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke()};
+    const wort=()=>worte[rd];
+    const ichMale=()=>maler===c.me;
+    function ui(){
+      const w=wort()||'';
+      q('.mmwort').innerHTML=phase==='rv'?`Es war: <b>${esc(w)}</b>`:ichMale()?`Mal: <b>${esc(w)}</b>`:'Rate: <b class="mono">'+[...w].map((ch,i)=>i===0&&t<=40?esc(ch):'_').join(' ')+'</b>';
+      q('.mmzeit').textContent=phase==='mal'?`⏱ ${t}s`:'';q('.mmpkt').textContent=`Runde ${rd+1}/${RUNDEN} · ${punkte} Punkte`;
+      tools.style.display=ichMale()&&phase==='mal'?'':'none';form.style.display=!ichMale()&&phase==='mal'?'':'none';
+      cv.classList.toggle('malen',ichMale()&&phase==='mal');
+      tools.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('sel',+b.dataset.f===farbe));tools.querySelectorAll('[data-g]').forEach(b=>b.classList.toggle('sel',+b.dataset.g===groesse));
+      if(!aus)c.status(phase==='mal'?(ichMale()?'Du malst! '+c.n(c.other)+' rät.':c.n(c.other)+' malt. Tipp deine Vermutungen ein!'):'');
+    }
+    const eintrag=(html,k)=>{const d=document.createElement('div');d.className=k||'';d.innerHTML=html;log.prepend(d)};
+    function anwenden(m){
+      if(m.rd!=null){rd=m.rd;maler=(c.seed+rd)%2;t=ZEIT;phase='mal';leeren();log.innerHTML='';ui();if(!ichMale())setTimeout(()=>inp.focus(),50)}
+      if(m.t!=null){t=m.t;ui()}
+      if(m.gs){eintrag(`<b style="color:${FARBE[1-maler]}">${1-maler===c.me?'Du':esc(c.names[1-maler])}:</b> ${esc(m.gs)}`)}
+      if(m.rv){phase='rv';punkte=m.rv.sum;if(m.rv.ok)richtig++;eintrag(m.rv.ok?`✅ Richtig! +${m.rv.pts} Punkte`:'⌛ Zeit abgelaufen.',m.rv.ok?'gut':'schlecht');ui()}
+      if(m.ende&&!aus){aus=true;c.end({coop:true,win:null,text:`Ihr habt zusammen ${punkte} Punkte. ${richtig} von ${RUNDEN} Bildern erraten.`})}
+    }
+    const send=m=>{anwenden(m);c.send({m})};
+    let tick=null;
+    function hostRunde(){
+      if(rd+1>=RUNDEN){send({ende:1});return}
+      send({rd:rd+1});
+      if(tick)clearInterval(tick);
+      tick=c.every(1000,()=>{if(phase!=='mal')return;const nt=t-1;send({t:nt});if(nt<=0)aufloesen(false)});
+    }
+    function aufloesen(ok){if(phase!=='mal')return;const pts=ok?2+Math.ceil(t/10):0;send({rv:{ok,pts,sum:punkte+pts}});c.after(3200,hostRunde)}
+    const passt=gs=>{const a=norm(gs),b=norm(wort());return a===b||a.replace(/^(der|die|das|ein|eine|einen)/,'')===b};
+    function hostRaten(gs){if(phase!=='mal')return;send({gs});if(passt(gs))aufloesen(true)}
+    c.on(form,'submit',e=>{e.preventDefault();const v=inp.value.trim().slice(0,40);inp.value='';if(!v||phase!=='mal'||ichMale())return;if(c.host)hostRaten(v);else c.send({rate:v})});
+    // Malen
+    let zuletzt=null,puffer=[];
+    c.on(cv,'pointerdown',e=>{if(!ichMale()||phase!=='mal')return;e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}const p=pos(e);zuletzt=p;const s=[p[0],p[1],p[0]+.1,p[1],farbe,groesse].map((v,i)=>i<4?Math.round(v*10)/10:v);strich(s);puffer.push(s)});
+    c.on(cv,'pointermove',e=>{if(!zuletzt)return;const p=pos(e);const s=[zuletzt[0],zuletzt[1],p[0],p[1]].map(v=>Math.round(v*10)/10).concat([farbe,groesse]);strich(s);puffer.push(s);zuletzt=p});
+    const auf=()=>{zuletzt=null};c.on(cv,'pointerup',auf);c.on(cv,'pointercancel',auf);
+    c.every(40,()=>{if(puffer.length){c.send({ln:puffer});puffer=[]}});
+    c.on(tools,'click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.f!=null)farbe=+b.dataset.f;else if(b.dataset.g!=null)groesse=+b.dataset.g;else if(b.dataset.x){leeren();puffer=[];c.send({clr:1})}ui()});
+    leeren();
+    if(c.host)c.after(500,hostRunde);
+    ui();
+    return{msg(d){
+      if(d.ln)d.ln.forEach(strich);
+      if(d.clr)leeren();
+      if(c.host){if(d.rate)hostRaten(String(d.rate).slice(0,40))}
+      else if(d.m)anwenden(d.m);
+    }};
+  }});
