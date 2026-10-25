@@ -304,6 +304,103 @@
   .mmf input{flex:1;min-width:0;padding:10px 12px;border:3px solid var(--ink);font-size:18px}
   .mmlog{margin-top:10px;max-height:150px;overflow-y:auto;font-size:15px}
   .mmlog div{padding:3px 0;border-bottom:1px dashed #ccc}.mmlog .gut{color:#1f9d55;font-weight:700}.mmlog .schlecht{color:var(--red);font-weight:700}
+  /* Bombe: Level und neue Module */
+  .bwahl h4,.bres h4{margin:0 0 12px;font-family:var(--disp);font-weight:900;font-size:30px;text-transform:uppercase}
+  .bwl{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-bottom:12px}
+  .bwl button{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 14px 10px;text-align:left;background:#fff;border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink)}
+  .bwl button:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--red)}
+  .bwl button b{font-family:var(--disp);font-weight:900;font-size:34px;line-height:1}
+  .bwl button span{font-family:var(--disp);font-weight:800;font-size:20px;text-transform:uppercase}
+  .bwl button small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .bwl button i{position:absolute;top:8px;right:10px;font-style:normal;color:#1f9d55;font-weight:900;font-size:22px}
+  .bwl button.fertig{background:#eaf7ef}
+  .bres{margin:0 0 16px;padding:14px 16px;background:#fff;border:4px solid var(--ink);animation:pop .3s}
+  .bres.gut{box-shadow:8px 8px 0 #1f9d55}.bres.schlecht{box-shadow:8px 8px 0 var(--red)}
+  .bres p{margin:0 0 12px}.bres div{display:flex;flex-wrap:wrap;gap:10px}
+  .blv{margin:0 0 10px;font-family:var(--disp);font-weight:900;font-size:24px;text-transform:uppercase}
+  .bmn{position:absolute;top:6px;left:8px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#2a2f3a}
+  .bsim{display:grid;grid-template-columns:repeat(2,64px);gap:10px}
+  .bsim button{height:64px;background:var(--k);border:3px solid var(--ink);opacity:.45;border-radius:8px;touch-action:none}
+  .bsim button.an{opacity:1;box-shadow:0 0 18px var(--k),inset 0 0 0 3px #fff}
+  .bpw{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .bpwr{display:flex;gap:4px}
+  .bpwr div{display:flex;flex-direction:column;align-items:center}
+  .bpwr button{width:34px;height:26px;background:#f4f2ec;border:2px solid var(--ink);font-size:12px;line-height:1}
+  .bpwr b{display:grid;place-items:center;width:34px;height:42px;background:#c6f5c0;border:2px solid var(--ink);font-family:var(--mono);font-size:24px}
+  .bpwok{padding:6px 16px;background:#f4f2ec;border:3px solid var(--ink);font-family:var(--mono);font-weight:800}
+  .bmem{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .bmemd{display:grid;place-items:center;width:84px;height:62px;background:#111;color:#3dff6e;font-family:var(--mono);font-weight:800;font-size:40px;border:3px solid var(--ink)}
+  .bmemk{display:flex;gap:6px;min-height:52px}
+  .bmemk button{width:40px;height:52px;background:#f4f2ec;border:3px solid var(--ink);font-family:var(--mono);font-weight:800;font-size:22px}
+  .bmems{display:flex;gap:5px}.bmems i{width:12px;height:12px;border:2px solid var(--ink);background:#333}.bmems i.an{background:#3dff6e}
+  .hbw{font-family:var(--mono);font-size:13px;line-height:1.8;word-spacing:.4em}
+  /* Reversi */
+  .rv{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;max-width:min(520px,62vh);margin:0 auto;padding:8px;background:var(--ink);border:4px solid var(--ink);box-shadow:8px 8px 0 var(--blue)}
+  .rv>div{position:relative;aspect-ratio:1;background:#1f9d55;display:grid;place-items:center}
+  .rv.mein>div.ok{cursor:pointer}
+  .rv.mein>div.ok::after{content:"";width:26%;height:26%;border-radius:50%;background:rgba(255,255,255,.55)}
+  .rv.mein>div.ok:hover{background:#2bb767}
+  .rs{display:block;width:80%;height:80%;border-radius:50%;border:3px solid rgba(0,0,0,.3)}
+  .rs.p0{background:var(--blue)}.rs.p1{background:var(--red)}
+  .rs.neu{box-shadow:0 0 0 3px #fff}.rs.flip{animation:flip .35s}
+  @keyframes flip{50%{transform:scaleX(0)}}
+  /* Mäxchen */
+  .mx{max-width:620px;margin:0 auto;text-align:center}
+  .mxl{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:15px}
+  .mxb{margin:16px 0;padding:18px;background:#fff;border:4px solid var(--ink);box-shadow:8px 8px 0 var(--blue)}
+  .mxw{font-size:clamp(70px,16vw,110px);line-height:1;min-height:1em}
+  .mxw .vd{display:inline-grid;place-items:center;width:.82em;height:.82em;margin:0 .06em;background:var(--ink);color:#fff;border-radius:.12em;font-family:var(--disp);font-size:.8em;vertical-align:middle}.mxw .vd.leer{opacity:.25}
+  .mxa{margin-top:8px;font-size:20px}.mxa b{font-family:var(--disp);font-size:30px;text-transform:uppercase}
+  .mxi{min-height:26px;margin-bottom:12px}
+  .mxk{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .mxk>.btn{margin:0 6px}
+  .mxk p{margin:0;font-weight:700}
+  .mxg{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+  .mxg button{min-width:58px;padding:8px 10px 6px;background:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);font-family:var(--disp);font-weight:800;font-size:18px}
+  .mxg button.wahr{background:#c6f5c0}
+  .mxg button:hover{background:var(--ink);color:#fff}
+  /* Maulwurf */
+  .mw{max-width:520px;margin:0 auto}
+  .mwtop{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;font-size:18px}.mwtop b{font-family:var(--disp);font-size:26px}
+  .mwt{font-family:var(--mono);font-weight:800}
+  .mwg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:14px;background:#8bc34a;border:4px solid var(--ink);box-shadow:8px 8px 0 var(--blue);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+  .mwg button{position:relative;aspect-ratio:1;border-radius:50%;background:radial-gradient(ellipse at 50% 70%,#3b2a1a 0 55%,#6b4a2b 56%);border:4px solid var(--ink);overflow:hidden;cursor:pointer;touch-action:manipulation}
+  .mwg button span{display:block;font-size:clamp(40px,11vw,64px);line-height:1;transform:translateY(110%);transition:transform .09s}
+  .mwg button.raus span{transform:none}
+  .mwg button.klopf{transform:scale(.94)}
+  .mwg button.treff{box-shadow:0 0 0 5px var(--hf)}
+  .mwg button.treff::after{content:attr(data-pk);position:absolute;inset:0;display:grid;place-items:center;font-family:var(--disp);font-weight:900;font-size:34px;color:#fff;text-shadow:0 0 6px var(--hf),2px 2px 0 var(--ink);animation:steig .7s forwards}
+  @keyframes steig{to{transform:translateY(-40%);opacity:0}}
+  /* Codewörter */
+  .cwtop{display:flex;justify-content:space-between;font-family:var(--disp);font-weight:900;font-size:22px;text-transform:uppercase;margin-bottom:8px}
+  .cwh{min-height:30px;margin-bottom:10px;font-size:15px}
+  .cwhw{display:inline-block;padding:2px 10px;background:var(--ink);color:#fff;font-family:var(--disp);font-size:22px;text-transform:uppercase}
+  .cwg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .cwc{position:relative;min-height:54px;padding:6px 3px;background:#fffdf3;border:3px solid #c9c4b6;font-weight:700;font-size:clamp(11px,2.4vw,16px);overflow-wrap:anywhere;hyphens:auto}
+  .cwc.mg{border-color:#1f9d55;box-shadow:inset 0 0 0 2px #1f9d55}
+  .cwc.ms{border-color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+  .cwc.ms::before{content:"☠";position:absolute;top:1px;right:3px;font-size:11px}
+  .cwc.nt::after{content:"";position:absolute;bottom:3px;left:3px;width:10px;height:10px;border-radius:50%;background:#bdb7a8}
+  .cwc.nx{opacity:.45}
+  .cwc.gef{background:#1f9d55;color:#fff;border-color:#1f9d55}
+  .cwc.tot{background:var(--ink);color:#fff}
+  .cwc:not(:disabled){cursor:pointer}.cwc:not(:disabled):hover{background:#dfe6ff}
+  .cwc:disabled{color:inherit}
+  .cwk{margin-top:14px}
+  .cwf{display:flex;gap:8px;flex-wrap:wrap}
+  .cwf input{flex:1;min-width:140px;padding:8px 10px;border:3px solid var(--ink);font-size:17px}
+  .cwf select{padding:6px;border:3px solid var(--ink);font-size:17px;background:#fff}
+  /* Echo-Kette */
+  .ek{max-width:420px;margin:0 auto;text-align:center}
+  .ekl{font-family:var(--disp);font-weight:900;font-size:30px;text-transform:uppercase;margin-bottom:10px}
+  .ekg{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:14px;background:var(--ink);border:4px solid var(--ink);box-shadow:8px 8px 0 var(--blue);border-radius:50%;aspect-ratio:1;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+  .ekg button{background:var(--k);border:0;opacity:.55;font-family:var(--disp);font-weight:900;font-size:28px;color:rgba(255,255,255,.7);touch-action:manipulation}
+  .ekg button:nth-child(1){border-top-left-radius:100%}.ekg button:nth-child(2){border-top-right-radius:100%}.ekg button:nth-child(3){border-bottom-left-radius:100%}.ekg button:nth-child(4){border-bottom-right-radius:100%}
+  .ekg.mein button{cursor:pointer;opacity:.8}
+  .ekg button.an{animation:ekan .35s}
+  @keyframes ekan{0%{opacity:1;filter:brightness(1.5);box-shadow:0 0 30px var(--k)}}
+  .ekg button.falsch{opacity:1;outline:6px solid #fff}.ekg button.richtig{opacity:1;animation:blink .4s 5 alternate}
+  .ekp{min-height:26px;margin-top:14px;font-family:var(--mono);letter-spacing:.1em;overflow-wrap:anywhere}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -325,7 +422,7 @@
   <section class="screen on" id="sStart">
     <p class="hello">// spielen wir eine Runde?</p>
     <h1 class="big">2 Spieler <span>Spiele</span></h1>
-    <p class="lead">Erstell einen Raum und gib den <b>Raumcode</b> an deine Mitspielerin oder deinen Mitspieler weiter. Dann spielt ihr <b>14 Spiele</b> miteinander oder gegeneinander, jeder an seinem eigenen Gerät. Kein Konto, kein Download.</p>
+    <p class="lead">Erstell einen Raum und gib den <b>Raumcode</b> an deine Mitspielerin oder deinen Mitspieler weiter. Dann spielt ihr <b>20 Spiele</b> miteinander oder gegeneinander, jeder an seinem eigenen Gerät. Kein Konto, kein Download.</p>
     <div class="err" id="err"></div>
     <div class="namerow">
       <label class="lb" for="name">Dein Name</label>
