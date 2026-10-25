@@ -1,0 +1,17 @@
+{
+  "id": "./zweiSpieler.html",
+  "name": "2 Spieler Spiele",
+  "short_name": "2 Spieler",
+  "description": "20 Spiele für zwei: Raum erstellen, Code weitergeben, losspielen.",
+  "lang": "de",
+  "start_url": "./zweiSpieler.html",
+  "scope": "./zweiSpieler.html",
+  "display": "standalone",
+  "background_color": "#f4f2ec",
+  "theme_color": "#0a1633",
+  "icons": [
+    { "src": "img/icons/zweispieler-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/icons/zweispieler-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "img/icons/zweispieler-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
