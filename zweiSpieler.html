@@ -218,6 +218,35 @@
     .chatbg{display:block;position:fixed;inset:0;z-index:44;background:rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .3s}
     .chatbg.on{opacity:1;pointer-events:auto}
   }
+  /* Startansicht: Spiele sofort sehen, unten der Knopf fürs Fenster */
+  #sStart .install{margin:22px auto 0}
+  @media (max-width:700px){
+    #sStart .hero{gap:4px;margin:0}
+    #sStart .jc{transform:scale(.62);margin:0 -6px}
+    #sStart h1.big{font-size:42px}
+    #sStart .lead{margin:6px auto 16px;font-size:14px}
+  }
+  .mitbar{position:fixed;left:0;right:0;bottom:0;z-index:35;padding:10px max(16px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));background:rgba(242,242,247,.86);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:.5px solid rgba(0,0,0,.18);text-align:center}
+  .mitbar .btn{width:100%;max-width:460px}
+  #sStart{padding-bottom:40px}
+  /* Fenster: unten hochfahrendes Blatt am Handy, mittig auf großen Bildschirmen */
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 16px calc(20px + env(safe-area-inset-bottom));border-radius:14px 14px 0 0;background:var(--bg);
+    transform:translateY(105%);visibility:hidden;transition:transform .3s cubic-bezier(.2,.9,.3,1),visibility 0s .3s}
+  .sheet.open{transform:none;visibility:visible;transition:transform .3s cubic-bezier(.2,.9,.3,1)}
+  .sheet h4{position:sticky;top:0;z-index:1;display:flex;align-items:center;margin:0 -16px 14px;padding:18px 12px 10px 16px;background:var(--bg);font-family:var(--disp);font-weight:700;font-size:20px}
+  .sheet h4::before{content:"";position:absolute;left:50%;top:6px;width:36px;height:5px;margin-left:-18px;border-radius:3px;background:var(--line)}
+  .sheet h4 button{margin-left:auto;height:32px;padding:0 12px;border:0;border-radius:16px;background:var(--fill);color:var(--dim);font-size:14px;font-weight:600}
+  .sheetbg{position:fixed;inset:0;z-index:49;background:rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .3s}
+  .sheetbg.on{opacity:1;pointer-events:auto}
+  .wahl{display:none}.wahl.on{display:block;margin:-6px 0 12px!important;padding:8px 12px;border-radius:10px;background:#e3f3fb;color:var(--p1d)!important}
+  .wahl b{color:var(--txt)}
+  @media (min-width:701px){
+    .sheet{left:50%;right:auto;bottom:auto;top:50%;width:min(500px,calc(100% - 32px));max-height:min(720px,calc(100dvh - 48px));padding-bottom:20px;border-radius:16px;
+      transform:translate(-50%,-46%);opacity:0;transition:transform .25s,opacity .25s,visibility 0s .25s}
+    .sheet.open{transform:translate(-50%,-50%);opacity:1;transition:transform .25s,opacity .25s}
+    .sheet h4::before{display:none}
+    .sheet h4{padding-top:14px}
+  }
   .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));z-index:60;max-width:calc(100% - 32px);transform:translate(-50%,140%);padding:10px 16px;border-radius:12px;background:rgba(28,28,30,.92);color:#fff;font-size:15px;font-weight:500;transition:transform .25s,opacity .25s;opacity:0;pointer-events:none}
   .toast.on{transform:translate(-50%,0);opacity:1}
 
@@ -569,7 +598,17 @@
       <h1 class="big">2 Spieler<span>21 Spiele für zwei</span></h1>
       <span class="jc p2" aria-hidden="true"></span>
     </div>
-    <p class="lead">Jeder spielt am eigenen Handy. Einer erstellt einen Raum, der andere gibt den Code ein. Kein Konto, kein Download.</p>
+    <p class="lead">Jeder spielt am eigenen Handy. Tipp ein Spiel an oder unten auf den Knopf, dann erstellst du einen Raum oder trittst einem bei. Kein Konto, kein Download.</p>
+    <div class="filt" id="filt0"><button type="button" class="on" data-f="">Alle</button><button type="button" data-f="vs">Gegeneinander</button><button type="button" data-f="coop">Miteinander</button></div>
+    <div class="games" id="games0"></div>
+    <div class="install" id="install"><b>Als App installieren</b>Tippe unten auf <svg class="ios-share" viewBox="0 0 18 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 13V1M5 5l4-4 4 4M5 8H2v11h14V8h-3"/></svg> „Teilen“ und dann auf „Zum Home-Bildschirm“. Dann startet es wie eine richtige App, ohne Browserleiste.<button type="button" id="installX" aria-label="Hinweis schließen">✕</button></div>
+    <div class="mitbar"><button class="btn primary" type="button" id="bMit">Raum erstellen oder beitreten</button></div>
+  </section>
+
+  <!-- ===== Fenster: Raum erstellen / beitreten ===== -->
+  <div class="sheetbg" id="sheetbg"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetH">
+    <h4 id="sheetH">Mitspielen <button type="button" id="bSheetX">Fertig</button></h4>
     <div class="menu">
     <div class="err" id="err"></div>
     <div class="namerow">
@@ -580,6 +619,7 @@
       <div class="card">
         <h3>Raum erstellen</h3>
         <p>Du bekommst einen Code, den du weitergibst.</p>
+        <p class="wahl" id="wahl"></p>
         <button class="btn primary" id="bCreate" type="button">Neuen Raum erstellen</button>
       </div>
       <form class="card" id="fJoin">
@@ -589,9 +629,8 @@
         <button class="btn red" type="submit">Beitreten</button>
       </form>
     </div>
-    <div class="install" id="install"><b>Als App installieren</b>Tippe unten auf <svg class="ios-share" viewBox="0 0 18 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 13V1M5 5l4-4 4 4M5 8H2v11h14V8h-3"/></svg> „Teilen“ und dann auf „Zum Home-Bildschirm“. Dann startet es wie eine richtige App, ohne Browserleiste.<button type="button" id="installX" aria-label="Hinweis schließen">✕</button></div>
     </div>
-  </section>
+  </div>
 
   <!-- ===== Verbinden / Warten ===== -->
   <section class="screen" id="sWait">
@@ -663,7 +702,7 @@
 const $=s=>document.querySelector(s);
 const PREFIX='lm-zweispieler-';
 const LOCAL=new URLSearchParams(location.search).has('lokal');
-const S={me:0,host:false,names:['',''],score:[0,0],code:'',open:false,G:null,seed:0,game:null,ctx:null};
+const S={me:0,host:false,names:['',''],score:[0,0],code:'',open:false,G:null,seed:0,game:null,ctx:null,wunsch:''};
 let tr=null,joinTimer=null;
 
 function newCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
@@ -684,7 +723,14 @@ function kopf(){
   $('#nCode').textContent=S.code;
   $('#navTtl').textContent=sc==='sWait'?'Neuer Raum':sc==='sJoin'?'Beitreten':imSpiel&&S.G?S.G.name:sc==='sRoom'?'Spielauswahl':'2 Spieler';
 }
-function showErr(m){const e=$('#err');e.textContent=m||'';e.classList.toggle('on',!!m)}
+function showErr(m){const e=$('#err');e.textContent=m||'';e.classList.toggle('on',!!m);if(m)fenster(true)}
+// Fenster zum Raum erstellen/beitreten. Mit Spiel-ID: dieses Spiel startet, sobald jemand deinem Raum beitritt.
+function fenster(auf,id){
+  if(auf&&id!==undefined){S.wunsch=id;const G=SPIELE.find(g=>g.id===id);
+    $('#wahl').innerHTML=G?`<b>${G.name}</b> startet, sobald jemand deinem Raum beitritt.`:'';$('#wahl').classList.toggle('on',!!G)}
+  $('#sheet').classList.toggle('open',auf);$('#sheetbg').classList.toggle('on',auf);
+  if(!auf){$('#name').blur();$('#codeIn').blur()}
+}
 const lsGet=(k,d)=>{try{return localStorage.getItem(k)??d}catch(e){return d}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 
@@ -803,7 +849,7 @@ function connect(){
     open:onOpen,data:onData,close:onClose,error:onErr};
   tr=S.host?hostTransport(S.code,h,LOCAL):gastTransport(S.code,h,LOCAL);
 }
-function hangup(){clearTimeout(joinTimer);if(tr){try{tr.close()}catch(_){}}tr=null;S.open=false;stopGame();wachHalten(false)}
+function hangup(){fenster(false);clearTimeout(joinTimer);if(tr){try{tr.close()}catch(_){}}tr=null;S.open=false;stopGame();wachHalten(false)}
 function createRoom(){hangup();S.host=true;S.me=0;S.names=[myName(),''];S.code=newCode();$('#bigCode').textContent='····';$('#waitTxt').textContent='Raum wird erstellt …';show('sWait');connect()}
 function joinRoom(code){
   code=(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -844,6 +890,7 @@ function enterRoom(){
   sys(`${S.names[1-S.me]} ist im Raum. Viel Spaß!`);
   renderScore();showLobby();show('sRoom');wachHalten(true);haptik('sieg');
   if(!(history.state&&history.state.zs))history.pushState({zs:'raum'},'');
+  if(S.host&&S.wunsch){const id=S.wunsch;S.wunsch='';setTimeout(()=>startGame(id),400)}
 }
 function renderScore(){
   const n=p=>`<span class="pl p${p}">${p===1&&p===S.me?'<small>DU</small>':''}<span>${esc(S.names[p])}</span>${p===0&&p===S.me?'<small>DU</small>':''}</span>`;
@@ -854,7 +901,7 @@ function renderScore(){
 let filter='';
 function renderGames(){
   const TON=['#ffe1dc','#d9f0fb','#fff0c7','#dcf3e3','#ece3fa','#ffe0ee','#e2e6ee','#fde6d2'];
-  $('#games').innerHTML=SPIELE.filter(g=>!filter||g.mode===filter).map(g=>`<button type="button" class="gc" data-id="${g.id}" style="--k:${ICONS[g.id]?.bg||TON[SPIELE.indexOf(g)%TON.length]}"><span class="tag ${g.mode}">${g.mode==='vs'?'Gegeneinander':'Miteinander'}</span><span class="em">${ICONS[g.id]?.svg||g.emoji}</span><h3>${g.name}</h3><p>${g.desc}</p></button>`).join('');
+  $('#games').innerHTML=$('#games0').innerHTML=SPIELE.filter(g=>!filter||g.mode===filter).map(g=>`<button type="button" class="gc" data-id="${g.id}" style="--k:${ICONS[g.id]?.bg||TON[SPIELE.indexOf(g)%TON.length]}"><span class="tag ${g.mode}">${g.mode==='vs'?'Gegeneinander':'Miteinander'}</span><span class="em">${ICONS[g.id]?.svg||g.emoji}</span><h3>${g.name}</h3><p>${g.desc}</p></button>`).join('');
 }
 function showLobby(){const vonSpiel=!$('#vGame').hidden;$('#vLobby').hidden=false;$('#vGame').hidden=true;renderGames();if(vonSpiel){gleite($('#vLobby'),true);scrollTo(0,0)}kopf();if(history.state&&history.state.zs==='spiel')history.back()}
 function pick(id){if(S.host)startGame(id);else{send({t:'want',id});toast('Spiel wird gestartet …')}}
@@ -937,7 +984,12 @@ const copy=(t,ok)=>{(navigator.clipboard?navigator.clipboard.writeText(t):Promis
 $('#bCopyCode').onclick=()=>copy(S.code,'Code kopiert!');
 $('#bCopyLink').onclick=()=>{if(navigator.share&&matchMedia('(pointer:coarse)').matches)navigator.share({title:'2 Spieler Spiele',text:`Spiel mit mir! Raumcode: ${S.code}`,url:link()}).catch(()=>{});else copy(link(),'Einladungslink kopiert!')};
 $('#games').onclick=e=>{const b=e.target.closest('.gc');if(b)pick(b.dataset.id)};
-$('#filt').onclick=e=>{const b=e.target.closest('button');if(!b)return;filter=b.dataset.f;$('#filt').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));renderGames()};
+$('#games0').onclick=e=>{const b=e.target.closest('.gc');if(b)fenster(true,b.dataset.id)};
+document.querySelectorAll('.filt').forEach(f=>f.onclick=e=>{const b=e.target.closest('button');if(!b)return;filter=b.dataset.f;document.querySelectorAll('.filt button').forEach(x=>x.classList.toggle('on',x.dataset.f===filter));renderGames()});
+$('#bMit').onclick=()=>fenster(true,'');
+$('#bSheetX').onclick=$('#sheetbg').onclick=()=>fenster(false);
+{let y0=null;const h=$('#sheet h4');h.addEventListener('touchstart',e=>{y0=e.touches[0].clientY},{passive:true});
+ h.addEventListener('touchend',e=>{if(y0!=null&&e.changedTouches[0].clientY-y0>50)fenster(false);y0=null})}
 const zurLobby=()=>{stopGame();send({t:'quit'});showLobby()};
 $('#bBack').onclick=$('#bLobby').onclick=zurLobby;
 $('#bAgain').onclick=()=>{if(S.G)pick(S.G.id)};
@@ -992,11 +1044,13 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 function zurueck(){
   const sc=document.querySelector('.screen.on')?.id;
   if($('#chat').classList.contains('open'))return chatAuf(false);
+  if($('#sheet').classList.contains('open'))return fenster(false);
   if(sc==='sRoom'&&!$('#vGame').hidden)return zurLobby();
   if(sc==='sRoom'){if(confirm('Raum verlassen? Die Verbindung wird getrennt.'))verlassen();return}
   if(sc==='sWait'||sc==='sJoin')verlassen();
 }
 $('#navBack').onclick=zurueck;
+addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#sheet').classList.contains('open'))fenster(false)});
 addEventListener('popstate',()=>{
   const sc=document.querySelector('.screen.on')?.id;
   if(sc!=='sRoom')return;
@@ -1004,7 +1058,7 @@ addEventListener('popstate',()=>{
   if(history.state&&history.state.zs)return;
   if(confirm('Raum verlassen? Die Verbindung wird getrennt.'))verlassen();else history.pushState({zs:'raum'},'');
 });
-kopf();
+kopf();renderGames();
 
 // Einladungslink: ?raum=ABCD
 const qRaum=new URLSearchParams(location.search).get('raum');
