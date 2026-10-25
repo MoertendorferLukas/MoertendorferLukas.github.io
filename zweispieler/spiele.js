@@ -8,7 +8,7 @@
 //  create(c) gibt {msg(d)} zurück: msg bekommt alles, was der andere schickt.
 // =====================================================================
 
-const FARBE=['#1740d8','#e2342b'];
+const FARBE=['#3d6bff','#ff3d68'];
 const esc=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 function rngFrom(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const ri=(r,n)=>Math.floor(r()*n);
@@ -200,9 +200,9 @@ SPIELE.push({id:'pong',name:'Pong',emoji:'🏓',mode:'vs',
     }
     c.frame(()=>{
       if(st.h!==altH){altH=st.h;blitz=1}blitz*=.88;
-      g.fillStyle='#0a1633';g.fillRect(0,0,W,H);
+      g.fillStyle='#1b1140';g.fillRect(0,0,W,H);
       g.fillStyle='rgba(255,255,255,.16)';for(let y=10;y<H;y+=28)g.fillRect(W/2-2,y,4,14);
-      g.font='800 64px "Big Shoulders Display",Impact,sans-serif';g.textAlign='center';g.textBaseline='top';
+      g.font='46px "Lilita One",system-ui,sans-serif';g.textAlign='center';g.textBaseline='top';
       for(let p=0;p<2;p++){g.fillStyle=FARBE[p];g.globalAlpha=.9;g.fillText(st.s[p],W/2+(p?80:-80),18);g.globalAlpha=1}
       g.font='700 13px "JetBrains Mono",monospace';g.fillStyle='rgba(255,255,255,.55)';
       for(let p=0;p<2;p++)g.fillText((p===c.me?'DU':c.names[p]).toUpperCase().slice(0,14),p?W-110:110,H-26);
@@ -257,7 +257,7 @@ SPIELE.push({id:'tron',name:'Lichtrenner',emoji:'🏍️',mode:'vs',
     wischen(c,cv,ich);steuerkreuz(c,ich);
     c.status(`Du fährst <b style="color:${FARBE[c.me]}">${c.me?'rechts':'links'}</b> los. Erster mit 3 Runden gewinnt.`);
     c.frame(t=>{
-      g.fillStyle='#0a1633';g.fillRect(0,0,W,H);
+      g.fillStyle='#1b1140';g.fillRect(0,0,W,H);
       g.strokeStyle='rgba(157,182,255,.07)';g.lineWidth=1;g.beginPath();
       for(let x=0;x<=GW;x+=2){g.moveTo(x*Z,0);g.lineTo(x*Z,H)}for(let y=0;y<=GH;y+=2){g.moveTo(0,y*Z);g.lineTo(W,y*Z)}g.stroke();
       for(let i=0;i<gr.length;i++)if(gr[i]){g.fillStyle=FARBE[gr[i]-1];g.fillRect((i%GW)*Z+1,((i/GW)|0)*Z+1,Z-2,Z-2)}
@@ -265,7 +265,7 @@ SPIELE.push({id:'tron',name:'Lichtrenner',emoji:'🏍️',mode:'vs',
         if(crash[p]){g.font='30px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('💥',k[0]*Z+Z/2,k[1]*Z+Z/2)}});
       g.font='700 12px "JetBrains Mono",monospace';g.textAlign='left';g.textBaseline='top';
       [0,1].forEach(p=>{g.fillStyle=FARBE[p];g.fillText(`${p===c.me?'DU':c.names[p].toUpperCase()} ${'■'.repeat(siege[p])}${'□'.repeat(ZIEL-siege[p])}`,p?W-200:10,8)});
-      if(text){g.font='900 64px "Big Shoulders Display",Impact,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#fff';g.fillText(text,W/2,H/2)}
+      if(text){g.font='46px "Lilita One",system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#fff';g.fillText(text,W/2,H/2)}
     });
     return{msg(d){if(c.host){if(d.d)lenken(1,d.d)}else if(d.m)anwenden(d.m)}};
   }});
@@ -526,7 +526,7 @@ const BOMBE_MOD={
   knopf(r,a){
     const kf=['rot','blau','gelb','weiß'][ri(r,4)],kt=['DRÜCKEN','HALTEN','STOPP','BUMM'][ri(r,4)],ks=['blau','gelb','rot','weiß'][ri(r,4)];
     const halten=bombeKnopfHalten(kf,kt,a.batt);
-    return{html:`<div class="knw"><button type="button" class="bkn" style="--k:${BOMBE_FH[kf]};color:${kf==='gelb'||kf==='weiß'?'#0a1633':'#fff'}">${kt}</button><span class="bstr"></span></div>`,
+    return{html:`<div class="knw"><button type="button" class="bkn" style="--k:${BOMBE_FH[kf]};color:${kf==='gelb'||kf==='weiß'?'#1b1140':'#fff'}">${kt}</button><span class="bstr"></span></div>`,
       init(m){
         const kn=m.querySelector('.bkn'),str=m.querySelector('.bstr');let haltT=null,gehalten=false;
         a.on(kn,'pointerdown',e=>{e.preventDefault();if(a.aus()||a.ok())return;try{kn.setPointerCapture(e.pointerId)}catch(_){}gehalten=false;
@@ -719,19 +719,19 @@ SPIELE.push({id:'labyrinth',name:'Blind-Labyrinth',emoji:'🌀',mode:'coop',
       g.setTransform(2,0,0,2,0,0);g.fillStyle='#f4f2ec';g.fillRect(0,0,W,W);g.translate(sx,0);
       g.fillStyle='#fff';g.fillRect(P,P,W-P*2,W-P*2);
       spur.forEach(i=>{g.fillStyle='rgba(23,64,216,.12)';g.fillRect(X(i),Y(i),cs,cs)});
-      const loch=i=>{g.fillStyle='#0a1633';g.beginPath();g.ellipse(X(i)+cs/2,Y(i)+cs/2,cs*.32,cs*.22,0,0,7);g.fill();g.strokeStyle='#e2342b';g.lineWidth=3;g.stroke()};
+      const loch=i=>{g.fillStyle='#1b1140';g.beginPath();g.ellipse(X(i)+cs/2,Y(i)+cs/2,cs*.32,cs*.22,0,0,7);g.fill();g.strokeStyle='#e2342b';g.lineWidth=3;g.stroke()};
       if(lotse)fallen.forEach(loch);
       fallenGes.forEach(i=>{g.fillStyle='rgba(226,52,43,.25)';g.fillRect(X(i),Y(i),cs,cs);loch(i)});
       if(lotse){g.font=`${cs*.6}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText('🏁',X(ziel)+cs/2,Y(ziel)+cs/2)}
       g.lineCap='round';
-      if(lotse){g.strokeStyle='#0a1633';g.lineWidth=4;g.beginPath();
+      if(lotse){g.strokeStyle='#1b1140';g.lineWidth=4;g.beginPath();
         for(let i=0;i<n*n;i++){const x=i%n,y=(i/n)|0;if(x<n-1&&E[i]){g.moveTo(X(i)+cs,Y(i));g.lineTo(X(i)+cs,Y(i)+cs)}if(y<n-1&&Sd[i]){g.moveTo(X(i),Y(i)+cs);g.lineTo(X(i)+cs,Y(i)+cs)}}g.stroke()}
-      else{g.fillStyle='rgba(10,22,51,.25)';for(let y=0;y<=n;y++)for(let x=0;x<=n;x++)g.fillRect(P+x*cs-2,P+y*cs-2,4,4)}
+      else{g.fillStyle='rgba(27,17,64,.25)';for(let y=0;y<=n;y++)for(let x=0;x<=n;x++)g.fillRect(P+x*cs-2,P+y*cs-2,4,4)}
       g.strokeStyle='#e2342b';g.lineWidth=6;g.beginPath();
       gesehen.forEach(k=>{const i=+k.slice(1);if(k[0]==='e'){g.moveTo(X(i)+cs,Y(i));g.lineTo(X(i)+cs,Y(i)+cs)}else{g.moveTo(X(i),Y(i)+cs);g.lineTo(X(i)+cs,Y(i)+cs)}});g.stroke();
-      g.strokeStyle='#0a1633';g.lineWidth=6;g.strokeRect(P,P,W-P*2,W-P*2);
+      g.strokeStyle='#1b1140';g.lineWidth=6;g.strokeRect(P,P,W-P*2,W-P*2);
       g.fillStyle=FARBE[laeufer];g.beginPath();g.arc(X(pos)+cs/2,Y(pos)+cs/2,cs*.3,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=3;g.stroke();
-      if(pause){g.fillStyle='rgba(10,22,51,.75)';g.fillRect(P,W/2-40,W-P*2,80);g.fillStyle='#fff';g.font='900 44px "Big Shoulders Display",Impact,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(lv<2?'LEVEL GESCHAFFT! ROLLENTAUSCH …':'ZIEL ERREICHT!',W/2,W/2)}
+      if(pause){g.fillStyle='rgba(27,17,64,.75)';g.fillRect(P,W/2-40,W-P*2,80);g.fillStyle='#fff';g.font='32px "Lilita One",system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(lv<2?'LEVEL GESCHAFFT! ROLLENTAUSCH …':'ZIEL ERREICHT!',W/2,W/2)}
     });
     return{msg(d){anwenden(d)}};
   }});
@@ -821,20 +821,20 @@ SPIELE.push({id:'eier',name:'Dino-Eier retten',emoji:'🥚',mode:'coop',
       c.end({coop:true,win:null,text:`Ihr habt ${st.p} Punkte gesammelt.`+(neu?' Neuer Rekord!':` Rekord auf diesem Gerät: ${best}.`)});
     }
     c.status(`Dein Nest ist <b style="color:${FARBE[c.me]}">${c.me?'rot':'blau'}</b>. Fang deine Farbe und die goldenen Eier!`);
-    const ei=(x,y,f)=>{g.fillStyle=f;g.beginPath();g.ellipse(x,y,13,17,0,0,7);g.fill();g.strokeStyle='#0a1633';g.lineWidth=3;g.stroke();g.fillStyle='rgba(255,255,255,.5)';g.beginPath();g.ellipse(x-4,y-6,3,5,-.4,0,7);g.fill()};
+    const ei=(x,y,f)=>{g.fillStyle=f;g.beginPath();g.ellipse(x,y,13,17,0,0,7);g.fill();g.strokeStyle='#1b1140';g.lineWidth=3;g.stroke();g.fillStyle='rgba(255,255,255,.5)';g.beginPath();g.ellipse(x-4,y-6,3,5,-.4,0,7);g.fill()};
     let altT=performance.now();
     c.frame(()=>{
       const t=performance.now(),dt=Math.min(.05,(t-altT)/1000);altT=t;
       const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#9db6ff');gr.addColorStop(1,'#f4f2ec');g.fillStyle=gr;g.fillRect(0,0,W,H);
-      g.fillStyle='#0a1633';g.fillRect(0,H-22,W,22);
+      g.fillStyle='#1b1140';g.fillRect(0,H-22,W,22);
       for(const o of st.o){const[x,y,k]=o;
         if(k===3){g.fillStyle='rgba(255,140,0,.5)';g.beginPath();g.moveTo(x-12,y-6);g.lineTo(x,y-50);g.lineTo(x+12,y-6);g.fill();g.fillStyle='#3a2f2a';g.beginPath();g.arc(x,y,15,0,7);g.fill();g.fillStyle='#ff7a00';g.beginPath();g.arc(x-4,y-3,4,0,7);g.fill()}
         else ei(x,y,k===2?'#f5c518':FARBE[k])}
-      for(let p=0;p<2;p++){const x=st.n[p];g.fillStyle=FARBE[p];g.beginPath();g.moveTo(x-NW/2,NY-6);g.quadraticCurveTo(x,NY+46,x+NW/2,NY-6);g.closePath();g.fill();g.strokeStyle='#0a1633';g.lineWidth=4;g.stroke();
+      for(let p=0;p<2;p++){const x=st.n[p];g.fillStyle=FARBE[p];g.beginPath();g.moveTo(x-NW/2,NY-6);g.quadraticCurveTo(x,NY+46,x+NW/2,NY-6);g.closePath();g.fill();g.strokeStyle='#1b1140';g.lineWidth=4;g.stroke();
         g.fillStyle='#fff';g.font='700 12px "JetBrains Mono",monospace';g.textAlign='center';g.textBaseline='middle';g.fillText(p===c.me?'DU':c.names[p].toUpperCase().slice(0,10),x,NY+12)}
       for(const f of fx){f.vy+=600*dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.l-=dt*1.4;g.globalAlpha=Math.max(0,f.l);g.fillStyle=f.k===3?'#ff7a00':f.k===4?'#fff3c4':f.k===2?'#f5c518':FARBE[f.k];g.fillRect(f.x,f.y,6,6)}
       g.globalAlpha=1;for(let i=fx.length-1;i>=0;i--)if(fx[i].l<=0)fx.splice(i,1);
-      g.fillStyle='#0a1633';g.font='900 34px "Big Shoulders Display",Impact,sans-serif';g.textAlign='left';g.textBaseline='top';g.fillText(st.p+' PUNKTE',16,12);
+      g.fillStyle='#1b1140';g.font='24px "Lilita One",system-ui,sans-serif';g.textAlign='left';g.textBaseline='top';g.fillText(st.p+' PUNKTE',16,12);
       g.textAlign='right';g.font='26px sans-serif';g.fillText('❤️'.repeat(Math.max(0,st.l))+'🖤'.repeat(5-Math.max(0,st.l)),W-14,14);
     });
     return{msg(d){
@@ -908,7 +908,7 @@ SPIELE.push({id:'malen',name:'Montagsmaler',emoji:'🎨',mode:'coop',
   desc:'Einer malt, der andere rät. Zusammen sammelt ihr so viele Punkte wie möglich.',
   how:'Abwechselnd malt einer einen Begriff, den nur er sieht, und der andere tippt Vermutungen ein. Je schneller richtig geraten wird, desto mehr Punkte bekommt ihr <b>gemeinsam</b>. 6 Runden mit je 80 Sekunden. Buchstaben und Zahlen malen ist verboten!',
   create(c){
-    const W=800,H=500,RUNDEN=6,ZEIT=80,FARBEN=['#0a1633','#e2342b','#1740d8','#1f9d55','#f5c518','#ff7a00','#8b4513','#ffffff'],GROESSE=[4,10,26];
+    const W=800,H=500,RUNDEN=6,ZEIT=80,FARBEN=['#1b1140','#e2342b','#1740d8','#1f9d55','#f5c518','#ff7a00','#8b4513','#ffffff'],GROESSE=[4,10,26];
     const worte=shuffle(MALWORTE.slice(),rngFrom(c.seed));
     let rd=-1,maler=0,t=ZEIT,phase='',punkte=0,richtig=0,aus=false,farbe=0,groesse=0;
     c.el.innerHTML=`<div class="mm"><div class="mmtop"><span class="mmwort"></span><span class="mmzeit"></span><span class="mmpkt"></span></div><div class="mmcv"></div>
@@ -1234,22 +1234,22 @@ SPIELE.push({id:'doppeldino',name:'Doppel-Dino',emoji:'🦖',mode:'coop',
       if(st.r!==altRolle){altRolle=st.r;c.status(`Du bist für das <b>${st.r===c.me?'⬆️ Springen':'⬇️ Ducken'}</b> zuständig. Leertaste oder aufs Spielfeld tippen.`)}
       if(!aus)boden=(boden+dt*(330+st.s*.12))%40;
       g.fillStyle='#dfe6ff';g.fillRect(0,0,W,H);
-      g.fillStyle='#0a1633';g.fillRect(0,BODEN,W,4);
-      g.fillStyle='rgba(10,22,51,.3)';for(let x=-boden;x<W;x+=40)g.fillRect(x,BODEN+14,14,3);
+      g.fillStyle='#1b1140';g.fillRect(0,BODEN,W,4);
+      g.fillStyle='rgba(27,17,64,.3)';for(let x=-boden;x<W;x+=40)g.fillRect(x,BODEN+14,14,3);
       g.textAlign='center';g.textBaseline='alphabetic';
       for(const[x,typ,w]of st.o){
         if(typ){g.font='44px sans-serif';g.save();g.translate(x+w/2,BODEN-34);g.scale(-1,1);g.fillText('🦅',0,0);g.restore()}
-        else{g.fillStyle='#1f9d55';g.fillRect(x,BODEN-46,w,46);g.fillRect(x-8,BODEN-34,8,6);g.fillRect(x+w,BODEN-28,8,6);g.strokeStyle='#0a1633';g.lineWidth=3;g.strokeRect(x,BODEN-46,w,46)}
+        else{g.fillStyle='#1f9d55';g.fillRect(x,BODEN-46,w,46);g.fillRect(x-8,BODEN-34,8,6);g.fillRect(x+w,BODEN-28,8,6);g.strokeStyle='#1b1140';g.lineWidth=3;g.strokeRect(x,BODEN-46,w,46)}
       }
       if(!(st.inv>0&&Math.floor(t/100)%2)){
         g.save();g.translate(DX+20,BODEN-st.y);g.scale(-1,st.du?.55:1);g.font='56px sans-serif';g.fillText('🦖',0,0);g.restore();
       }
-      g.fillStyle='#0a1633';g.font='900 30px "Big Shoulders Display",Impact,sans-serif';g.textAlign='left';g.textBaseline='top';g.fillText(st.s+' M',14,12);
+      g.fillStyle='#1b1140';g.font='22px "Lilita One",system-ui,sans-serif';g.textAlign='left';g.textBaseline='top';g.fillText(st.s+' M',14,12);
       g.textAlign='right';g.font='24px sans-serif';g.fillText('❤️'.repeat(st.l)+'🖤'.repeat(3-st.l),W-12,12);
       g.textAlign='center';g.font='700 15px "JetBrains Mono",monospace';
       g.fillStyle=FARBE[st.r];g.fillText(`⬆️ SPRINGEN: ${st.r===c.me?'DU':c.names[st.r].toUpperCase().slice(0,12)}`,W/2-150,16);
       g.fillStyle=FARBE[1-st.r];g.fillText(`⬇️ DUCKEN: ${1-st.r===c.me?'DU':c.names[1-st.r].toUpperCase().slice(0,12)}`,W/2+150,16);
-      if(st.tausch>0){g.fillStyle='rgba(10,22,51,.8)';g.fillRect(W/2-190,H/2-50,380,64);g.fillStyle='#fff';g.font='900 40px "Big Shoulders Display",Impact,sans-serif';g.textBaseline='middle';g.fillText('ROLLENTAUSCH!',W/2,H/2-18)}
+      if(st.tausch>0){g.fillStyle='rgba(27,17,64,.8)';g.fillRect(W/2-190,H/2-50,380,64);g.fillStyle='#fff';g.font='29px "Lilita One",system-ui,sans-serif';g.textBaseline='middle';g.fillText('ROLLENTAUSCH!',W/2,H/2-18)}
     });
     return{msg(d){
       if(c.host){if(d.k!=null)ein[1]=!!d.k}
