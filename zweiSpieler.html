@@ -500,6 +500,40 @@
   .ekg button.falsch{opacity:1;outline:6px solid #fff}.ekg button.richtig{opacity:1;animation:blink .4s 5 alternate}
   .ekp{min-height:26px;margin-top:14px;font-family:var(--mono);letter-spacing:.1em;overflow-wrap:anywhere}
 
+  /* Kritzel-Gedächtnis */
+  .kg,.kgr,.kge{max-width:460px;margin:0 auto}
+  .kgtop{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:10px;text-align:center}
+  .kgnr{font-family:var(--mono);font-size:13px;color:var(--dim);text-align:center}
+  .kgwort{min-height:44px;font-family:var(--disp);font-weight:800;font-size:36px;line-height:1.2;overflow-wrap:anywhere}
+  .kgbar{height:8px;margin-bottom:12px;border-radius:4px;background:var(--fill);overflow:hidden}
+  .kgbar i{display:block;height:100%;background:var(--p1);transform:scaleX(0);transform-origin:left}
+  @keyframes kgbar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+  .garea .kg .cv{max-width:min(100%,58vh)!important;border:1px solid var(--line);background:#fff}
+  .kgwort:empty{display:none}.kglos{margin:8px 0 4px}
+  .kgbw{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+  .kgb{display:block;width:100%;height:auto}
+  .kgbw.leer::after{content:"leeres Blatt";position:absolute;inset:0;display:grid;place-items:center;color:var(--dim);font-size:14px}
+  .kgr .kgnr{margin-bottom:8px}
+  .kgbild{max-width:min(100%,38vh);margin:0 auto}
+  .kgf{display:flex;gap:10px;margin-top:12px}
+  .kgf input{flex:1;min-width:0;padding:10px 12px;border:2px solid var(--line);font-size:18px;background:#fff}
+  .kgf input:focus{outline:none;border-color:var(--p1)}
+  .kgzur{margin-top:10px}
+  .kgwarte{padding:40px 10px;text-align:center;font-size:18px}
+  .kgsc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+  .kgsc div{display:flex;flex-direction:column;align-items:center;padding:12px;border-radius:14px;color:#fff}
+  .kgsc .p0{background:var(--p1)}.kgsc .p1{background:var(--p2)}
+  .kgsc span{font-weight:600}.kgsc b{font-family:var(--disp);font-size:44px;line-height:1.1}.kgsc small{opacity:.85}
+  .kgw{margin-bottom:18px}
+  .kgw h4{margin:0 0 6px;font-family:var(--disp);font-size:20px}
+  .kgpaar{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .kgpaar figure{margin:0;min-width:0}
+  .kgpaar .p0 .kgbw{border:2px solid var(--p1)}.kgpaar .p1 .kgbw{border:2px solid var(--p2)}
+  .kgpaar figcaption{margin-top:4px;font-size:15px;overflow-wrap:anywhere}
+  .kgpaar figcaption i{font-style:normal;font-weight:800}
+  .kgpaar .gut i{color:#1f9d55}.kgpaar .schlecht i{color:var(--red)}.kgpaar em{color:var(--dim)}
+  .kge .kgok{width:100%}
+
   /* Spiele an den neuen Look anpassen: flach, runde Ecken, keine harten Schlagschatten */
   .garea :is(.c4,.bsg,.rv,.mwg,svg.dots,.duell,.mxb,.hand,.taut,.bres,.zgk,.hb,.brolle,.bcase,.bmod,.ekg){border-radius:14px}
   .garea :is(.sspk button,.taukn button,.bwl button,.glauf span,.mxg button,.cwc,.bsym button,.bmemk button,.bpwok,.cwhw,input,select){border-radius:10px}
@@ -532,7 +566,7 @@
   <section class="screen on" id="sStart">
     <div class="hero">
       <span class="jc p1" aria-hidden="true"></span>
-      <h1 class="big">2 Spieler<span>20 Spiele für zwei</span></h1>
+      <h1 class="big">2 Spieler<span>21 Spiele für zwei</span></h1>
       <span class="jc p2" aria-hidden="true"></span>
     </div>
     <p class="lead">Jeder spielt am eigenen Handy. Einer erstellt einen Raum, der andere gibt den Code ein. Kein Konto, kein Download.</p>
