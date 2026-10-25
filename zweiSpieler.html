@@ -140,6 +140,7 @@
   .gc{position:relative;display:flex;flex-direction:column;align-items:stretch;padding:0;text-align:left;border:0;border-radius:16px;background:var(--card);overflow:hidden;transition:transform .1s}
   .gc:active{transform:scale(.97)}
   .gc .em{display:grid;place-items:center;aspect-ratio:16/10;background:var(--k);font-size:44px;line-height:1}
+  .gc .em svg{width:46%;max-width:76px;height:auto}
   .gc h3{margin:10px 12px 2px;font-family:var(--disp);font-weight:700;font-size:16px;line-height:1.2}
   .gc p{margin:0 12px 12px;font-size:12.5px;line-height:1.35;color:var(--dim);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .tag{position:absolute;top:8px;left:8px;padding:2px 7px;border-radius:6px;font-weight:600;font-size:11px;background:rgba(255,255,255,.9);color:var(--txt)}
@@ -242,6 +243,7 @@
     .filt button{padding:4px 2px}
     .games{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .gc .em{font-size:40px}
+    .gc .em svg{width:52%}
     .ghead{display:none}
     #vLobby{padding-top:4px}
     .gwrap{margin:0 -6px;padding:10px}
@@ -621,6 +623,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="zweispieler/spiele.js"></script>
+<script src="zweispieler/icons.js"></script>
 <script>
 'use strict';
 const $=s=>document.querySelector(s);
@@ -645,7 +648,7 @@ function kopf(){
   document.body.classList.toggle('zurueck',sc!=='sStart');
   document.body.classList.toggle('imraum',sc==='sRoom');
   $('#nCode').textContent=S.code;
-  $('#navTtl').textContent=sc==='sWait'?'Neuer Raum':sc==='sJoin'?'Beitreten':imSpiel&&S.G?S.G.emoji+' '+S.G.name:sc==='sRoom'?'Spielauswahl':'2 Spieler';
+  $('#navTtl').textContent=sc==='sWait'?'Neuer Raum':sc==='sJoin'?'Beitreten':imSpiel&&S.G?S.G.name:sc==='sRoom'?'Spielauswahl':'2 Spieler';
 }
 function showErr(m){const e=$('#err');e.textContent=m||'';e.classList.toggle('on',!!m)}
 const lsGet=(k,d)=>{try{return localStorage.getItem(k)??d}catch(e){return d}};
@@ -817,7 +820,7 @@ function renderScore(){
 let filter='';
 function renderGames(){
   const TON=['#ffe1dc','#d9f0fb','#fff0c7','#dcf3e3','#ece3fa','#ffe0ee','#e2e6ee','#fde6d2'];
-  $('#games').innerHTML=SPIELE.filter(g=>!filter||g.mode===filter).map(g=>`<button type="button" class="gc" data-id="${g.id}" style="--k:${TON[SPIELE.indexOf(g)%TON.length]}"><span class="tag ${g.mode}">${g.mode==='vs'?'Gegeneinander':'Miteinander'}</span><span class="em">${g.emoji}</span><h3>${g.name}</h3><p>${g.desc}</p></button>`).join('');
+  $('#games').innerHTML=SPIELE.filter(g=>!filter||g.mode===filter).map(g=>`<button type="button" class="gc" data-id="${g.id}" style="--k:${ICONS[g.id]?.bg||TON[SPIELE.indexOf(g)%TON.length]}"><span class="tag ${g.mode}">${g.mode==='vs'?'Gegeneinander':'Miteinander'}</span><span class="em">${ICONS[g.id]?.svg||g.emoji}</span><h3>${g.name}</h3><p>${g.desc}</p></button>`).join('');
 }
 function showLobby(){const vonSpiel=!$('#vGame').hidden;$('#vLobby').hidden=false;$('#vGame').hidden=true;renderGames();if(vonSpiel){gleite($('#vLobby'),true);scrollTo(0,0)}kopf();if(history.state&&history.state.zs==='spiel')history.back()}
 function pick(id){if(S.host)startGame(id);else{send({t:'want',id});toast('Spiel wird gestartet …')}}
@@ -833,7 +836,7 @@ function runGame(id,seed){
   stopGame();S.G=G;S.seed=seed;
   $('#vLobby').hidden=true;$('#vGame').hidden=false;gleite($('#vGame'));
   if(!(history.state&&history.state.zs==='spiel'))history.pushState({zs:'spiel'},'');
-  $('#gName').textContent=G.emoji+' '+G.name;$('#gTag').className='tag '+G.mode;$('#gTag').textContent=G.mode==='vs'?'Gegeneinander':'Miteinander';
+  $('#gName').textContent=G.name;$('#gTag').className='tag '+G.mode;$('#gTag').textContent=G.mode==='vs'?'Gegeneinander':'Miteinander';
   $('#gHow').innerHTML=G.how;$('#gHowBox').open=!lsGet('lm2p-how-'+id,'');lsSet('lm2p-how-'+id,'1');
   $('#gStatus').innerHTML='';
   sys(`${G.name} startet.`);
