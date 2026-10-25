@@ -11,9 +11,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
 <!--
   2 Spieler Spiele: ohne Backend.
-  Die Verbindung läuft direkt von Browser zu Browser (WebRTC über PeerJS).
-  Der öffentliche PeerJS-Server vermittelt nur den Raumcode, die Spieldaten gehen direkt zwischen den Spielern hin und her.
-  Zum Testen auf einem Gerät: zweiSpieler.html?lokal in zwei Tabs öffnen (läuft dann über BroadcastChannel).
+  Die Verbindung läuft wenn möglich direkt von Browser zu Browser (WebRTC über PeerJS, der öffentliche
+  PeerJS-Server vermittelt nur den Raumcode). Klappt das nicht, etwa im Handy-Netz, gehen die Spieldaten
+  über öffentliche MQTT-Broker (EMQX, HiveMQ) als Relay.
+  Zum Testen auf einem Gerät: zweiSpieler.html?lokal in zwei Tabs öffnen (Relay über BroadcastChannel).
 -->
 <style>
   :root{--paper:#f4f2ec;--white:#fff;--ink:#0a1633;--blue:#1740d8;--blue2:#0b2a8f;--sky:#9db6ff;--muted:#4a5577;--red:#e2342b;
@@ -364,7 +365,7 @@
     <div class="waitbox">
       <p class="hello">// verbinde …</p>
       <div><span class="bigcode" id="joinCode">····</span></div>
-      <p><span class="spin"></span><b>Verbinde mit dem Raum …</b></p>
+      <p><span class="spin"></span><b id="joinTxt">Verbinde mit dem Raum …</b></p>
       <p><button class="btn sm" type="button" data-leave>Abbrechen</button></p>
     </div>
   </section>
@@ -424,63 +425,135 @@ const lsGet=(k,d)=>{try{return localStorage.getItem(k)??d}catch(e){return d}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 
 // ---------- Verbindung ----------
-// PeerJS: WebRTC direkt zwischen den Browsern, der öffentliche Broker vermittelt nur den Raumcode.
+// Zuerst direkt per WebRTC (PeerJS): Der öffentliche Broker vermittelt nur den Raumcode.
+// Klappt das nicht (z. B. Handy-Netz mit Carrier-NAT), läuft alles über ein öffentliches MQTT-Relay.
+const ICE={iceServers:[
+  {urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun.cloudflare.com:3478']},
+  {urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'},
+  {urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}
+],sdpSemantics:'unified-plan'};
+const RELAYS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
+const DIREKT_MS=8000;
+
+function ladeSkript(urls){
+  return new Promise((ok,nein)=>{const v=i=>{if(i>=urls.length)return nein();const s=document.createElement('script');s.src=urls[i];s.onload=ok;s.onerror=()=>{s.remove();v(i+1)};document.head.appendChild(s)};v(0)});
+}
+
 function peerTransport(code,host,h){
-  if(!window.Peer){setTimeout(()=>h.error('Die Verbindungs-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen und neu laden.'));return{send(){},close(){}}}
+  if(!window.Peer){setTimeout(()=>h.error('lib'));return{send(){},close(){}}}
   let conn=null,dead=false;
-  const peer=host?new Peer(PREFIX+code):new Peer();
+  const opt={config:ICE,debug:0};
+  const peer=host?new Peer(PREFIX+code,opt):new Peer(opt);
   const wire=c=>{
-    c.on('open',()=>{if(dead)return;conn=c;h.open()});
+    c.on('open',()=>{if(dead)return;if(host&&h.busy()){c.send({t:'full'});setTimeout(()=>c.close(),600);return}conn=c;h.open()});
     c.on('data',d=>{if(c===conn)h.data(d)});
     c.on('close',()=>{if(c===conn){conn=null;if(!dead)h.close()}});
     c.on('error',()=>{});
   };
   peer.on('open',()=>{if(dead)return;if(host)h.ready();else wire(peer.connect(PREFIX+code,{reliable:true,serialization:'json'}))});
-  if(host)peer.on('connection',c=>{
-    if(conn){c.on('open',()=>{c.send({t:'full'});setTimeout(()=>c.close(),600)});return}
-    wire(c);
-  });
+  if(host)peer.on('connection',wire);
   peer.on('error',e=>{
     if(dead)return;
     if(e.type==='unavailable-id')h.error('taken');
-    else if(e.type==='peer-unavailable')h.error(`Raum ${code} wurde nicht gefunden. Stimmt der Code und ist der Raum noch offen?`);
-    else if(!conn)h.error(['network','server-error','socket-error','socket-closed'].includes(e.type)?'Keine Verbindung zum Vermittlungs-Server. Bitte gleich nochmal probieren.':'Verbindungsfehler ('+e.type+').');
+    else if(!conn)h.error(e.type==='peer-unavailable'?'notfound':'net');
   });
   peer.on('disconnected',()=>{if(!dead)try{peer.reconnect()}catch(_){}});
   return{send(d){if(conn&&conn.open)conn.send(d)},close(){dead=true;try{conn&&conn.close()}catch(_){}try{peer.destroy()}catch(_){}}};
 }
-// Lokaler Test-Modus (?lokal): zwei Tabs im selben Browser über BroadcastChannel
-function localTransport(code,host,h){
-  const bc=new BroadcastChannel(PREFIX+code),id=Math.random();let open=false,partner=null;
-  bc.onmessage=e=>{const m=e.data;if(m.from===id||(m.to&&m.to!==id))return;
-    if(m.k==='knock'&&host){if(open){bc.postMessage({from:id,to:m.from,k:'full'});return}open=true;partner=m.from;bc.postMessage({from:id,to:m.from,k:'ok'});h.open()}
-    else if(m.k==='ok'&&!host&&!open){open=true;partner=m.from;h.open()}
+
+// Kanal für das Relay: BroadcastChannel (lokaler Test) oder MQTT über mehrere öffentliche Broker.
+// Jede Nachricht geht an alle Broker, Doppelte werden über die Laufnummer aussortiert.
+function bcKanal(code,onmsg,onready){
+  const bc=new BroadcastChannel(PREFIX+code);bc.onmessage=e=>onmsg(e.data);setTimeout(onready);
+  return{pub:m=>bc.postMessage(m),close:()=>bc.close()};
+}
+function mqttKanal(code,onmsg,onready,onfail){
+  const topic='lm-zweispieler/v1/'+code;let clients=[],bereit=false,dead=false,fehl=0;
+  ladeSkript(['https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js','https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js']).then(()=>{
+    if(dead)return;
+    clients=RELAYS.map(url=>{
+      const cl=mqtt.connect(url,{clientId:'lmzs_'+Math.random().toString(36).slice(2,10),keepalive:30,reconnectPeriod:3000,connectTimeout:8000,clean:true});
+      let gezaehlt=false;
+      cl.on('connect',()=>cl.subscribe(topic,{qos:0},err=>{if(!err&&!bereit&&!dead){bereit=true;onready()}}));
+      cl.on('message',(t,p)=>{try{onmsg(JSON.parse(p.toString()))}catch(_){}});
+      cl.on('error',()=>{if(!gezaehlt){gezaehlt=true;if(++fehl>=RELAYS.length&&!bereit&&!dead)onfail()}});
+      return cl;
+    });
+    setTimeout(()=>{if(!bereit&&!dead)onfail()},12000);
+  },()=>{if(!dead)onfail()});
+  return{pub:m=>{const s=JSON.stringify(m);clients.forEach(c=>c.connected&&c.publish(topic,s,{qos:0}))},close(){dead=true;clients.forEach(c=>{try{c.end(true)}catch(_){}})}};
+}
+function relayTransport(code,host,h,kanal){
+  const id=Math.random().toString(36).slice(2,10);let open=false,partner=null,n=0,puffer=[],timer=null,ping=null,zuletzt=0;
+  const gesehen=new Map();
+  const pub=m=>{m.from=id;m.n=++n;ch.pub(m)};
+  const flush=()=>{timer=null;if(puffer.length&&open){pub({to:partner,k:'d',b:puffer});puffer=[]}};
+  const ch=kanal(code,m=>{
+    if(!m||m.from===id||(m.to&&m.to!==id))return;
+    const g=gesehen.get(m.from)||new Set();if(g.has(m.n))return;g.add(m.n);if(g.size>400)g.delete(g.values().next().value);gesehen.set(m.from,g);
+    if(open&&m.from===partner)zuletzt=Date.now();
+    if(m.k==='knock'&&host){if(open||h.busy()){pub({to:m.from,k:'full'});return}open=true;partner=m.from;zuletzt=Date.now();pub({to:m.from,k:'ok'});lebt();h.open()}
+    else if(m.k==='ok'&&!host&&!open){open=true;partner=m.from;zuletzt=Date.now();lebt();h.open()}
     else if(m.k==='full'&&!host)h.data({t:'full'});
-    else if(m.k==='d'&&open&&m.from===partner)h.data(m.d);
-    else if(m.k==='bye'&&open&&m.from===partner){open=false;partner=null;h.close()}};
-  if(host)setTimeout(()=>h.ready());else{bc.postMessage({from:id,k:'knock'});setTimeout(()=>{if(!open)h.error(`Raum ${code} wurde nicht gefunden (lokaler Modus).`)},2500)}
-  return{send(d){if(open)bc.postMessage({from:id,to:partner,k:'d',d})},close(){if(open)bc.postMessage({from:id,to:partner,k:'bye'});open=false;bc.close()}};
+    else if(m.k==='d'&&open&&m.from===partner)m.b.forEach(d=>h.data(d));
+    else if(m.k==='bye'&&open&&m.from===partner)weg();
+  },()=>{if(host)h.ready();else{pub({k:'knock'});setTimeout(()=>{if(!open)pub({k:'knock'})},2500);setTimeout(()=>{if(!open)h.error('notfound')},7000)}},()=>h.error('net'));
+  // Lebenszeichen, damit ein geschlossener Tab bemerkt wird
+  function lebt(){ping=setInterval(()=>{pub({to:partner,k:'p'});if(Date.now()-zuletzt>15000)weg()},4000)}
+  function weg(){if(!open)return;open=false;partner=null;clearInterval(ping);h.close()}
+  return{send(d){if(!open)return;puffer.push(d);if(!timer)timer=setTimeout(flush,40)},
+    close(){clearInterval(ping);clearTimeout(timer);if(open)pub({to:partner,k:'bye'});open=false;setTimeout(()=>ch.close(),200)}};
+}
+// Raum-Ersteller: wartet gleichzeitig direkt und über das Relay
+function hostTransport(code,h,lokal){
+  let aktiv=null,bereit=false,fehler=0;const teile=[];
+  const mk=f=>{const t={};const hh={
+    busy:()=>!!aktiv,
+    ready(){if(!bereit){bereit=true;h.ready()}},
+    open(){aktiv=t;h.open()},
+    data(d){if(aktiv===t)h.data(d)},
+    close(){if(aktiv===t){aktiv=null;h.close()}},
+    error(e){if(e==='taken')return h.error('taken');if(++fehler>=teile.length&&!bereit)h.error(e)}};
+    Object.assign(t,f(hh));teile.push(t);};
+  if(lokal)mk(hh=>relayTransport(code,true,hh,(c,a,b)=>bcKanal(c,a,b)));
+  else{mk(hh=>peerTransport(code,true,hh));mk(hh=>relayTransport(code,true,hh,mqttKanal))}
+  return{send(d){aktiv&&aktiv.send(d)},close(){teile.forEach(t=>t.close())}};
+}
+// Gast: erst direkt probieren, nach ein paar Sekunden über das Relay
+function gastTransport(code,h,lokal){
+  let cur,umweg=false,fertig=false;
+  const relay=()=>{if(umweg||fertig)return;umweg=true;clearTimeout(t);try{cur.close()}catch(_){}h.umweg&&h.umweg();
+    cur=relayTransport(code,false,{...h,busy:()=>false,error:e=>{if(!fertig)h.error(e)},open(){fertig=true;h.open()}},lokal?(c,a,b)=>bcKanal(c,a,b):mqttKanal)};
+  const t=setTimeout(relay,lokal?0:DIREKT_MS);
+  if(!lokal)cur=peerTransport(code,false,{...h,busy:()=>false,open(){if(umweg)return;fertig=true;clearTimeout(t);h.open()},error:()=>relay()});
+  else cur={send(){},close(){}};
+  return{send(d){cur.send(d)},close(){fertig=true;clearTimeout(t);cur.close()}};
 }
 function send(m){tr&&tr.send(m)}
 
 function myName(){const v=$('#name').value.trim().slice(0,16);if(v)lsSet('lm2p-name',v);return v||(S.host?'Spieler 1':'Spieler 2')}
 function connect(){
   showErr('');
-  tr=(LOCAL?localTransport:peerTransport)(S.code,S.host,{
-    ready(){$('#bigCode').textContent=S.code;$('#waitTxt').textContent='Warte auf Mitspieler …';show('sWait')},
-    open:onOpen,data:onData,close:onClose,error:onErr});
+  const h={ready(){$('#bigCode').textContent=S.code;$('#waitTxt').textContent='Warte auf Mitspieler …';show('sWait')},
+    umweg(){$('#joinTxt').textContent='Direkte Verbindung klappt nicht, versuche den Umweg über einen Relay-Server …'},
+    open:onOpen,data:onData,close:onClose,error:onErr};
+  tr=S.host?hostTransport(S.code,h,LOCAL):gastTransport(S.code,h,LOCAL);
 }
 function hangup(){clearTimeout(joinTimer);if(tr){try{tr.close()}catch(_){}}tr=null;S.open=false;stopGame()}
 function createRoom(){hangup();S.host=true;S.me=0;S.names=[myName(),''];S.code=newCode();$('#bigCode').textContent='····';$('#waitTxt').textContent='Raum wird erstellt …';show('sWait');connect()}
 function joinRoom(code){
   code=(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(code.length!==4){showErr('Der Raumcode hat 4 Zeichen.');$('#codeIn').focus();return}
-  hangup();S.host=false;S.me=1;S.names=['',myName()];S.code=code;$('#joinCode').textContent=code;show('sJoin');connect();
-  joinTimer=setTimeout(()=>{if(!S.open)onErr('Die Verbindung klappt gerade nicht. Manche Netzwerke (z. B. Schul- oder Firmen-WLAN) blockieren direkte Verbindungen. Probier es nochmal oder über mobile Daten.')},20000);
+  hangup();S.host=false;S.me=1;S.names=['',myName()];S.code=code;$('#joinCode').textContent=code;$('#joinTxt').textContent='Verbinde mit dem Raum …';show('sJoin');connect();
+  joinTimer=setTimeout(()=>{if(!S.open)onErr('net')},35000);
 }
+const FEHLER={
+  lib:'Die Verbindungs-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen und die Seite neu laden.',
+  notfound:'Raum nicht gefunden. Stimmt der Code und ist die Seite beim Raum-Ersteller noch offen?',
+  net:'Die Verbindung klappt gerade nicht, weder direkt noch über den Relay-Server. Bitte beide die Seite neu laden und nochmal probieren.'};
 function onErr(m){
   if(m==='taken'&&S.host){hangup();S.code=newCode();connect();return}
-  hangup();show('sStart');showErr(m);
+  hangup();show('sStart');showErr(FEHLER[m]||m);
 }
 function onOpen(){clearTimeout(joinTimer);S.open=true;S.score=[0,0];send({t:'hi',name:S.names[S.me]})}
 function onClose(){
@@ -600,7 +673,7 @@ $('#cform').onsubmit=e=>{e.preventDefault();sendChat($('#cin').value);$('#cin').
 $('#quick').onclick=e=>{const b=e.target.closest('button');if(b)sendChat(b.textContent)};
 $('#cfab').onclick=()=>{$('#chat').classList.add('open');unread=0;badge();$('#cin').focus()};
 $('#bChatX').onclick=()=>$('#chat').classList.remove('open');
-addEventListener('beforeunload',()=>{if(tr)tr.close()});
+addEventListener('pagehide',()=>{if(tr)tr.close()});
 
 // Einladungslink: ?raum=ABCD
 const qRaum=new URLSearchParams(location.search).get('raum');
