@@ -2,11 +2,19 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>2 Spieler Spiele · Lukas Mörtendorfer</title>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="img/icons/favicon-32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="img/icons/zweispieler-180.png">
+<!-- Als App auf dem Home-Bildschirm: Vollbild ohne Browserleiste -->
+<link rel="manifest" href="zweispieler.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="2 Spieler">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#0a1633">
 <meta name="description" content="2-Spieler-Spiele im Browser: Raum erstellen, Code weitergeben und miteinander oder gegeneinander spielen.">
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
 <!--
@@ -148,7 +156,7 @@
   .cfab i{position:absolute;top:-8px;right:-8px;min-width:22px;height:22px;padding:0 5px;background:var(--red);border:2px solid var(--ink);font-style:normal;font-size:12px;font-weight:800;line-height:18px;display:none}
   .cfab i.on{display:block}
   @media (max-width:960px){
-    .room{grid-template-columns:1fr}
+    .room{grid-template-columns:minmax(0,1fr)}
     .chat{position:fixed;top:auto;left:8px;right:8px;bottom:8px;z-index:45;height:min(440px,70vh);display:none}
     .chat.open{display:flex}
     .chat h4 button{display:block}
@@ -401,6 +409,121 @@
   @keyframes ekan{0%{opacity:1;filter:brightness(1.5);box-shadow:0 0 30px var(--k)}}
   .ekg button.falsch{opacity:1;outline:6px solid #fff}.ekg button.richtig{opacity:1;animation:blink .4s 5 alternate}
   .ekp{min-height:26px;margin-top:14px;font-family:var(--mono);letter-spacing:.1em;overflow-wrap:anywhere}
+
+  /* ---------- App-Gefühl am Handy ---------- */
+  html{touch-action:manipulation;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;background:var(--ink)}
+  body{overscroll-behavior:none;min-height:100dvh;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  input,textarea,select{-webkit-user-select:text;user-select:text}
+  img,svg,canvas{-webkit-user-drag:none}
+  nav{padding-top:env(safe-area-inset-top);background:var(--ink);color:#fff;border-bottom-color:var(--ink)}
+  nav .wrap{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+  nav .logo{box-shadow:4px 4px 0 var(--blue2)}
+  nav .ttl{overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .navback{display:none;flex:none;align-items:center;justify-content:center;width:44px;height:44px;margin-left:-8px;background:none;border:0;color:#fff;font-size:34px;line-height:1;font-weight:300}
+  .navback span{transform:translateY(-2px)}
+  .navback:active{opacity:.5}
+  .zurueck .navback{display:flex}.zurueck nav .logo{display:none}
+  .nr{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .nr .back{margin-left:0}
+  .ncode{display:none;padding:3px 8px 1px;background:#fff;color:var(--ink);font-family:var(--mono);font-weight:800;font-size:13px;letter-spacing:.12em}
+  .imraum .ncode{display:inline-block}
+  .zurueck nav .back{display:none}
+  main{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+  .wrap{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+  /* Seitenwechsel wie in einer App */
+  .vor{animation:vor .26s cubic-bezier(.2,.8,.2,1)}
+  .rueck{animation:rueck .26s cubic-bezier(.2,.8,.2,1)}
+  @keyframes vor{from{opacity:0;transform:translateX(36px)}}
+  @keyframes rueck{from{opacity:0;transform:translateX(-36px)}}
+  /* Hinweis: zum Home-Bildschirm hinzufügen */
+  .install{display:none;position:relative;max-width:880px;margin:0 0 22px;padding:12px 44px 12px 14px;background:#fff;border:3px solid var(--ink);box-shadow:5px 5px 0 var(--blue);font-size:15px}
+  .install.on{display:block}
+  .install b{font-family:var(--disp);font-weight:900;font-size:20px;text-transform:uppercase;display:block}
+  .install button{position:absolute;top:4px;right:4px;width:40px;height:40px;background:none;border:0;font-size:20px}
+  .install .ios-share{display:inline-block;width:18px;height:20px;vertical-align:-4px}
+  .chatbg{display:none}
+  /* Kein klebender Hover auf Touch-Geräten, dafür Feedback beim Drücken */
+  @media (hover:none){
+    .btn:hover{transform:none;box-shadow:5px 5px 0 var(--ink)}
+    .btn.sm:hover{box-shadow:3px 3px 0 var(--ink)}
+    .btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+    .gc:hover{transform:none;box-shadow:6px 6px 0 var(--ink)}
+    .gc:active{transform:translate(3px,3px) scale(.98);box-shadow:3px 3px 0 var(--blue)}
+    .bwl button:hover,.sspk button:hover{transform:none}
+    .bwl button:active,.sspk button:active,.mxg button:active,.filt button:active,.quick button:active{transform:translate(2px,2px)}
+    .mxg button:hover{background:#fff;color:inherit}
+    .cwc:not(:disabled):hover{background:#fffdf3}
+    .rv.mein>div.ok:hover{background:#1f9d55}
+    nav .back:hover{background:none;color:inherit}
+  }
+  @media (pointer:coarse){
+    .btn.sm{min-height:44px;padding:8px 14px 6px}
+    .filt button{min-height:42px}
+    .quick button{min-height:38px;padding:4px 11px;font-size:15px}
+    .cform input{font-size:16px}
+    .cform button{min-width:76px}
+    .chat h4 button{width:44px;height:36px}
+    .pad{grid-template-columns:repeat(3,76px);grid-template-rows:repeat(2,66px);gap:10px}
+    .pad button{font-size:28px}
+    .bpwr button{width:40px;height:36px;font-size:15px}
+    .bpwr b{width:40px}
+    .mmtools button[data-f]{width:40px;height:40px}.mmtools button[data-g]{width:44px;height:40px}
+    .mxg button{min-width:62px;min-height:46px}
+    details.how summary{padding:6px 0}
+  }
+  @media (max-width:700px){
+    nav .wrap{height:54px;gap:10px}
+    nav .ttl{font-size:22px}
+    main{padding-top:30px}
+    h1.big{font-size:clamp(54px,17vw,84px)}
+    .lead{font-size:16px;margin:18px 0 22px}
+    .cards{gap:18px}
+    .card{padding:18px;box-shadow:6px 6px 0 var(--ink)}
+    .card .btn{width:100%;min-height:52px}
+    .namerow{margin-bottom:20px}
+    input.f{font-size:18px;min-height:50px}
+    .rbar{position:sticky;top:calc(54px + 4px + env(safe-area-inset-top));z-index:20;margin:-18px -16px 16px;padding:8px 16px;border:0;border-bottom:3px solid var(--ink);box-shadow:none}
+    .rbar .rc,.rbar [data-leave]{display:none}
+    .rbar .sc{width:100%;justify-content:center}
+    .lobh{font-size:40px}
+    .lobp{font-size:14px;margin-bottom:14px}
+    .filt{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:3px solid var(--ink);background:var(--ink);gap:3px}
+    .filt button{border:0;padding:8px 2px 6px;font-size:clamp(13px,3.9vw,16px);letter-spacing:.02em}
+    .games{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .gc{padding:12px 12px 12px;box-shadow:4px 4px 0 var(--ink);min-height:150px}
+    .gc .em{font-size:34px;margin-bottom:6px}
+    .gc h3{font-size:21px;margin-bottom:4px;overflow-wrap:anywhere;hyphens:auto}
+    .gc p{font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .tag{top:8px;right:8px;font-size:9px;padding:1px 5px}
+    .gc .tag{font-size:0;padding:0;background:none;border:0}
+    .gc .tag.vs::before{content:"⚔️";font-size:16px}.gc .tag.coop::before{content:"🤝";font-size:16px}
+    .filt i{display:none}
+    .cfab{top:calc(env(safe-area-inset-top) + 5px);bottom:auto!important;right:max(12px,env(safe-area-inset-right))!important;width:44px;height:44px;font-size:20px;border:2px solid #fff;box-shadow:none}
+    .cfab:active{background:var(--blue2)}
+    .imraum .nr{margin-right:50px}
+    details.how p{font-size:14px}
+    .ghead{display:none}
+    .gstatus{margin:0 -16px 12px;padding:8px 16px;font-size:14px}
+    details.how{margin:0 0 12px}
+    .endov{position:fixed;inset:0;z-index:50;background:rgba(10,22,51,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:16px 16px calc(16px + env(safe-area-inset-bottom));place-items:end center}
+    .endbox{width:100%;max-width:520px;animation:hoch .32s cubic-bezier(.2,.9,.3,1)}
+    .endbox .eb .btn{flex:1;min-height:54px}
+    .waitbox .btn{min-height:50px}
+    .bigcode{font-size:clamp(64px,22vw,110px)}
+    .toast{bottom:calc(88px + env(safe-area-inset-bottom));max-width:calc(100% - 32px)}
+  }
+  @keyframes hoch{from{transform:translateY(60px);opacity:0}}
+  @media (max-width:960px){
+    .cfab{right:max(16px,env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom))}
+    .chat{display:flex!important;left:0;right:0;bottom:0;height:min(480px,72dvh);padding-bottom:env(safe-area-inset-bottom);border:0;border-top:4px solid var(--ink);box-shadow:0 -8px 30px rgba(10,22,51,.25);transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.9,.3,1),visibility 0s .3s;visibility:hidden}
+    .chat.open{transform:none;visibility:visible;transition:transform .3s cubic-bezier(.2,.9,.3,1)}
+    .chat h4{padding:4px 4px 4px 14px;position:relative}
+    .chat h4::before{content:"";position:absolute;left:50%;top:5px;width:40px;height:4px;margin-left:-20px;background:rgba(255,255,255,.4);border-radius:2px}
+    .chatbg{display:block;position:fixed;inset:0;z-index:44;background:rgba(10,22,51,.4);opacity:0;pointer-events:none;transition:opacity .3s}
+    .chatbg.on{opacity:1;pointer-events:auto}
+  }
+  /* Als installierte App: Link zur Webseite ausblenden */
+  .app nav .back{display:none}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -410,9 +533,10 @@
 
 <nav>
   <div class="wrap">
+    <button class="navback" type="button" id="navBack" aria-label="Zurück"><span>‹</span></button>
     <a class="logo" href="index.html">LM</a>
-    <span class="ttl">2 Spieler</span>
-    <a class="back" href="index.html#ueber">← Zur Seite</a>
+    <span class="ttl" id="navTtl">2 Spieler</span>
+    <span class="nr"><span class="ncode" id="nCode"></span><a class="back" href="index.html#ueber">← Zur Seite</a></span>
   </div>
 </nav>
 
@@ -423,6 +547,7 @@
     <p class="hello">// spielen wir eine Runde?</p>
     <h1 class="big">2 Spieler <span>Spiele</span></h1>
     <p class="lead">Erstell einen Raum und gib den <b>Raumcode</b> an deine Mitspielerin oder deinen Mitspieler weiter. Dann spielt ihr <b>20 Spiele</b> miteinander oder gegeneinander, jeder an seinem eigenen Gerät. Kein Konto, kein Download.</p>
+    <div class="install" id="install"><b>Als App installieren</b>Tippe unten auf <svg class="ios-share" viewBox="0 0 18 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 13V1M5 5l4-4 4 4M5 8H2v11h14V8h-3"/></svg> „Teilen“ und dann auf „Zum Home-Bildschirm“. Dann startet es wie eine richtige App, ohne Browserleiste.<button type="button" id="installX" aria-label="Hinweis schließen">✕</button></div>
     <div class="err" id="err"></div>
     <div class="namerow">
       <label class="lb" for="name">Dein Name</label>
@@ -480,7 +605,7 @@
         <div id="vLobby">
           <h2 class="lobh">Was spielen wir?</h2>
           <p class="lobp">Wer ein Spiel anklickt, startet es für euch beide. Siege in den Gegeneinander-Spielen zählen oben in den Punktestand.</p>
-          <div class="filt" id="filt"><button type="button" class="on" data-f="">Alle</button><button type="button" data-f="vs">⚔️ Gegeneinander</button><button type="button" data-f="coop">🤝 Miteinander</button></div>
+          <div class="filt" id="filt"><button type="button" class="on" data-f="">Alle</button><button type="button" data-f="vs"><i>⚔️ </i>Gegeneinander</button><button type="button" data-f="coop"><i>🤝 </i>Miteinander</button></div>
           <div class="games" id="games"></div>
         </div>
         <div id="vGame" hidden>
@@ -500,6 +625,7 @@
         <form class="cform" id="cform"><input id="cin" maxlength="200" autocomplete="off" placeholder="Nachricht …" aria-label="Chatnachricht"><button type="submit">Senden</button></form>
       </aside>
     </div>
+    <div class="chatbg" id="chatbg"></div>
     <button class="cfab" type="button" id="cfab" aria-label="Chat öffnen">💬<i id="cbadge">0</i></button>
   </section>
 </main>
@@ -516,7 +642,22 @@ let tr=null,joinTimer=null;
 
 function newCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),2600)}
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));scrollTo(0,0)}
+function show(id,rueck){
+  const war=document.querySelector('.screen.on');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));scrollTo(0,0);
+  if(war&&war.id!==id)gleite(id==='sRoom'?$('#vLobby'):$('#'+id),rueck||id==='sStart');
+  kopf();
+}
+// Seitenwechsel wie in einer App (vor = von rechts, zurück = von links)
+function gleite(el,rueck){if(!el)return;el.classList.remove('vor','rueck');void el.offsetWidth;el.classList.add(rueck?'rueck':'vor')}
+// Kopfleiste: Zurück-Pfeil und Titel je nach Ansicht
+function kopf(){
+  const sc=document.querySelector('.screen.on')?.id,imSpiel=sc==='sRoom'&&!$('#vGame').hidden;
+  document.body.classList.toggle('zurueck',sc!=='sStart');
+  document.body.classList.toggle('imraum',sc==='sRoom');
+  $('#nCode').textContent=S.code;
+  $('#navTtl').textContent=sc==='sWait'?'Neuer Raum':sc==='sJoin'?'Beitreten':imSpiel&&S.G?S.G.emoji+' '+S.G.name:sc==='sRoom'?'Spielauswahl':'2 Spieler';
+}
 function showErr(m){const e=$('#err');e.textContent=m||'';e.classList.toggle('on',!!m)}
 const lsGet=(k,d)=>{try{return localStorage.getItem(k)??d}catch(e){return d}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
@@ -636,7 +777,7 @@ function connect(){
     open:onOpen,data:onData,close:onClose,error:onErr};
   tr=S.host?hostTransport(S.code,h,LOCAL):gastTransport(S.code,h,LOCAL);
 }
-function hangup(){clearTimeout(joinTimer);if(tr){try{tr.close()}catch(_){}}tr=null;S.open=false;stopGame()}
+function hangup(){clearTimeout(joinTimer);if(tr){try{tr.close()}catch(_){}}tr=null;S.open=false;stopGame();wachHalten(false)}
 function createRoom(){hangup();S.host=true;S.me=0;S.names=[myName(),''];S.code=newCode();$('#bigCode').textContent='····';$('#waitTxt').textContent='Raum wird erstellt …';show('sWait');connect()}
 function joinRoom(code){
   code=(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -675,7 +816,8 @@ function onData(m){
 function enterRoom(){
   $('#rCode').textContent=S.code;$('#clog').innerHTML='';unread=0;badge();
   sys(`${S.names[1-S.me]} ist im Raum. Viel Spaß!`);
-  renderScore();showLobby();show('sRoom');
+  renderScore();showLobby();show('sRoom');wachHalten(true);haptik('sieg');
+  if(!(history.state&&history.state.zs))history.pushState({zs:'raum'},'');
 }
 function renderScore(){
   const n=p=>`<span><i class="dot" style="background:${FARBE[p]}"></i>${esc(p===S.me?S.names[p]+' (du)':S.names[p])}</span>`;
@@ -685,7 +827,7 @@ let filter='';
 function renderGames(){
   $('#games').innerHTML=SPIELE.filter(g=>!filter||g.mode===filter).map(g=>`<button type="button" class="gc" data-id="${g.id}"><span class="tag ${g.mode}">${g.mode==='vs'?'Gegeneinander':'Miteinander'}</span><span class="em">${g.emoji}</span><h3>${g.name}</h3><p>${g.desc}</p></button>`).join('');
 }
-function showLobby(){$('#vLobby').hidden=false;$('#vGame').hidden=true;renderGames()}
+function showLobby(){const vonSpiel=!$('#vGame').hidden;$('#vLobby').hidden=false;$('#vGame').hidden=true;renderGames();if(vonSpiel){gleite($('#vLobby'),true);scrollTo(0,0)}kopf();if(history.state&&history.state.zs==='spiel')history.back()}
 function pick(id){if(S.host)startGame(id);else{send({t:'want',id});toast('Spiel wird gestartet …')}}
 function startGame(id){if(!S.open)return;const seed=Math.floor(Math.random()*2147483647);send({t:'start',id,seed});runGame(id,seed)}
 
@@ -697,14 +839,16 @@ function stopGame(){
 function runGame(id,seed){
   const G=SPIELE.find(g=>g.id===id);if(!G)return;
   stopGame();S.G=G;S.seed=seed;
-  $('#vLobby').hidden=true;$('#vGame').hidden=false;
+  $('#vLobby').hidden=true;$('#vGame').hidden=false;gleite($('#vGame'));
+  if(!(history.state&&history.state.zs==='spiel'))history.pushState({zs:'spiel'},'');
   $('#gName').textContent=G.emoji+' '+G.name;$('#gTag').className='tag '+G.mode;$('#gTag').textContent=G.mode==='vs'?'Gegeneinander':'Miteinander';
   $('#gHow').innerHTML=G.how;$('#gHowBox').open=!lsGet('lm2p-how-'+id,'');lsSet('lm2p-how-'+id,'1');
   $('#gStatus').innerHTML='';
   sys(`${G.name} startet.`);
   S.ctx=makeCtx(G,seed);
   try{S.game=G.create(S.ctx)||{}}catch(e){console.error(e);S.game={}}
-  $('#vGame').scrollIntoView({block:'start',behavior:'smooth'});
+  if(innerWidth<=700)scrollTo(0,0);else $('#vGame').scrollIntoView({block:'start',behavior:'smooth'});
+  kopf();haptik('tap');
 }
 function makeCtx(G,seed){
   const area=$('#gArea');area.innerHTML='';area.className='garea g-'+G.id;
@@ -736,7 +880,7 @@ function showEnd(r){
   else if(r.w===S.me){h='Du gewinnst! 🏆';k='win'}
   else{h=esc(S.names[r.w])+' gewinnt';k='lose'}
   $('#endH').innerHTML=h;$('#endP').textContent=r.text||'';$('#endBox').className='endbox '+k;
-  $('#endOv').classList.add('on');
+  $('#endOv').classList.add('on');haptik(k==='win'?'sieg':k==='lose'?'fehler':'tap');
   if(!r.coop)sys(r.w<0?`${S.G.name}: Unentschieden.`:`${S.G.name}: ${S.names[r.w]} gewinnt.`);
 }
 
@@ -747,7 +891,7 @@ function badge(){const b=$('#cbadge');b.textContent=unread;b.classList.toggle('o
 function addChat(p,txt){
   if(!txt)return;const d=document.createElement('div');d.className='m'+(p===S.me?' me':'')+(p===1?' p1':'');
   d.innerHTML=`<b>${esc(p===S.me?'Du':S.names[p])}</b>${esc(txt)}`;const l=$('#clog');l.appendChild(d);l.scrollTop=l.scrollHeight;
-  if(p!==S.me&&!chatOpen()){unread++;badge();toast(S.names[p]+': '+txt.slice(0,60))}
+  if(p!==S.me){haptik('tick');if(!chatOpen()){unread++;badge();toast(S.names[p]+': '+txt.slice(0,60))}}
 }
 function sys(t){const d=document.createElement('div');d.className='sys';d.textContent=t;const l=$('#clog');l.appendChild(d);l.scrollTop=l.scrollHeight}
 function sendChat(t){t=t.trim().slice(0,200);if(!t||!S.open)return;send({t:'chat',m:t});addChat(S.me,t)}
@@ -757,20 +901,81 @@ $('#name').value=lsGet('lm2p-name','');
 $('#bCreate').onclick=createRoom;
 $('#fJoin').onsubmit=e=>{e.preventDefault();joinRoom($('#codeIn').value)};
 $('#codeIn').oninput=e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'')};
-document.querySelectorAll('[data-leave]').forEach(b=>b.onclick=()=>{hangup();show('sStart');history.replaceState(null,'',location.pathname+(LOCAL?'?lokal':''))});
+const verlassen=()=>{hangup();show('sStart',true);history.replaceState(null,'',location.pathname+(LOCAL?'?lokal':''))};
+document.querySelectorAll('[data-leave]').forEach(b=>b.onclick=verlassen);
 const link=()=>`${location.origin}${location.pathname}?${LOCAL?'lokal&':''}raum=${S.code}`;
 const copy=(t,ok)=>{(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(ok),()=>prompt('Zum Kopieren:',t))};
 $('#bCopyCode').onclick=()=>copy(S.code,'Code kopiert!');
 $('#bCopyLink').onclick=()=>{if(navigator.share&&matchMedia('(pointer:coarse)').matches)navigator.share({title:'2 Spieler Spiele',text:`Spiel mit mir! Raumcode: ${S.code}`,url:link()}).catch(()=>{});else copy(link(),'Einladungslink kopiert!')};
 $('#games').onclick=e=>{const b=e.target.closest('.gc');if(b)pick(b.dataset.id)};
 $('#filt').onclick=e=>{const b=e.target.closest('button');if(!b)return;filter=b.dataset.f;$('#filt').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));renderGames()};
-$('#bBack').onclick=$('#bLobby').onclick=()=>{stopGame();send({t:'quit'});showLobby()};
+const zurLobby=()=>{stopGame();send({t:'quit'});showLobby()};
+$('#bBack').onclick=$('#bLobby').onclick=zurLobby;
 $('#bAgain').onclick=()=>{if(S.G)pick(S.G.id)};
 $('#cform').onsubmit=e=>{e.preventDefault();sendChat($('#cin').value);$('#cin').value=''};
 $('#quick').onclick=e=>{const b=e.target.closest('button');if(b)sendChat(b.textContent)};
-$('#cfab').onclick=()=>{$('#chat').classList.add('open');unread=0;badge();$('#cin').focus()};
-$('#bChatX').onclick=()=>$('#chat').classList.remove('open');
+const chatAuf=auf=>{$('#chat').classList.toggle('open',auf);$('#chatbg').classList.toggle('on',auf);if(auf){unread=0;badge();if(!matchMedia('(pointer:coarse)').matches)$('#cin').focus()}else $('#cin').blur()};
+$('#cfab').onclick=()=>chatAuf(true);
+$('#bChatX').onclick=$('#chatbg').onclick=()=>chatAuf(false);
+// Chat-Blatt nach unten wischen zum Schließen
+{let y0=null;const h=$('#chat h4');h.addEventListener('touchstart',e=>{y0=e.touches[0].clientY},{passive:true});
+ h.addEventListener('touchend',e=>{if(y0!=null&&e.changedTouches[0].clientY-y0>50)chatAuf(false);y0=null})}
+// Tastatur am Handy: Chat-Blatt über der Tastatur halten
+if(window.visualViewport){const vv=visualViewport,pass=()=>{const ch=$('#chat'),unten=Math.max(0,innerHeight-vv.height-vv.offsetTop);
+  ch.style.bottom=unten?unten+'px':'';ch.style.maxHeight=unten?(vv.height-12)+'px':''};vv.addEventListener('resize',pass);vv.addEventListener('scroll',pass)}
 addEventListener('pagehide',()=>{if(tr)tr.close()});
+
+// ---------- App-Gefühl ----------
+const APP=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+document.documentElement.classList.toggle('app',APP);
+// Hinweis zum Installieren nur in Safari auf dem iPhone/iPad
+if(IOS&&!APP&&!lsGet('lm2p-install',''))$('#install').classList.add('on');
+$('#installX').onclick=()=>{$('#install').classList.remove('on');lsSet('lm2p-install','1')};
+// Kein Zoom durch Kneifen (iOS ignoriert user-scalable=no)
+['gesturestart','gesturechange'].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
+document.addEventListener('touchmove',e=>{if(e.scale&&e.scale!==1)e.preventDefault()},{passive:false});
+// Haptik: Android über navigator.vibrate, iPhone (Safari 18+) über einen versteckten Schalter,
+// der beim Umschalten ein kurzes Tippen auslöst. Das klappt am iPhone nur direkt nach einer Berührung.
+const haptik=(()=>{
+  const MUSTER={tap:8,tick:12,sieg:[18,60,28],fehler:[40,50,40]};
+  let lb=null;
+  if(IOS&&!navigator.vibrate){
+    lb=document.createElement('label');lb.setAttribute('aria-hidden','true');
+    lb.style.cssText='position:fixed;left:-100px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+    lb.innerHTML='<input type="checkbox" switch tabindex="-1">';document.body.appendChild(lb);
+  }
+  return art=>{try{if(navigator.vibrate)navigator.vibrate(MUSTER[art]||8);else if(lb)lb.click()}catch(_){}};
+})();
+document.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse')return;
+  if(e.target.closest('button:not(:disabled),.c4c,.rv>div,.bsg>div,svg.dots .e,g[data-i],a.btn'))haptik('tap');
+},true);
+// Bildschirm bleibt an, solange ihr in einem Raum seid
+let sperre=null,wach=false;
+async function wachHalten(an){
+  wach=an;
+  try{if(an&&!sperre&&navigator.wakeLock){sperre=await navigator.wakeLock.request('screen');sperre.addEventListener('release',()=>{sperre=null})}
+    else if(!an&&sperre){await sperre.release();sperre=null}}catch(_){}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&wach)wachHalten(true)});
+// Zurück-Pfeil oben, Wischgeste zurück und Android-Zurück-Taste
+function zurueck(){
+  const sc=document.querySelector('.screen.on')?.id;
+  if($('#chat').classList.contains('open'))return chatAuf(false);
+  if(sc==='sRoom'&&!$('#vGame').hidden)return zurLobby();
+  if(sc==='sRoom'){if(confirm('Raum verlassen? Die Verbindung wird getrennt.'))verlassen();return}
+  if(sc==='sWait'||sc==='sJoin')verlassen();
+}
+$('#navBack').onclick=zurueck;
+addEventListener('popstate',()=>{
+  const sc=document.querySelector('.screen.on')?.id;
+  if(sc!=='sRoom')return;
+  if(!$('#vGame').hidden){stopGame();send({t:'quit'});$('#vLobby').hidden=false;$('#vGame').hidden=true;renderGames();gleite($('#vLobby'),true);scrollTo(0,0);kopf();return}
+  if(history.state&&history.state.zs)return;
+  if(confirm('Raum verlassen? Die Verbindung wird getrennt.'))verlassen();else history.pushState({zs:'raum'},'');
+});
+kopf();
 
 // Einladungslink: ?raum=ABCD
 const qRaum=new URLSearchParams(location.search).get('raum');
