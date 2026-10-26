@@ -1430,3 +1430,52 @@ SPIELE.push({id:'kritzel',name:'Kritzel-Gedächtnis',emoji:'✏️',mode:'vs',
       }
     }};
   }});
+
+// ---------------------------------------------------------------------
+//  Englisch: Name, Kurzbeschreibung und Regeln (Texte im Spiel noch auf Deutsch)
+// ---------------------------------------------------------------------
+const SPIELE_EN={
+  vier:['Connect Four','The classic: whoever gets four discs in a row first wins.',
+    'Tap a column to drop your disc into it. Four in a row (horizontal, vertical or diagonal) wins.'],
+  schiffe:['Battleships','Hidden fleets, a grid, steady nerves. A hit means: shoot again.',
+    'Reshuffle your fleet until you like it, then press <b>Ready!</b>. Then you take turns shooting at the other sea. After a hit you go again. Ships never touch, not even diagonally. Whoever sinks all enemy ships first wins.'],
+  pong:['Pong','Retro tennis in real time. The ball gets faster with every hit.',
+    'Move your paddle with ↑ and ↓ (or W and S), with the mouse or your finger. Hit the ball with the edge of the paddle and it flies at a steeper angle. First to 7 points wins.'],
+  tron:['Light Racers','You draw glowing trails across the field. Whoever crashes first loses.',
+    'Steer with the arrow keys or WASD, on a phone by swiping or with the D-pad. You keep moving and leave a light trail behind you. Crash into a wall or a trail and the round goes to the other player. First to win 3 rounds wins.'],
+  duell:['Quick Draw','A western duel of reflexes. Draw too early or fall for a trick and you lose.',
+    'Wait until a big <b>ZIEH!</b> (draw!) appears, then click, tap or press space as fast as you can. Press too early or fall for a fake word (like “ZIEGE!”) and the other player gets the point. Reaction time is measured on your own screen, so it’s fair even on a slow connection. First to 5 points wins.'],
+  ssp:['Rock Paper Scissors','Rock, paper, scissors with a dino joker that eats everything once.',
+    'Both pick rock, paper or scissors at the same time. Scissors beat paper, paper beats rock, rock beats scissors. Each player has the 🦖 dino joker <b>once per game</b>: it eats everything except another dino. First to win 4 rounds wins.'],
+  tau:['Tug of War','Alternate hammering until the other one flies over the line.',
+    'Press ← and → (or A and D) <b>alternately</b>, on a phone the two big buttons alternately. Every correct switch is a pull on the rope. Pull the marker all the way to your side! After 30 seconds whoever is ahead wins.'],
+  kaestchen:['Dots and Boxes','Draw lines, close boxes, collect points. Close one and you go again.',
+    'Take turns drawing a line between two neighbouring dots. Whoever draws the fourth line around a box gets it and goes again. At the end, whoever has more boxes wins.'],
+  bombe:['Defuse the Bomb','One sees the bomb, the other the manual. 7 levels, from the practice bomb to the final boss.',
+    'One of you is the <b>defuser</b> and sees the bomb, the other is the <b>expert</b> with the manual. The defuser describes what they see, the expert says what to do. Talk in the chat (or call each other). Solve all modules before time runs out. Too many mistakes and it goes BOOM. There are <b>7 levels</b> with more and more modules (wires, button, symbols, colour sequence, password, memory). From level 6 the timer speeds up with every mistake. After each bomb you swap roles. The bomb and manual texts are in German.'],
+  labyrinth:['Blind Maze','One walks blind through the maze, the other guides them past the traps.',
+    'The <b>runner</b> sees no walls, only the ones they’ve already bumped into. The <b>guide</b> sees the whole maze, the goal and the traps and gives directions in the chat (“3 down, then right!”). If the runner steps into a trap, they go back to the start. After each level you swap roles. Beat all 3 levels as fast as you can!'],
+  gedanken:['Mind Reader','Say the same word at the same time. Sounds easy? It isn’t.',
+    'Each of you secretly types a word, then both are revealed at once. If they match, you win! If not, next round you look for a word that fits <b>both</b> previous words (for example “sea” and “sand” → “beach”). You have 10 tries. Words already used are off limits. No agreeing on anything in the chat!'],
+  eier:['Save the Dino Eggs','Catch the falling dino eggs together, but each colour only with the matching nest.',
+    'Move your nest with ← and → (or A and D), with the mouse or your finger. <b>Blue eggs</b> only go in the blue nest, <b>red</b> ones only in the red, <b>golden</b> ones in both (+5 points). An egg that lands in the wrong nest bounces out. If an egg hits the ground you lose a life. Don’t catch the <b>meteors</b>! You share 5 lives.'],
+  zahlen:['Number Sense','Lay down your cards in ascending order without revealing your numbers.',
+    'Each player gets cards with numbers from 1 to 100. Together you must lay down <b>all cards in ascending order</b>. There are no turns: whoever thinks they have the lowest card just plays it. But <b>don’t reveal numbers in the chat!</b> Only gut feeling and timing. Play too early and you lose a life. In level 1 everyone has 1 card, in level 2 two, and so on. Can you beat level 8?'],
+  malen:['Draw & Guess','One draws, the other guesses. Together you collect as many points as possible.',
+    'Taking turns, one player draws a word only they can see and the other types guesses. The faster it’s guessed, the more points you get <b>together</b>. 6 rounds of 80 seconds each. Drawing letters or numbers is not allowed! The words are in German.'],
+  reversi:['Reversi','Trap discs and flip them. The board often tips at the last second.',
+    'Place your disc so that it traps enemy discs between it and one of your own (horizontally, vertically or diagonally). All trapped discs become yours. The light dots show where you can play. If you can’t move, you pass. At the end, whoever has more discs wins.'],
+  maexchen:['Mäxchen (Liar’s Dice)','Roll, announce, bluff. Do you believe the other player or call it?',
+    'On your turn you roll two dice in secret and announce a value that must be <b>higher</b> than the last one. Lying is allowed! The other player either believes it (and then has to beat it) or calls it. Lied? Then the liar loses a life, otherwise the doubter does. The higher number always comes first (5 and 3 is 53). Order: 31 is the lowest, then up to 65, then the doubles (11 to 66), and at the very top is <b>Mäxchen</b> (21). Mäxchen is worth 2 lives. Everyone has 5 lives.'],
+  maulwurf:['Whack-a-Mole Duel','Nine holes, one hammer each. Whoever hits first gets the point.',
+    'Whack everything that pops out of the holes, but faster than the other player! 🐹 is 1 point, 🌟 is 3 points, whoever hits the 💣 loses 2 points. On a computer the keys 1 to 9 work too (like a number pad). After 40 seconds, whoever has more points wins.'],
+  codewort:['Codewords','Find all agents together with just one word as a clue. But watch out for the assassins.',
+    'There are 25 words on the table. Each of you sees your own secret card: <b>green outlines</b> are the agents your partner must find, <b>black</b> ones are assassins. On your turn you give <b>one word and a number</b> as a clue (“animal 2”). The other taps words: agent? Keep guessing! Bystander? Turn over. Assassin? You lose! Then you swap. Find all 15 agents in 9 turns. No extra hints in the chat, please. The words are in German.'],
+  doppeldino:['Double Dino','One dino, two brains: one jumps, the other ducks. How far can you get?',
+    'You control <b>one dino together</b>. One of you handles <b>jumping</b> (over cacti), the other <b>ducking</b> (under pterosaurs). Your job is shown at the top. Keys: space or ↑/↓, on a phone tap the playing field (hold to duck). You swap every 300 metres! You have 3 lives.'],
+  echo:['Echo Chain','Take turns replaying the tone chain and adding one tone. How long will it get?',
+    'Four colourful keys with four tones. On your turn you replay the <b>whole chain so far</b> and then add <b>one new tone</b>. Then it’s the other player’s turn. Your partner sees and hears every key press, so pay attention! One wrong tone and the chain breaks. Keys: 1 to 4 or click.'],
+  kritzel:['Scribble Memory','15 words, read each one briefly and then scribble for 2 seconds. Can you still tell what you drew?',
+    'You both get the same <b>15 words</b> one after another. First you see the word for 1 second, then you have <b>2 seconds</b> to scribble it. Then the sheet clears and the next word comes. Afterwards you see your own drawings in random order and write down, without time pressure, what they were meant to be. Each correct word scores a point (a small typo still counts). The reveal with both of your drawings only comes at the very end. The words are in German.'],
+};
+for(const g of SPIELE){const e=SPIELE_EN[g.id];if(e)g.en={name:e[0],desc:e[1],how:e[2]}}

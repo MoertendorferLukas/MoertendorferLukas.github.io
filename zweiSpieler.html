@@ -14,7 +14,14 @@
 <meta name="apple-mobile-web-app-title" content="2 Spieler">
 <meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#f2f2f7">
-<meta name="description" content="2-Spieler-Spiele im Browser: Raum erstellen, Code weitergeben und miteinander oder gegeneinander spielen.">
+<meta name="description" content="2-Spieler-Spiele im Browser: Raum erstellen, Code weitergeben und miteinander oder gegeneinander spielen." data-en-content="2-player games in the browser: create a room, share the code and play with or against each other.">
+<script>
+// ---------- Sprache: gespeicherte Wahl (gilt für die ganze Seite), sonst Browsersprache ----------
+{let s;try{s=localStorage.getItem('sprache');}catch(e){}
+  if(s!=='de'&&s!=='en')s=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'de']).some(l=>/^de/i.test(l))?'de':'en';
+  document.documentElement.lang=s;}
+const T=(de,en)=>document.documentElement.lang==='en'?en:de;
+</script>
 <!--
   2 Spieler Spiele: ohne Backend.
   Die Verbindung läuft wenn möglich direkt von Browser zu Browser (WebRTC über PeerJS, der öffentliche
@@ -51,6 +58,7 @@
   nav .ttl{font-family:var(--disp);font-weight:700;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
   .nr{margin-left:auto;display:flex;align-items:center;gap:8px}
   nav .back{font-size:15px;color:var(--p1d);text-decoration:none;white-space:nowrap}
+  nav .lng{min-width:44px;height:32px;padding:0 8px;border:0;border-radius:8px;background:var(--fill);color:var(--p1d);font-family:inherit;font-weight:600;font-size:14px;cursor:pointer}
   .navback{display:none;flex:none;align-items:center;justify-content:center;width:40px;height:44px;margin-left:-12px;background:none;border:0;color:var(--p1d);font-size:34px;line-height:1;font-weight:300}
   .navback span{transform:translateY(-2px)}
   .navback:active{opacity:.4}
@@ -583,10 +591,10 @@
 
 <nav>
   <div class="wrap">
-    <button class="navback" type="button" id="navBack" aria-label="Zurück"><span>‹</span></button>
-    <a class="logo" href="index.html" aria-label="Zur Hauptseite"><b>2</b><b>P</b></a>
+    <button class="navback" type="button" id="navBack" aria-label="Zurück" data-en-aria-label="Back"><span>‹</span></button>
+    <a class="logo" href="index.html" aria-label="Zur Hauptseite" data-en-aria-label="To the main page"><b>2</b><b>P</b></a>
     <span class="ttl" id="navTtl">2 Spieler</span>
-    <span class="nr"><span class="ncode" id="nCode"></span><a class="back" href="index.html#ueber">← Zur Seite</a></span>
+    <span class="nr"><span class="ncode" id="nCode"></span><button class="lng" id="lng" type="button" aria-label="Switch to English" data-en-aria-label="Auf Deutsch umschalten"><span data-en="DE">EN</span></button><a class="back" href="index.html#ueber" data-en="← Main page">← Zur Seite</a></span>
   </div>
 </nav>
 
@@ -596,38 +604,38 @@
   <section class="screen on" id="sStart">
     <div class="hero">
       <span class="jc p1" aria-hidden="true"></span>
-      <h1 class="big">2 Spieler<span>21 Spiele für zwei</span></h1>
+      <h1 class="big" data-en="2 Players<span>21 games for two</span>">2 Spieler<span>21 Spiele für zwei</span></h1>
       <span class="jc p2" aria-hidden="true"></span>
     </div>
-    <p class="lead">Jeder spielt am eigenen Handy. Tipp ein Spiel an oder unten auf den Knopf, dann erstellst du einen Raum oder trittst einem bei. Kein Konto, kein Download.</p>
-    <div class="filt" id="filt0"><button type="button" class="on" data-f="">Alle</button><button type="button" data-f="vs">Gegeneinander</button><button type="button" data-f="coop">Miteinander</button></div>
+    <p class="lead" data-en="Everyone plays on their own phone. Tap a game or the button below to create a room or join one. No account, no download.">Jeder spielt am eigenen Handy. Tipp ein Spiel an oder unten auf den Knopf, dann erstellst du einen Raum oder trittst einem bei. Kein Konto, kein Download.</p>
+    <div class="filt" id="filt0"><button type="button" class="on" data-f="" data-en="All">Alle</button><button type="button" data-f="vs" data-en="Versus">Gegeneinander</button><button type="button" data-f="coop" data-en="Co-op">Miteinander</button></div>
     <div class="games" id="games0"></div>
-    <div class="install" id="install"><b>Als App installieren</b>Tippe unten auf <svg class="ios-share" viewBox="0 0 18 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 13V1M5 5l4-4 4 4M5 8H2v11h14V8h-3"/></svg> „Teilen“ und dann auf „Zum Home-Bildschirm“. Dann startet es wie eine richtige App, ohne Browserleiste.<button type="button" id="installX" aria-label="Hinweis schließen">✕</button></div>
-    <div class="mitbar"><button class="btn primary" type="button" id="bMit">Raum erstellen oder beitreten</button></div>
+    <div class="install" id="install"><b data-en="Install as an app">Als App installieren</b><span data-en='Tap <svg class="ios-share" viewBox="0 0 18 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 13V1M5 5l4-4 4 4M5 8H2v11h14V8h-3"/></svg> “Share” below and then “Add to Home Screen”. It then starts like a real app, without the browser bar.'>Tippe unten auf <svg class="ios-share" viewBox="0 0 18 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 13V1M5 5l4-4 4 4M5 8H2v11h14V8h-3"/></svg> „Teilen“ und dann auf „Zum Home-Bildschirm“. Dann startet es wie eine richtige App, ohne Browserleiste.</span><button type="button" id="installX" aria-label="Hinweis schließen" data-en-aria-label="Close hint">✕</button></div>
+    <div class="mitbar"><button class="btn primary" type="button" id="bMit" data-en="Create or join a room">Raum erstellen oder beitreten</button></div>
   </section>
 
   <!-- ===== Fenster: Raum erstellen / beitreten ===== -->
   <div class="sheetbg" id="sheetbg"></div>
   <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetH">
-    <h4 id="sheetH">Mitspielen <button type="button" id="bSheetX">Fertig</button></h4>
+    <h4 id="sheetH"><span data-en="Play together">Mitspielen</span> <button type="button" id="bSheetX" data-en="Done">Fertig</button></h4>
     <div class="menu">
     <div class="err" id="err"></div>
     <div class="namerow">
-      <label class="lb" for="name">Dein Name</label>
-      <input class="f" id="name" maxlength="16" autocomplete="nickname" placeholder="z. B. Lukas">
+      <label class="lb" for="name" data-en="Your name">Dein Name</label>
+      <input class="f" id="name" maxlength="16" autocomplete="nickname" placeholder="z. B. Lukas" data-en-placeholder="e.g. Lukas">
     </div>
     <div class="cards">
       <div class="card">
-        <h3>Raum erstellen</h3>
-        <p>Du bekommst einen Code, den du weitergibst.</p>
+        <h3 data-en="Create a room">Raum erstellen</h3>
+        <p data-en="You get a code to pass on.">Du bekommst einen Code, den du weitergibst.</p>
         <p class="wahl" id="wahl"></p>
-        <button class="btn primary" id="bCreate" type="button">Neuen Raum erstellen</button>
+        <button class="btn primary" id="bCreate" type="button" data-en="Create new room">Neuen Raum erstellen</button>
       </div>
       <form class="card" id="fJoin">
-        <h3>Raum beitreten</h3>
-        <p>Gib den Code ein, den du bekommen hast.</p>
-        <input class="f codein" id="codeIn" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD" aria-label="Raumcode">
-        <button class="btn red" type="submit">Beitreten</button>
+        <h3 data-en="Join a room">Raum beitreten</h3>
+        <p data-en="Enter the code you were given.">Gib den Code ein, den du bekommen hast.</p>
+        <input class="f codein" id="codeIn" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD" aria-label="Raumcode" data-en-aria-label="Room code">
+        <button class="btn red" type="submit" data-en="Join">Beitreten</button>
       </form>
     </div>
     </div>
@@ -636,21 +644,21 @@
   <!-- ===== Verbinden / Warten ===== -->
   <section class="screen" id="sWait">
     <div class="waitbox">
-      <p class="hello">Dein Raumcode</p>
+      <p class="hello" data-en="Your room code">Dein Raumcode</p>
       <div><span class="bigcode" id="bigCode">····</span></div>
       <div class="waitbtns">
-        <button class="btn dark" type="button" id="bCopyCode">Code kopieren</button>
-        <button class="btn" type="button" id="bCopyLink">Einladungslink teilen</button>
+        <button class="btn dark" type="button" id="bCopyCode" data-en="Copy code">Code kopieren</button>
+        <button class="btn" type="button" id="bCopyLink" data-en="Share invite link">Einladungslink teilen</button>
       </div>
       <p><span class="spin"></span><b id="waitTxt">Warte auf Mitspieler …</b></p>
-      <p class="small">Die andere Person öffnet diese Seite, gibt den Code bei „Raum beitreten“ ein und schon geht’s los.<br>Oder schick ihr einfach den Einladungslink.</p>
+      <p class="small" data-en="The other person opens this page, enters the code under “Join a room” and off you go.<br>Or just send them the invite link.">Die andere Person öffnet diese Seite, gibt den Code bei „Raum beitreten“ ein und schon geht’s los.<br>Oder schick ihr einfach den Einladungslink.</p>
       <p><button class="btn sm" type="button" data-leave>Abbrechen</button></p>
     </div>
   </section>
 
   <section class="screen" id="sJoin">
     <div class="waitbox">
-      <p class="hello">Verbinde …</p>
+      <p class="hello" data-en="Connecting …">Verbinde …</p>
       <div><span class="bigcode" id="joinCode">····</span></div>
       <p><span class="spin"></span><b id="joinTxt">Verbinde mit dem Raum …</b></p>
       <p><button class="btn sm" type="button" data-leave>Abbrechen</button></p>
@@ -660,38 +668,38 @@
   <!-- ===== Raum ===== -->
   <section class="screen" id="sRoom">
     <div class="rbar">
-      <span class="rc">Raum <b id="rCode"></b></span>
+      <span class="rc"><span data-en="Room">Raum</span> <b id="rCode"></b></span>
       <span class="sc" id="rScore"></span>
       <span class="sp"></span>
-      <button class="btn sm" type="button" data-leave>Raum verlassen</button>
+      <button class="btn sm" type="button" data-leave data-en="Leave room">Raum verlassen</button>
     </div>
     <div class="room">
       <div>
         <div id="vLobby">
-          <h2 class="lobh">Was spielen wir?</h2>
-          <p class="lobp">Wer ein Spiel anklickt, startet es für euch beide. Siege in den Gegeneinander-Spielen zählen oben in den Punktestand.</p>
-          <div class="filt" id="filt"><button type="button" class="on" data-f="">Alle</button><button type="button" data-f="vs"><i>⚔️ </i>Gegeneinander</button><button type="button" data-f="coop"><i>🤝 </i>Miteinander</button></div>
+          <h2 class="lobh" data-en="What shall we play?">Was spielen wir?</h2>
+          <p class="lobp" data-en="Whoever taps a game starts it for both of you. Wins in versus games count towards the score at the top.">Wer ein Spiel anklickt, startet es für euch beide. Siege in den Gegeneinander-Spielen zählen oben in den Punktestand.</p>
+          <div class="filt" id="filt"><button type="button" class="on" data-f="" data-en="All">Alle</button><button type="button" data-f="vs" data-en="<i>⚔️ </i>Versus"><i>⚔️ </i>Gegeneinander</button><button type="button" data-f="coop" data-en="<i>🤝 </i>Co-op"><i>🤝 </i>Miteinander</button></div>
           <div class="games" id="games"></div>
         </div>
         <div id="vGame" hidden>
-          <div class="ghead"><button class="btn sm" type="button" id="bBack">← Andere Spiele</button><h2 id="gName"></h2><span class="tag" id="gTag"></span></div>
-          <details class="how" id="gHowBox"><summary>So geht’s</summary><p id="gHow"></p></details>
+          <div class="ghead"><button class="btn sm" type="button" id="bBack" data-en="← Other games">← Andere Spiele</button><h2 id="gName"></h2><span class="tag" id="gTag"></span></div>
+          <details class="how" id="gHowBox"><summary data-en="How to play">So geht’s</summary><p id="gHow"></p></details>
           <div class="gstatus" id="gStatus"></div>
           <div class="gwrap">
             <div class="garea" id="gArea"></div>
-            <div class="endov" id="endOv"><div class="endbox" id="endBox"><h3 id="endH"></h3><p id="endP"></p><div class="eb"><button class="btn primary" type="button" id="bAgain">Nochmal</button><button class="btn" type="button" id="bLobby">Andere Spiele</button></div></div></div>
+            <div class="endov" id="endOv"><div class="endbox" id="endBox"><h3 id="endH"></h3><p id="endP"></p><div class="eb"><button class="btn primary" type="button" id="bAgain" data-en="Play again">Nochmal</button><button class="btn" type="button" id="bLobby" data-en="Other games">Andere Spiele</button></div></div></div>
           </div>
         </div>
       </div>
       <aside class="chat" id="chat" aria-label="Chat">
-        <h4>Chat <button type="button" id="bChatX">Fertig</button></h4>
+        <h4>Chat <button type="button" id="bChatX" data-en="Done">Fertig</button></h4>
         <div class="clog" id="clog"></div>
-        <div class="quick" id="quick"><button type="button">👍</button><button type="button">😂</button><button type="button">😱</button><button type="button">GG!</button><button type="button">Nochmal?</button><button type="button">Links</button><button type="button">Rechts</button><button type="button">Hoch</button><button type="button">Runter</button></div>
-        <form class="cform" id="cform"><input id="cin" maxlength="200" autocomplete="off" placeholder="Nachricht …" aria-label="Chatnachricht"><button type="submit" aria-label="Senden">Senden</button></form>
+        <div class="quick" id="quick"><button type="button">👍</button><button type="button">😂</button><button type="button">😱</button><button type="button">GG!</button><button type="button" data-en="Again?">Nochmal?</button><button type="button" data-en="Left">Links</button><button type="button" data-en="Right">Rechts</button><button type="button" data-en="Up">Hoch</button><button type="button" data-en="Down">Runter</button></div>
+        <form class="cform" id="cform"><input id="cin" maxlength="200" autocomplete="off" placeholder="Nachricht …" data-en-placeholder="Message …" aria-label="Chatnachricht" data-en-aria-label="Chat message"><button type="submit" aria-label="Senden" data-en-aria-label="Send" data-en="Send">Senden</button></form>
       </aside>
     </div>
     <div class="chatbg" id="chatbg"></div>
-    <button class="cfab" type="button" id="cfab" aria-label="Chat öffnen">💬<i id="cbadge">0</i></button>
+    <button class="cfab" type="button" id="cfab" aria-label="Chat öffnen" data-en-aria-label="Open chat">💬<i id="cbadge">0</i></button>
   </section>
 </main>
 <div class="toast" id="toast"></div>
@@ -722,13 +730,13 @@ function kopf(){
   document.body.classList.toggle('zurueck',sc!=='sStart');
   document.body.classList.toggle('imraum',sc==='sRoom');
   $('#nCode').textContent=S.code;
-  $('#navTtl').textContent=sc==='sWait'?'Neuer Raum':sc==='sJoin'?'Beitreten':imSpiel&&S.G?S.G.name:sc==='sRoom'?'Spielauswahl':'2 Spieler';
+  $('#navTtl').textContent=sc==='sWait'?T('Neuer Raum','New room'):sc==='sJoin'?T('Beitreten','Joining'):imSpiel&&S.G?gname(S.G):sc==='sRoom'?T('Spielauswahl','Choose a game'):T('2 Spieler','2 Players');
 }
 function showErr(m){const e=$('#err');e.textContent=m||'';e.classList.toggle('on',!!m);if(m)fenster(true)}
 // Fenster zum Raum erstellen/beitreten. Mit Spiel-ID: dieses Spiel startet, sobald jemand deinem Raum beitritt.
 function fenster(auf,id){
   if(auf&&id!==undefined){S.wunsch=id;const G=SPIELE.find(g=>g.id===id);
-    $('#wahl').innerHTML=G?`<b>${G.name}</b> startet, sobald jemand deinem Raum beitritt.`:'';$('#wahl').classList.toggle('on',!!G)}
+    $('#wahl').innerHTML=G?T(`<b>${G.name}</b> startet, sobald jemand deinem Raum beitritt.`,`<b>${gname(G)}</b> starts as soon as someone joins your room.`):'';$('#wahl').classList.toggle('on',!!G)}
   $('#sheet').classList.toggle('open',auf);$('#sheetbg').classList.toggle('on',auf);
   if(!auf){$('#name').blur();$('#codeIn').blur()}
 }
@@ -842,70 +850,93 @@ function gastTransport(code,h,lokal){
 }
 function send(m){tr&&tr.send(m)}
 
-function myName(){const v=$('#name').value.trim().slice(0,16);if(v)lsSet('lm2p-name',v);return v||(S.host?'Spieler 1':'Spieler 2')}
+function myName(){const v=$('#name').value.trim().slice(0,16);if(v)lsSet('lm2p-name',v);return v||(S.host?T('Spieler 1','Player 1'):T('Spieler 2','Player 2'))}
 function connect(){
   showErr('');
-  const h={ready(){$('#bigCode').textContent=S.code;$('#waitTxt').textContent='Warte auf Mitspieler …';show('sWait')},
-    umweg(){$('#joinTxt').textContent='Direkte Verbindung klappt nicht, versuche den Umweg über einen Relay-Server …'},
+  const h={ready(){$('#bigCode').textContent=S.code;$('#waitTxt').textContent=T('Warte auf Mitspieler …','Waiting for the other player …');show('sWait')},
+    umweg(){$('#joinTxt').textContent=T('Direkte Verbindung klappt nicht, versuche den Umweg über einen Relay-Server …','Direct connection isn’t working, trying the detour via a relay server …')},
     open:onOpen,data:onData,close:onClose,error:onErr};
   tr=S.host?hostTransport(S.code,h,LOCAL):gastTransport(S.code,h,LOCAL);
 }
 function hangup(){fenster(false);clearTimeout(joinTimer);if(tr){try{tr.close()}catch(_){}}tr=null;S.open=false;stopGame();wachHalten(false)}
-function createRoom(){hangup();S.host=true;S.me=0;S.names=[myName(),''];S.code=newCode();$('#bigCode').textContent='····';$('#waitTxt').textContent='Raum wird erstellt …';show('sWait');connect()}
+function createRoom(){hangup();S.host=true;S.me=0;S.names=[myName(),''];S.code=newCode();$('#bigCode').textContent='····';$('#waitTxt').textContent=T('Raum wird erstellt …','Creating room …');show('sWait');connect()}
 function joinRoom(code){
   code=(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-  if(code.length!==4){showErr('Der Raumcode hat 4 Zeichen.');$('#codeIn').focus();return}
-  hangup();S.host=false;S.me=1;S.names=['',myName()];S.code=code;$('#joinCode').textContent=code;$('#joinTxt').textContent='Verbinde mit dem Raum …';show('sJoin');connect();
+  if(code.length!==4){showErr(T('Der Raumcode hat 4 Zeichen.','The room code has 4 characters.'));$('#codeIn').focus();return}
+  hangup();S.host=false;S.me=1;S.names=['',myName()];S.code=code;$('#joinCode').textContent=code;$('#joinTxt').textContent=T('Verbinde mit dem Raum …','Connecting to the room …');show('sJoin');connect();
   joinTimer=setTimeout(()=>{if(!S.open)onErr('net')},35000);
 }
 const FEHLER={
-  lib:'Die Verbindungs-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen und die Seite neu laden.',
-  notfound:'Raum nicht gefunden. Stimmt der Code und ist die Seite beim Raum-Ersteller noch offen?',
-  net:'Die Verbindung klappt gerade nicht, weder direkt noch über den Relay-Server. Bitte beide die Seite neu laden und nochmal probieren.'};
+  lib:['Die Verbindungs-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen und die Seite neu laden.','The connection library couldn’t be loaded. Please check your internet connection and reload the page.'],
+  notfound:['Raum nicht gefunden. Stimmt der Code und ist die Seite beim Raum-Ersteller noch offen?','Room not found. Is the code right and is the page still open on the host’s device?'],
+  net:['Die Verbindung klappt gerade nicht, weder direkt noch über den Relay-Server. Bitte beide die Seite neu laden und nochmal probieren.','The connection isn’t working right now, neither directly nor via the relay server. Both of you please reload the page and try again.']};
 function onErr(m){
   if(m==='taken'&&S.host){hangup();S.code=newCode();connect();return}
-  hangup();show('sStart');showErr(FEHLER[m]||m);
+  hangup();show('sStart');showErr(FEHLER[m]?T(...FEHLER[m]):m);
 }
 function onOpen(){clearTimeout(joinTimer);S.open=true;S.score=[0,0];send({t:'hi',name:S.names[S.me]})}
 function onClose(){
-  const wer=S.names[1-S.me]||'Dein Mitspieler';S.open=false;stopGame();
-  if(S.host){$('#waitTxt').textContent='Warte auf Mitspieler …';show('sWait');toast(wer+' hat den Raum verlassen.')}
-  else{hangup();show('sStart');showErr(wer+' hat den Raum geschlossen oder die Verbindung ist abgebrochen.')}
+  const wer=S.names[1-S.me]||T('Dein Mitspieler','The other player');S.open=false;stopGame();
+  if(S.host){$('#waitTxt').textContent=T('Warte auf Mitspieler …','Waiting for the other player …');show('sWait');toast(wer+T(' hat den Raum verlassen.',' left the room.'))}
+  else{hangup();show('sStart');showErr(wer+T(' hat den Raum geschlossen oder die Verbindung ist abgebrochen.',' closed the room or the connection dropped.'))}
 }
 function onData(m){
   if(!m||typeof m!=='object')return;
   switch(m.t){
     case 'hi':S.names[1-S.me]=String(m.name||'').slice(0,16)||(S.me?'Spieler 1':'Spieler 2');enterRoom();break;
-    case 'full':hangup();show('sStart');showErr('Dieser Raum ist schon voll.');break;
+    case 'full':hangup();show('sStart');showErr(T('Dieser Raum ist schon voll.','This room is already full.'));break;
     case 'chat':addChat(1-S.me,String(m.m||'').slice(0,200));break;
     case 'want':if(S.host)startGame(m.id);break;
     case 'start':if(!S.host)runGame(m.id,m.seed);break;
     case 'g':if(S.ctx&&m.s===S.seed&&S.game&&S.game.msg)try{S.game.msg(m.d)}catch(e){console.error(e)}break;
-    case 'quit':if(S.ctx){stopGame();showLobby();toast(S.names[1-S.me]+' ist zur Spielauswahl zurück.')}break;
+    case 'quit':if(S.ctx){stopGame();showLobby();toast(S.names[1-S.me]+T(' ist zur Spielauswahl zurück.',' went back to the game list.'))}break;
   }
 }
 
 // ---------- Raum ----------
 function enterRoom(){
   $('#rCode').textContent=S.code;$('#clog').innerHTML='';unread=0;badge();
-  sys(`${S.names[1-S.me]} ist im Raum. Viel Spaß!`);
+  sys(T(`${S.names[1-S.me]} ist im Raum. Viel Spaß!`,`${S.names[1-S.me]} is in the room. Have fun!`));
   renderScore();showLobby();show('sRoom');wachHalten(true);haptik('sieg');
   if(!(history.state&&history.state.zs))history.pushState({zs:'raum'},'');
   if(S.host&&S.wunsch){const id=S.wunsch;S.wunsch='';setTimeout(()=>startGame(id),400)}
 }
 function renderScore(){
-  const n=p=>`<span class="pl p${p}">${p===1&&p===S.me?'<small>DU</small>':''}<span>${esc(S.names[p])}</span>${p===0&&p===S.me?'<small>DU</small>':''}</span>`;
+  const du=`<small>${T('DU','YOU')}</small>`,n=p=>`<span class="pl p${p}">${p===1&&p===S.me?du:''}<span>${esc(S.names[p])}</span>${p===0&&p===S.me?du:''}</span>`;
   const alt=$('#rScore .st')?.textContent,neu=`${S.score[0]}:${S.score[1]}`;
   $('#rScore').innerHTML=`${n(0)}<b class="st">${S.score[0]}<i>:</i>${S.score[1]}</b>${n(1)}`;
   if(alt&&alt!==neu)$('#rScore .st').classList.add('bump');
 }
+// ---------- Deutsch / Englisch ----------
+const gname=G=>T(G.name,G.en?.name||G.name);
+const modus=G=>G.mode==='vs'?T('Gegeneinander','Versus'):T('Miteinander','Co-op');
+function spielKopf(G){$('#gName').textContent=gname(G);$('#gTag').className='tag '+G.mode;$('#gTag').textContent=modus(G);$('#gHow').innerHTML=T(G.how,G.en?.how||G.how)}
+const TITEL={de:document.title,en:'2-player games · Lukas Mörtendorfer'};
+function sprache(s){
+  const en=s==='en';
+  document.documentElement.lang=s;document.title=TITEL[s];
+  for(const el of document.querySelectorAll('[data-en]')){
+    if(el.dataset.de===undefined)el.dataset.de=el.innerHTML;
+    el.innerHTML=en?el.dataset.en:el.dataset.de;
+  }
+  for(const a of ['aria-label','placeholder','content'])for(const el of document.querySelectorAll('[data-en-'+a+']')){
+    if(!el.hasAttribute('data-de-'+a))el.setAttribute('data-de-'+a,el.getAttribute(a)||'');
+    el.setAttribute(a,el.getAttribute((en?'data-en-':'data-de-')+a));
+  }
+}
+if(document.documentElement.lang==='en')sprache('en');
+$('#lng').onclick=()=>{
+  const s=document.documentElement.lang==='en'?'de':'en';lsSet('sprache',s);sprache(s);
+  renderGames();kopf();if(S.open)renderScore();if(S.G&&!$('#vGame').hidden)spielKopf(S.G);
+};
+
 let filter='';
 function renderGames(){
   const TON=['#ffe1dc','#d9f0fb','#fff0c7','#dcf3e3','#ece3fa','#ffe0ee','#e2e6ee','#fde6d2'];
-  $('#games').innerHTML=$('#games0').innerHTML=SPIELE.filter(g=>!filter||g.mode===filter).map(g=>`<button type="button" class="gc" data-id="${g.id}" style="--k:${ICONS[g.id]?.bg||TON[SPIELE.indexOf(g)%TON.length]}"><span class="tag ${g.mode}">${g.mode==='vs'?'Gegeneinander':'Miteinander'}</span><span class="em">${ICONS[g.id]?.svg||g.emoji}</span><h3>${g.name}</h3><p>${g.desc}</p></button>`).join('');
+  $('#games').innerHTML=$('#games0').innerHTML=SPIELE.filter(g=>!filter||g.mode===filter).map(g=>`<button type="button" class="gc" data-id="${g.id}" style="--k:${ICONS[g.id]?.bg||TON[SPIELE.indexOf(g)%TON.length]}"><span class="tag ${g.mode}">${modus(g)}</span><span class="em">${ICONS[g.id]?.svg||g.emoji}</span><h3>${gname(g)}</h3><p>${T(g.desc,g.en?.desc||g.desc)}</p></button>`).join('');
 }
 function showLobby(){const vonSpiel=!$('#vGame').hidden;$('#vLobby').hidden=false;$('#vGame').hidden=true;renderGames();if(vonSpiel){gleite($('#vLobby'),true);scrollTo(0,0)}kopf();if(history.state&&history.state.zs==='spiel')history.back()}
-function pick(id){if(S.host)startGame(id);else{send({t:'want',id});toast('Spiel wird gestartet …')}}
+function pick(id){if(S.host)startGame(id);else{send({t:'want',id});toast(T('Spiel wird gestartet …','Starting game …'))}}
 function startGame(id){if(!S.open)return;const seed=Math.floor(Math.random()*2147483647);send({t:'start',id,seed});runGame(id,seed)}
 
 // ---------- Spiel ----------
@@ -918,10 +949,9 @@ function runGame(id,seed){
   stopGame();S.G=G;S.seed=seed;
   $('#vLobby').hidden=true;$('#vGame').hidden=false;gleite($('#vGame'));
   if(!(history.state&&history.state.zs==='spiel'))history.pushState({zs:'spiel'},'');
-  $('#gName').textContent=G.name;$('#gTag').className='tag '+G.mode;$('#gTag').textContent=G.mode==='vs'?'Gegeneinander':'Miteinander';
-  $('#gHow').innerHTML=G.how;$('#gHowBox').open=!lsGet('lm2p-how-'+id,'');lsSet('lm2p-how-'+id,'1');
+  spielKopf(G);$('#gHowBox').open=!lsGet('lm2p-how-'+id,'');lsSet('lm2p-how-'+id,'1');
   $('#gStatus').innerHTML='';
-  sys(`${G.name} startet.`);
+  sys(T(`${G.name} startet.`,`${gname(G)} is starting.`));
   S.ctx=makeCtx(G,seed);
   try{S.game=G.create(S.ctx)||{}}catch(e){console.error(e);S.game={}}
   if(innerWidth<=700)scrollTo(0,0);else $('#vGame').scrollIntoView({block:'start',behavior:'smooth'});
@@ -933,7 +963,7 @@ function makeCtx(G,seed){
   const c={
     el:area,me:S.me,other:1-S.me,host:S.host,seed,rng:rngFrom(seed),names:S.names.slice(),
     n(p){return `<b style="color:${FARBE[p]}">${p===S.me?'Du':esc(S.names[p])}</b>`},
-    dran(p){return p===S.me?'<b>Du bist dran!</b>':`${c.n(p)} ist dran …`},
+    dran(p){return p===S.me?T('<b>Du bist dran!</b>','<b>Your turn!</b>'):T(`${c.n(p)} ist dran …`,`${c.n(p)}’s turn …`)},
     send(d){if(alive)send({t:'g',s:seed,d})},
     status(h){if(alive)$('#gStatus').innerHTML=h},
     every(ms,f){const id=setInterval(()=>{if(alive)f()},ms);kill.push(()=>clearInterval(id));return id},
@@ -952,13 +982,13 @@ function makeCtx(G,seed){
 }
 function showEnd(r){
   let h,k='';
-  if(r.coop){h=r.win===true?'Geschafft!':r.win===false?'Leider verloren':'Spiel vorbei';k=r.win===true?'win':r.win===false?'lose':''}
-  else if(r.w<0)h='Unentschieden';
-  else if(r.w===S.me){h='Du gewinnst!';k='win'}
-  else{h=esc(S.names[r.w])+' gewinnt';k='lose'}
+  if(r.coop){h=r.win===true?T('Geschafft!','You did it!'):r.win===false?T('Leider verloren','Game lost'):T('Spiel vorbei','Game over');k=r.win===true?'win':r.win===false?'lose':''}
+  else if(r.w<0)h=T('Unentschieden','Draw');
+  else if(r.w===S.me){h=T('Du gewinnst!','You win!');k='win'}
+  else{h=esc(S.names[r.w])+T(' gewinnt',' wins');k='lose'}
   $('#endH').innerHTML=h;$('#endP').textContent=r.text||'';$('#endBox').className='endbox '+k;
   $('#endOv').classList.add('on');haptik(k==='win'?'sieg':k==='lose'?'fehler':'tap');
-  if(!r.coop)sys(r.w<0?`${S.G.name}: Unentschieden.`:`${S.G.name}: ${S.names[r.w]} gewinnt.`);
+  if(!r.coop)sys(r.w<0?`${gname(S.G)}: ${T('Unentschieden.','draw.')}`:`${gname(S.G)}: ${S.names[r.w]}${T(' gewinnt.',' wins.')}`);
 }
 
 // ---------- Chat ----------
@@ -967,7 +997,7 @@ const chatOpen=()=>getComputedStyle($('#cfab')).display==='none'||$('#chat').cla
 function badge(){const b=$('#cbadge');b.textContent=unread;b.classList.toggle('on',unread>0)}
 function addChat(p,txt){
   if(!txt)return;const d=document.createElement('div');d.className='m'+(p===S.me?' me':'')+(p===1?' p1':'');
-  d.innerHTML=`<b>${esc(p===S.me?'Du':S.names[p])}</b>${esc(txt)}`;const l=$('#clog');l.appendChild(d);l.scrollTop=l.scrollHeight;
+  d.innerHTML=`<b>${esc(p===S.me?T('Du','You'):S.names[p])}</b>${esc(txt)}`;const l=$('#clog');l.appendChild(d);l.scrollTop=l.scrollHeight;
   if(p!==S.me){haptik('tick');if(!chatOpen()){unread++;badge();toast(S.names[p]+': '+txt.slice(0,60))}}
 }
 function sys(t){const d=document.createElement('div');d.className='sys';d.textContent=t;const l=$('#clog');l.appendChild(d);l.scrollTop=l.scrollHeight}
@@ -981,9 +1011,9 @@ $('#codeIn').oninput=e=>{e.target.value=e.target.value.toUpperCase().replace(/[^
 const verlassen=()=>{hangup();show('sStart',true);history.replaceState(null,'',location.pathname+(LOCAL?'?lokal':''))};
 document.querySelectorAll('[data-leave]').forEach(b=>b.onclick=verlassen);
 const link=()=>`${location.origin}${location.pathname}?${LOCAL?'lokal&':''}raum=${S.code}`;
-const copy=(t,ok)=>{(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(ok),()=>prompt('Zum Kopieren:',t))};
-$('#bCopyCode').onclick=()=>copy(S.code,'Code kopiert!');
-$('#bCopyLink').onclick=()=>{if(navigator.share&&matchMedia('(pointer:coarse)').matches)navigator.share({title:'2 Spieler Spiele',text:`Spiel mit mir! Raumcode: ${S.code}`,url:link()}).catch(()=>{});else copy(link(),'Einladungslink kopiert!')};
+const copy=(t,ok)=>{(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(ok),()=>prompt(T('Zum Kopieren:','To copy:'),t))};
+$('#bCopyCode').onclick=()=>copy(S.code,T('Code kopiert!','Code copied!'));
+$('#bCopyLink').onclick=()=>{if(navigator.share&&matchMedia('(pointer:coarse)').matches)navigator.share({title:T('2 Spieler Spiele','2-player games'),text:T(`Spiel mit mir! Raumcode: ${S.code}`,`Play with me! Room code: ${S.code}`),url:link()}).catch(()=>{});else copy(link(),T('Einladungslink kopiert!','Invite link copied!'))};
 $('#games').onclick=e=>{const b=e.target.closest('.gc');if(b)pick(b.dataset.id)};
 $('#games0').onclick=e=>{const b=e.target.closest('.gc');if(b)fenster(true,b.dataset.id)};
 document.querySelectorAll('.filt').forEach(f=>f.onclick=e=>{const b=e.target.closest('button');if(!b)return;filter=b.dataset.f;document.querySelectorAll('.filt button').forEach(x=>x.classList.toggle('on',x.dataset.f===filter));renderGames()});
@@ -1047,7 +1077,7 @@ function zurueck(){
   if($('#chat').classList.contains('open'))return chatAuf(false);
   if($('#sheet').classList.contains('open'))return fenster(false);
   if(sc==='sRoom'&&!$('#vGame').hidden)return zurLobby();
-  if(sc==='sRoom'){if(confirm('Raum verlassen? Die Verbindung wird getrennt.'))verlassen();return}
+  if(sc==='sRoom'){if(confirm(T('Raum verlassen? Die Verbindung wird getrennt.','Leave the room? The connection will be closed.')))verlassen();return}
   if(sc==='sWait'||sc==='sJoin')verlassen();
 }
 $('#navBack').onclick=zurueck;
@@ -1057,13 +1087,13 @@ addEventListener('popstate',()=>{
   if(sc!=='sRoom')return;
   if(!$('#vGame').hidden){stopGame();send({t:'quit'});$('#vLobby').hidden=false;$('#vGame').hidden=true;renderGames();gleite($('#vLobby'),true);scrollTo(0,0);kopf();return}
   if(history.state&&history.state.zs)return;
-  if(confirm('Raum verlassen? Die Verbindung wird getrennt.'))verlassen();else history.pushState({zs:'raum'},'');
+  if(confirm(T('Raum verlassen? Die Verbindung wird getrennt.','Leave the room? The connection will be closed.')))verlassen();else history.pushState({zs:'raum'},'');
 });
 kopf();renderGames();
 
 // Einladungslink: ?raum=ABCD
 const qRaum=new URLSearchParams(location.search).get('raum');
-if(qRaum){$('#codeIn').value=qRaum.toUpperCase().slice(0,4);if($('#name').value)joinRoom(qRaum);else{$('#name').focus();showErr('Du wurdest eingeladen! Gib deinen Namen ein und drück „Beitreten“.')}}
+if(qRaum){$('#codeIn').value=qRaum.toUpperCase().slice(0,4);if($('#name').value)joinRoom(qRaum);else{$('#name').focus();showErr(T('Du wurdest eingeladen! Gib deinen Namen ein und drück „Beitreten“.','You’ve been invited! Enter your name and tap “Join”.'))}}
 </script>
 </body>
 </html>
