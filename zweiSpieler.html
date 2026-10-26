@@ -240,6 +240,7 @@
   .sheetbg.on{opacity:1;pointer-events:auto}
   .wahl{display:none}.wahl.on{display:block;margin:-6px 0 12px!important;padding:8px 12px;border-radius:10px;background:#e3f3fb;color:var(--p1d)!important}
   .wahl b{color:var(--txt)}
+  .offl{display:none;margin:0 0 16px;padding:12px 16px;border-radius:13px;background:#fff4d6;color:#7a5200;font-size:15px}.offl.on{display:block}.offl b{color:var(--txt)}
   @media (min-width:701px){
     .sheet{left:50%;right:auto;bottom:auto;top:50%;width:min(500px,calc(100% - 32px));max-height:min(720px,calc(100dvh - 48px));padding-bottom:20px;border-radius:16px;
       transform:translate(-50%,-46%);opacity:0;transition:transform .25s,opacity .25s,visibility 0s .25s}
@@ -612,6 +613,7 @@
     <h4 id="sheetH">Mitspielen <button type="button" id="bSheetX">Fertig</button></h4>
     <div class="menu">
     <div class="err" id="err"></div>
+    <p class="offl" id="offl" role="status"><b>Du bist gerade offline.</b> Zum Mitspielen brauchen beide Handys Internet. Sobald du wieder online bist, kannst du hier einen Raum erstellen oder beitreten.</p>
     <div class="namerow">
       <label class="lb" for="name">Dein Name</label>
       <input class="f" id="name" maxlength="16" autocomplete="nickname" placeholder="z. B. Lukas">
@@ -851,10 +853,14 @@ function connect(){
   tr=S.host?hostTransport(S.code,h,LOCAL):gastTransport(S.code,h,LOCAL);
 }
 function hangup(){fenster(false);clearTimeout(joinTimer);if(tr){try{tr.close()}catch(_){}}tr=null;S.open=false;stopGame();wachHalten(false)}
-function createRoom(){hangup();S.host=true;S.me=0;S.names=[myName(),''];S.code=newCode();$('#bigCode').textContent='····';$('#waitTxt').textContent='Raum wird erstellt …';show('sWait');connect()}
+// Ohne Internet gibt es keinen Mitspieler: freundlich Bescheid sagen statt ins Leere zu verbinden
+const offline=()=>!LOCAL&&navigator.onLine===false;
+function netzHinweis(zeigen){const o=offline();$('#offl').classList.toggle('on',o);if(o&&zeigen){showErr('');fenster(true)}return o}
+function createRoom(){if(netzHinweis(true))return;hangup();S.host=true;S.me=0;S.names=[myName(),''];S.code=newCode();$('#bigCode').textContent='····';$('#waitTxt').textContent='Raum wird erstellt …';show('sWait');connect()}
 function joinRoom(code){
   code=(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(code.length!==4){showErr('Der Raumcode hat 4 Zeichen.');$('#codeIn').focus();return}
+  if(netzHinweis(true))return;
   hangup();S.host=false;S.me=1;S.names=['',myName()];S.code=code;$('#joinCode').textContent=code;$('#joinTxt').textContent='Verbinde mit dem Raum …';show('sJoin');connect();
   joinTimer=setTimeout(()=>{if(!S.open)onErr('net')},35000);
 }
@@ -864,7 +870,7 @@ const FEHLER={
   net:'Die Verbindung klappt gerade nicht, weder direkt noch über den Relay-Server. Bitte beide die Seite neu laden und nochmal probieren.'};
 function onErr(m){
   if(m==='taken'&&S.host){hangup();S.code=newCode();connect();return}
-  hangup();show('sStart');showErr(FEHLER[m]||m);
+  hangup();show('sStart');if(!netzHinweis(true))showErr(FEHLER[m]||m);
 }
 function onOpen(){clearTimeout(joinTimer);S.open=true;S.score=[0,0];send({t:'hi',name:S.names[S.me]})}
 function onClose(){
@@ -988,6 +994,9 @@ $('#games').onclick=e=>{const b=e.target.closest('.gc');if(b)pick(b.dataset.id)}
 $('#games0').onclick=e=>{const b=e.target.closest('.gc');if(b)fenster(true,b.dataset.id)};
 document.querySelectorAll('.filt').forEach(f=>f.onclick=e=>{const b=e.target.closest('button');if(!b)return;filter=b.dataset.f;document.querySelectorAll('.filt button').forEach(x=>x.classList.toggle('on',x.dataset.f===filter));renderGames()});
 $('#bMit').onclick=()=>fenster(true,'');
+netzHinweis();
+addEventListener('online',()=>{netzHinweis();toast('Wieder online.')});
+addEventListener('offline',()=>{netzHinweis();toast(S.open?'Keine Internetverbindung, das Spiel kann hängen bleiben.':'Du bist offline.')});
 $('#bSheetX').onclick=$('#sheetbg').onclick=()=>fenster(false);
 {let y0=null;const h=$('#sheet h4');h.addEventListener('touchstart',e=>{y0=e.touches[0].clientY},{passive:true});
  h.addEventListener('touchend',e=>{if(y0!=null&&e.changedTouches[0].clientY-y0>50)fenster(false);y0=null})}
@@ -1065,5 +1074,6 @@ kopf();renderGames();
 const qRaum=new URLSearchParams(location.search).get('raum');
 if(qRaum){$('#codeIn').value=qRaum.toUpperCase().slice(0,4);if($('#name').value)joinRoom(qRaum);else{$('#name').focus();showErr('Du wurdest eingeladen! Gib deinen Namen ein und drück „Beitreten“.')}}
 </script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
 </body>
 </html>
