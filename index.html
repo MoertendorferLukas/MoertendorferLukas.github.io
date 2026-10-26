@@ -10,7 +10,14 @@
 <link rel="manifest" href="site.webmanifest">
 <meta name="apple-mobile-web-app-title" content="Lukas M.">
 <meta name="theme-color" content="#1740d8">
-<meta name="description" content="Lukas Mörtendorfer, 19, Informatik-Schüler in der 5. Klasse der HTL Leonding und Softwareentwickler.">
+<meta name="description" content="Lukas Mörtendorfer, 19, Informatik-Schüler in der 5. Klasse der HTL Leonding und Softwareentwickler." data-en-content="Lukas Mörtendorfer, 19, computer science student in his final year at HTL Leonding and software developer.">
+<script>
+// ---------- Sprache: gespeicherte Wahl, sonst Browsersprache (kein Deutsch = Englisch) ----------
+{let s;try{s=localStorage.getItem('sprache');}catch(e){}
+  if(s!=='de'&&s!=='en')s=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'de']).some(l=>/^de/i.test(l))?'de':'en';
+  document.documentElement.lang=s;}
+const T=(de,en)=>document.documentElement.lang==='en'?en:de;
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@700&family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
 <!--
   ✏️ ANPASSEN: Auskommentierte TODO-Blöcke (Praktikum, Diplomarbeit) ausfüllen und einkommentieren.
@@ -40,6 +47,8 @@
   nav li a b{font-family:var(--mono);font-size:12px;color:var(--blue);margin-right:5px;vertical-align:2px}
   nav li a:hover{background:var(--blue);color:#fff}
   nav li a:hover b{color:#fff}
+  nav .lng{flex:none;height:36px;min-width:44px;padding:0 8px;font-family:var(--mono);font-weight:800;font-size:13px;color:var(--ink);background:var(--paper);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--blue);cursor:pointer}
+  nav .lng:hover{background:var(--blue);color:#fff}
   @media (max-width:760px){nav li a span{display:none}nav li a{padding:6px 7px}nav li a b{margin:0;font-size:13px}}
 
   /* ---------- Hero ---------- */
@@ -353,13 +362,14 @@
   <div class="wrap">
     <a class="logo" href="#top">LM</a>
     <ul>
-      <li><a href="#ueber"><b>01</b><span>Über mich</span></a></li>
+      <li><a href="#ueber"><b>01</b><span data-en="About">Über mich</span></a></li>
       <li><a href="#skills"><b>02</b><span>Skills</span></a></li>
-      <li><a href="#werdegang"><b>03</b><span>Werdegang</span></a></li>
-      <li><a href="#projekte"><b>04</b><span>Projekte</span></a></li>
-      <li><a href="#kontakt"><b>05</b><span>Kontakt</span></a></li>
-      <li><a href="#spiel"><b>06</b><span>Spiel</span></a></li>
+      <li><a href="#werdegang"><b>03</b><span data-en="Journey">Werdegang</span></a></li>
+      <li><a href="#projekte"><b>04</b><span data-en="Projects">Projekte</span></a></li>
+      <li><a href="#kontakt"><b>05</b><span data-en="Contact">Kontakt</span></a></li>
+      <li><a href="#spiel"><b>06</b><span data-en="Game">Spiel</span></a></li>
     </ul>
+    <button class="lng" id="lng" type="button" aria-label="Switch to English" data-en-aria-label="Auf Deutsch umschalten"><span data-en="DE">EN</span></button>
   </div>
 </nav>
 
@@ -374,17 +384,17 @@
   <div class="deco d-vert" aria-hidden="true">Portfolio · Nº 01 · 2026</div>
   <div class="wrap grid">
     <div>
-      <p class="hello">// Hallo Welt, ich bin</p>
+      <p class="hello" data-en="// Hello world, I’m">// Hallo Welt, ich bin</p>
       <h1><span class="n1">Lukas</span><span class="n2">Mörtendorfer</span></h1>
-      <p class="sub"><b>19 Jahre</b>, Schüler der <b>5. Klasse an der HTL Leonding</b> (Informatik) und leidenschaftlicher Entwickler. Ich programmiere Software, Websites und kleine Spiele, am liebsten solche, die man gern benutzt.</p>
+      <p class="sub" data-en="<b>19 years old</b>, final-year student at <b>HTL Leonding</b> (computer science) and passionate developer. I build software, websites and small games, ideally ones people enjoy using."><b>19 Jahre</b>, Schüler der <b>5. Klasse an der HTL Leonding</b> (Informatik) und leidenschaftlicher Entwickler. Ich programmiere Software, Websites und kleine Spiele, am liebsten solche, die man gern benutzt.</p>
       <div class="cta">
-        <a class="btn primary" href="#projekte">Projekte ansehen →</a>
-        <a class="btn" href="#kontakt">Kontakt</a>
-        <a class="btn" href="#spielebuch" data-book>📖 Spielebuch</a>
+        <a class="btn primary" href="#projekte" data-en="View projects →">Projekte ansehen →</a>
+        <a class="btn" href="#kontakt" data-en="Contact">Kontakt</a>
+        <a class="btn" href="#spielebuch" data-book data-en="📖 Game book">📖 Spielebuch</a>
       </div>
       <div class="badges"><span>Java</span><span>C#</span><span>Python</span><span>JavaScript</span><span>SQL</span></div>
     </div>
-    <div class="term" aria-label="Terminal mit Infos über Lukas">
+    <div class="term" aria-label="Terminal mit Infos über Lukas" data-en-aria-label="Terminal with info about Lukas">
       <div class="bar"><i></i><i></i><i></i><span>lukas@htl: ~</span></div>
       <pre id="term"></pre>
     </div>
@@ -392,32 +402,32 @@
 </header>
 
 <div class="tickwrap" aria-hidden="true"><div class="ticker"><div class="tk">
-  <span>Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i>Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i></span>
-  <span>Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i>Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i></span>
+  <span data-en="Code<i>■</i>Web<i>■</i>Games<i>■</i>Databases<i>■</i>HTL Computer Science<i>■</i>Code<i>■</i>Web<i>■</i>Games<i>■</i>Databases<i>■</i>HTL Computer Science<i>■</i>">Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i>Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i></span>
+  <span data-en="Code<i>■</i>Web<i>■</i>Games<i>■</i>Databases<i>■</i>HTL Computer Science<i>■</i>Code<i>■</i>Web<i>■</i>Games<i>■</i>Databases<i>■</i>HTL Computer Science<i>■</i>">Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i>Code<i>■</i>Web<i>■</i>Spiele<i>■</i>Datenbanken<i>■</i>HTL Informatik<i>■</i></span>
 </div></div></div>
 
 <!-- ================= 01 ÜBER MICH ================= -->
 <section id="ueber">
   <div class="wrap">
-    <header class="sh rv"><h2><b>01</b>Über mich</h2></header>
+    <header class="sh rv"><h2><b>01</b><span data-en="About me">Über mich</span></h2></header>
     <div class="about">
       <div class="txt rv">
-        <p>Servus! Ich bin <b>Lukas</b>, 19 Jahre alt, und gehe in die <b>5. Klasse der HTL Leonding</b>, Abteilung Informatik. Dort lerne ich alles von objektorientierter Programmierung über Datenbanken und Netzwerktechnik bis hin zu Projektmanagement.</p>
-        <p>Am meisten Spaß macht mir, Ideen in funktionierenden Code zu verwandeln, egal ob es eine Webanwendung, ein Tool für den Alltag oder ein kleines Browserspiel wie der <b>Dinoangler</b> ist. Ich mag sauberen Code, durchdachte Oberflächen und das Gefühl, wenn nach langem Debuggen endlich alles läuft.</p>
-        <p>Neben der Schule bringe ich mir laufend neue Technologien bei und arbeite an eigenen Projekten.</p>
-        <div class="quote">Ideen rein.<br>Funktionierender Code raus.</div>
+        <p data-en="Hi there! I’m <b>Lukas</b>, 19, and in my final (5th) year at <b>HTL Leonding</b>, a technical college in Austria, specialising in computer science. There I learn everything from object-oriented programming to databases, networking and project management.">Servus! Ich bin <b>Lukas</b>, 19 Jahre alt, und gehe in die <b>5. Klasse der HTL Leonding</b>, Abteilung Informatik. Dort lerne ich alles von objektorientierter Programmierung über Datenbanken und Netzwerktechnik bis hin zu Projektmanagement.</p>
+        <p data-en="What I enjoy most is turning ideas into working code, whether it’s a web app, an everyday tool or a small browser game like <b>Dino Angler</b>. I like clean code, well thought-out interfaces and that feeling when everything finally works after a long debugging session.">Am meisten Spaß macht mir, Ideen in funktionierenden Code zu verwandeln, egal ob es eine Webanwendung, ein Tool für den Alltag oder ein kleines Browserspiel wie der <b>Dinoangler</b> ist. Ich mag sauberen Code, durchdachte Oberflächen und das Gefühl, wenn nach langem Debuggen endlich alles läuft.</p>
+        <p data-en="Alongside school I keep teaching myself new technologies and work on my own projects.">Neben der Schule bringe ich mir laufend neue Technologien bei und arbeite an eigenen Projekten.</p>
+        <div class="quote" data-en="Ideas in.<br>Working code out.">Ideen rein.<br>Funktionierender Code raus.</div>
         <div class="duo">
-          <p>Und weil Spielen zu zweit doppelt so viel Spaß macht, gibt es hier auch <b>2 Spieler Spiele</b>: Raum erstellen, Code weitergeben und schon spielt ihr miteinander oder gegeneinander, jeder an seinem eigenen Gerät.</p>
-          <a class="btn primary" href="zweiSpieler.html">🎮 2 Spieler Spiele →</a>
+          <p data-en="And because playing together is twice the fun, there are also <b>2-player games</b>: create a room, share the code and play with or against each other, each on your own device.">Und weil Spielen zu zweit doppelt so viel Spaß macht, gibt es hier auch <b>2 Spieler Spiele</b>: Raum erstellen, Code weitergeben und schon spielt ihr miteinander oder gegeneinander, jeder an seinem eigenen Gerät.</p>
+          <a class="btn primary" href="zweiSpieler.html" data-en="🎮 2-player games →">🎮 2 Spieler Spiele →</a>
         </div>
       </div>
       <dl class="facts rv">
         <div><dt>Name</dt><dd>Lukas Mörtendorfer</dd></div>
-        <div><dt>Alter</dt><dd>19</dd></div>
-        <div><dt>Ausbildung</dt><dd>HTL · Informatik</dd></div>
-        <div><dt>Schule</dt><dd>HTL Leonding · 5. Klasse</dd></div>
-        <div><dt>Sprachen</dt><dd>Deutsch, Englisch</dd></div>
-        <div><dt>Status</dt><dd class="acc">Offen für Praktika &amp; Projekte</dd></div>
+        <div><dt data-en="Age">Alter</dt><dd>19</dd></div>
+        <div><dt data-en="Education">Ausbildung</dt><dd data-en="HTL · Computer science">HTL · Informatik</dd></div>
+        <div><dt data-en="School">Schule</dt><dd data-en="HTL Leonding · final year">HTL Leonding · 5. Klasse</dd></div>
+        <div><dt data-en="Languages">Sprachen</dt><dd data-en="German, English">Deutsch, Englisch</dd></div>
+        <div><dt>Status</dt><dd class="acc" data-en="Open to internships &amp; projects">Offen für Praktika &amp; Projekte</dd></div>
       </dl>
     </div>
   </div>
@@ -426,20 +436,20 @@
 <!-- ================= 02 SKILLS ================= -->
 <section id="skills" style="padding-top:20px">
   <div class="wrap">
-    <header class="sh rv"><h2><b>02</b>Was ich kann</h2></header>
+    <header class="sh rv"><h2><b>02</b><span data-en="What I can do">Was ich kann</span></h2></header>
     <div class="skills">
-      <article class="skill rv"><div class="ic">{ }</div><h3>Programmierung</h3><p>Objektorientiert, sauber strukturiert, mit Tests.</p>
-        <div class="chips"><span>Java</span><span>C#</span><span>Python</span><span>C</span><span>OOP</span><span>Algorithmen</span></div></article>
-      <article class="skill rv"><div class="ic">&lt;/&gt;</div><h3>Webentwicklung</h3><p>Von der statischen Seite bis zur Web-App.</p>
+      <article class="skill rv"><div class="ic">{ }</div><h3 data-en="Programming">Programmierung</h3><p data-en="Object-oriented, cleanly structured, with tests.">Objektorientiert, sauber strukturiert, mit Tests.</p>
+        <div class="chips"><span>Java</span><span>C#</span><span>Python</span><span>C</span><span>OOP</span><span data-en="Algorithms">Algorithmen</span></div></article>
+      <article class="skill rv"><div class="ic">&lt;/&gt;</div><h3 data-en="Web development">Webentwicklung</h3><p data-en="From static sites to web apps.">Von der statischen Seite bis zur Web-App.</p>
         <div class="chips"><span>HTML</span><span>CSS</span><span>JavaScript</span><span>TypeScript</span><span>Node.js</span><span>REST</span></div></article>
-      <article class="skill rv"><div class="ic">DB</div><h3>Datenbanken</h3><p>Daten modellieren, abfragen und anbinden.</p>
-        <div class="chips"><span>SQL</span><span>MySQL</span><span>PostgreSQL</span><span>ER-Modell</span><span>JDBC</span></div></article>
-      <article class="skill rv"><div class="ic">$_</div><h3>Tools &amp; Systeme</h3><p>Werkzeuge, die jeden Tag im Einsatz sind.</p>
+      <article class="skill rv"><div class="ic">DB</div><h3 data-en="Databases">Datenbanken</h3><p data-en="Modelling, querying and connecting data.">Daten modellieren, abfragen und anbinden.</p>
+        <div class="chips"><span>SQL</span><span>MySQL</span><span>PostgreSQL</span><span data-en="ER model">ER-Modell</span><span>JDBC</span></div></article>
+      <article class="skill rv"><div class="ic">$_</div><h3 data-en="Tools &amp; systems">Tools &amp; Systeme</h3><p data-en="The tools I use every day.">Werkzeuge, die jeden Tag im Einsatz sind.</p>
         <div class="chips"><span>Git</span><span>GitHub</span><span>Linux</span><span>Docker</span><span>IntelliJ</span><span>VS Code</span></div></article>
-      <article class="skill rv"><div class="ic">⇄</div><h3>Netzwerke</h3><p>Grundlagen aus dem HTL-Unterricht.</p>
+      <article class="skill rv"><div class="ic">⇄</div><h3 data-en="Networking">Netzwerke</h3><p data-en="Fundamentals from HTL classes.">Grundlagen aus dem HTL-Unterricht.</p>
         <div class="chips"><span>TCP/IP</span><span>Subnetting</span><span>Routing</span><span>Cisco</span></div></article>
-      <article class="skill rv"><div class="ic">✓</div><h3>Projektarbeit</h3><p>Im Team planen, umsetzen und dokumentieren.</p>
-        <div class="chips"><span>Scrum</span><span>UML</span><span>Teamarbeit</span><span>Dokumentation</span></div></article>
+      <article class="skill rv"><div class="ic">✓</div><h3 data-en="Project work">Projektarbeit</h3><p data-en="Planning, building and documenting as a team.">Im Team planen, umsetzen und dokumentieren.</p>
+        <div class="chips"><span>Scrum</span><span>UML</span><span data-en="Teamwork">Teamarbeit</span><span data-en="Documentation">Dokumentation</span></div></article>
     </div>
     <div class="langs rv" id="langs">
       <div class="lang"><div class="row"><span>Java</span><span>85%</span></div><div class="meter"><i data-w="85"></i></div></div>
@@ -455,14 +465,14 @@
 <!-- ================= 03 WERDEGANG ================= -->
 <section id="werdegang" style="padding-top:20px">
   <div class="wrap">
-    <header class="sh rv"><h2><b>03</b>Werdegang</h2></header>
+    <header class="sh rv"><h2><b>03</b><span data-en="Journey">Werdegang</span></h2></header>
     <ol class="tl">
-      <li class="rv"><div class="when">2022 – heute</div><h3>HTL Leonding · Abteilung Informatik</h3><p>Fünfjährige Ausbildung mit Matura und Diplomarbeit. Softwareentwicklung, Datenbanken, Netzwerktechnik, Betriebssysteme und Projektmanagement.</p></li>
+      <li class="rv"><div class="when" data-en="2022 – today">2022 – heute</div><h3 data-en="HTL Leonding · Computer Science">HTL Leonding · Abteilung Informatik</h3><p data-en="Five-year technical programme with Matura (school-leaving exam) and diploma thesis. Software development, databases, networking, operating systems and project management.">Fünfjährige Ausbildung mit Matura und Diplomarbeit. Softwareentwicklung, Datenbanken, Netzwerktechnik, Betriebssysteme und Projektmanagement.</p></li>
       <!-- TODO ausfüllen, dann Kommentar entfernen:
       <li class="rv"><div class="when">[Sommer Jahr]</div><h3>Pflichtpraktikum · [Firma]</h3><p>[Was du dort gemacht hast, z. B. Mitarbeit an einer Webanwendung im Entwicklerteam.]</p></li>
       <li class="rv"><div class="when">2026/27</div><h3>Diplomarbeit · [Thema]</h3><p>[Kurze Beschreibung deines Diplomarbeitsprojekts und deiner Rolle im Team.]</p></li>
       -->
-      <li class="rv"><div class="when">laufend</div><h3>Eigene Projekte</h3><p>Browserspiele, Websites und kleine Tools, um Neues auszuprobieren und dazuzulernen.</p></li>
+      <li class="rv"><div class="when" data-en="ongoing">laufend</div><h3 data-en="Own projects">Eigene Projekte</h3><p data-en="Browser games, websites and small tools to try out new things and keep learning.">Browserspiele, Websites und kleine Tools, um Neues auszuprobieren und dazuzulernen.</p></li>
     </ol>
   </div>
 </section>
@@ -470,17 +480,17 @@
 <!-- ================= 04 PROJEKTE ================= -->
 <section id="projekte" style="padding-top:20px">
   <div class="wrap">
-    <header class="sh rv"><h2><b>04</b>Projekte</h2></header>
+    <header class="sh rv"><h2><b>04</b><span data-en="Projects">Projekte</span></h2></header>
     <div class="bookrow rv" id="spielebuch">
-      <button class="b2d" id="book2d" type="button" aria-label="Spielebuch öffnen"><span class="cover">
-        <span class="ck">Band Nº 01</span>
-        <span class="ct">Das Dino-<br><span>Spielebuch</span></span>
-        <span class="cs">von Lukas Mörtendorfer · 2026</span>
+      <button class="b2d" id="book2d" type="button" aria-label="Spielebuch öffnen" data-en-aria-label="Open the game book"><span class="cover">
+        <span class="ck" data-en="Volume Nº 01">Band Nº 01</span>
+        <span class="ct" data-en="The Dino<br><span>Game Book</span>">Das Dino-<br><span>Spielebuch</span></span>
+        <span class="cs" data-en="by Lukas Mörtendorfer · 2026">von Lukas Mörtendorfer · 2026</span>
         <span class="cd">🦖</span>
       </span></button>
       <div class="bt">
-        <h3>Das Spielebuch</h3>
-        <p>Alle meine Spiele in einem kleinen Buch: kurze Beschreibung, geheimer Eingang und direkt starten. <b>Klick aufs Buch und blätter durch.</b></p>
+        <h3 data-en="The game book">Das Spielebuch</h3>
+        <p data-en="All my games in one little book: a short description, the secret entrance and a button to play. <b>Click the book and flip through.</b>">Alle meine Spiele in einem kleinen Buch: kurze Beschreibung, geheimer Eingang und direkt starten. <b>Klick aufs Buch und blätter durch.</b></p>
       </div>
     </div>
     <div class="projects">
@@ -499,12 +509,12 @@
 <!-- ================= 05 KONTAKT ================= -->
 <section class="contact" id="kontakt" style="padding-top:20px">
   <div class="wrap">
-    <header class="sh rv"><h2><b>05</b>Kontakt</h2></header>
+    <header class="sh rv"><h2><b>05</b><span data-en="Contact">Kontakt</span></h2></header>
     <div class="box rv">
-      <h3>Lass uns<br><span>was bauen.</span></h3>
-      <p>Du hast einen Praktikumsplatz, ein Projekt oder einfach eine Frage? Schreib mir, ich melde mich schnell zurück.</p>
+      <h3 data-en="Let’s<br><span>build something.</span>">Lass uns<br><span>was bauen.</span></h3>
+      <p data-en="Got an internship, a project or just a question? Write to me and I’ll get back to you quickly.">Du hast einen Praktikumsplatz, ein Projekt oder einfach eine Frage? Schreib mir, ich melde mich schnell zurück.</p>
       <div class="cta">
-        <a class="btn primary" href="mailto:l.moertendorfer@students.htl-leonding.ac.at">✉ E-Mail schreiben</a>
+        <a class="btn primary" href="mailto:l.moertendorfer@students.htl-leonding.ac.at" data-en="✉ Send an email">✉ E-Mail schreiben</a>
         <a class="btn" href="https://github.com/MoertendorferLukas" target="_blank" rel="noopener">GitHub ↗</a>
       </div>
     </div>
@@ -514,15 +524,15 @@
 <!-- ================= 06 SPIEL ================= -->
 <section class="game" id="spiel" style="padding-top:20px">
   <div class="wrap">
-    <header class="sh rv"><h2><b>06</b>Kurze Pause?</h2></header>
-    <p class="lead rv">Spring über die Kakteen. Manchmal liegt ein Boot im Wasser, über das du einfach drüberlaufen kannst. <b>Oder du springst rein …</b> Und wenn ein Spinnenfaden von der Decke hängt: hochspringen und nochmal drücken. Schaut ein riesiges Maul aus dem Boden? <b>Dann trau dich und spring nicht.</b></p>
-    <div class="stage rv"><canvas id="dg" aria-label="Dino-Spiel: Springen mit Leertaste oder Tippen"></canvas></div>
+    <header class="sh rv"><h2><b>06</b><span data-en="Need a break?">Kurze Pause?</span></h2></header>
+    <p class="lead rv" data-en="Jump over the cacti. Sometimes there’s a boat in the water that you can simply walk across. <b>Or you jump in …</b> And when a spider thread hangs from the ceiling: jump up and press again. A giant mouth peeking out of the ground? <b>Then be brave and don’t jump.</b>">Spring über die Kakteen. Manchmal liegt ein Boot im Wasser, über das du einfach drüberlaufen kannst. <b>Oder du springst rein …</b> Und wenn ein Spinnenfaden von der Decke hängt: hochspringen und nochmal drücken. Schaut ein riesiges Maul aus dem Boden? <b>Dann trau dich und spring nicht.</b></p>
+    <div class="stage rv"><canvas id="dg" aria-label="Dino-Spiel: Springen mit Leertaste oder Tippen" data-en-aria-label="Dino game: jump with space or tap"></canvas></div>
     <div class="controls">
-      <span><kbd>Leertaste</kbd><kbd>↑</kbd> oder tippen = springen</span>
-      <span>Länger drücken = höher</span>
-      <span><kbd>↓</kbd> = schneller landen</span>
-      <span>Am Faden in der Luft nochmal drücken = festhalten</span>
-      <span>Maul nicht überspringen = gefressen werden</span>
+      <span data-en="<kbd>Space</kbd><kbd>↑</kbd> or tap = jump"><kbd>Leertaste</kbd><kbd>↑</kbd> oder tippen = springen</span>
+      <span data-en="Hold longer = jump higher">Länger drücken = höher</span>
+      <span data-en="<kbd>↓</kbd> = land faster"><kbd>↓</kbd> = schneller landen</span>
+      <span data-en="Press again in the air near the thread = grab it">Am Faden in der Luft nochmal drücken = festhalten</span>
+      <span data-en="Don’t jump the mouth = get eaten">Maul nicht überspringen = gefressen werden</span>
     </div>
   </div>
 </section>
@@ -530,43 +540,43 @@
 <footer><div class="wrap"><span>© 2026 · <b>Lukas Mörtendorfer</b></span><span class="mono">built with ☕ &amp; 🦖</span></div></footer>
 
 <!-- ================= SPIELEBUCH ================= -->
-<div id="bookov" role="dialog" aria-modal="true" aria-label="Spielebuch" aria-hidden="true">
-  <button class="bx" type="button" aria-label="Spielebuch schließen">×</button>
+<div id="bookov" role="dialog" aria-modal="true" aria-label="Spielebuch" data-en-aria-label="Game book" aria-hidden="true">
+  <button class="bx" type="button" aria-label="Spielebuch schließen" data-en-aria-label="Close the game book">×</button>
   <div class="bstage"><div class="bfly" id="bfly"><div class="book closed" id="book">
-    <div class="bboard"><div class="endp"><b class="lm">LM</b><p>Handgeschrieben in HTML, CSS &amp; JavaScript</p></div></div>
+    <div class="bboard"><div class="endp"><b class="lm">LM</b><p data-en="Handwritten in HTML, CSS &amp; JavaScript">Handgeschrieben in HTML, CSS &amp; JavaScript</p></div></div>
     <i class="ed bb-b"></i><i class="ed bb-r"></i>
     <i class="ed pe eR"></i><i class="ed pe eL"></i><i class="ed pe eF"></i>
     <div class="leaf cv">
       <div class="face front"><div class="cover">
-        <span class="ck">Band Nº 01</span>
-        <span class="ct">Das Dino-<br><span>Spielebuch</span></span>
-        <span class="cs">von Lukas Mörtendorfer · 2026</span>
+        <span class="ck" data-en="Volume Nº 01">Band Nº 01</span>
+        <span class="ct" data-en="The Dino<br><span>Game Book</span>">Das Dino-<br><span>Spielebuch</span></span>
+        <span class="cs" data-en="by Lukas Mörtendorfer · 2026">von Lukas Mörtendorfer · 2026</span>
         <span class="cd">🦖</span>
       </div></div>
-      <div class="face back"><div class="endp"><span class="exl">Ex Libris<b>🦖</b>Dieses Buch gehört dir</span></div></div>
+      <div class="face back"><div class="endp"><span class="exl" data-en="Ex Libris<b>🦖</b>This book belongs to you">Ex Libris<b>🦖</b>Dieses Buch gehört dir</span></div></div>
       <i class="ed ce-b"></i><i class="ed ce-r"></i>
     </div>
     <div class="leaf">
       <div class="face front"><div class="pg">
-        <h4>Inhalt</h4>
-        <p class="tag">Sechs Spiele, ein Dino</p>
+        <h4 data-en="Contents">Inhalt</h4>
+        <p class="tag" data-en="Six games, one dino">Sechs Spiele, ein Dino</p>
         <ol>
-          <li><a href="#" data-go="2"><span>🎣</span><i>Dinoangler</i><em>02</em></a></li>
+          <li><a href="#" data-go="2"><span>🎣</span><i data-en="Dino Angler">Dinoangler</i><em>02</em></a></li>
           <li><a href="#" data-go="2"><span>🕷️</span><i>Spider-Rex</i><em>03</em></a></li>
-          <li><a href="#" data-go="3"><span>🥚</span><i>Dino-Weitwurf</i><em>04</em></a></li>
+          <li><a href="#" data-go="3"><span>🥚</span><i data-en="Dino Toss">Dino-Weitwurf</i><em>04</em></a></li>
           <li><a href="#" data-go="3"><span>😋</span><i>Mampfosaurus</i><em>05</em></a></li>
-          <li><a href="#" data-go="4"><span>🏴‍☠️</span><i>Käpt'n Rexbart</i><em>06</em></a></li>
-          <li><a href="#" data-go="4"><span>🌵</span><i>Dino-Runner</i><em>07</em></a></li>
-          <li><a href="#" data-go="5"><span>🗝️</span><i>Geheimnisse</i><em>08</em></a></li>
+          <li><a href="#" data-go="4"><span>🏴‍☠️</span><i data-en="Captain Rexbeard">Käpt'n Rexbart</i><em>06</em></a></li>
+          <li><a href="#" data-go="4"><span>🌵</span><i data-en="Dino Runner">Dino-Runner</i><em>07</em></a></li>
+          <li><a href="#" data-go="5"><span>🗝️</span><i data-en="Secrets">Geheimnisse</i><em>08</em></a></li>
         </ol>
         <span class="pno">01</span>
       </div></div>
       <div class="face back"><div class="pg">
-        <figure class="shot"><img src="img/spiele/dinoangler.jpg" alt="Screenshot: Dinoangler" decoding="async"><span class="pic">🎣</span></figure>
-        <h4>Dinoangler</h4>
-        <p class="tag">Angelspiel · Canvas 2D</p>
-        <p>Ein kleiner Dino im Boot und ein riesiger Ozean. Fische fangen und verkaufen, Rute und Boot verbessern, mit dem Senkblei bis in den Tiefseegraben angeln und sieben Geheimnisse finden.</p>
-        <p class="egg"><b>Geheimer Eingang:</b> Im Dino-Runner ins Boot springen.</p>
+        <figure class="shot"><img src="img/spiele/dinoangler.jpg" alt="Screenshot: Dinoangler" data-en-alt="Screenshot: Dino Angler" decoding="async"><span class="pic">🎣</span></figure>
+        <h4 data-en="Dino Angler">Dinoangler</h4>
+        <p class="tag" data-en="Fishing game · Canvas 2D">Angelspiel · Canvas 2D</p>
+        <p data-en="A little dino in a boat and a huge ocean. Catch and sell fish, upgrade your rod and boat, fish all the way down to the deep-sea trench with the sinker and find seven secrets.">Ein kleiner Dino im Boot und ein riesiger Ozean. Fische fangen und verkaufen, Rute und Boot verbessern, mit dem Senkblei bis in den Tiefseegraben angeln und sieben Geheimnisse finden.</p>
+        <p class="egg" data-en="<b>Secret entrance:</b> Jump into the boat in Dino Runner."><b>Geheimer Eingang:</b> Im Dino-Runner ins Boot springen.</p>
         <a class="btn primary" href="dinoGoesFishing.html">Spielen →</a>
         <span class="pno">02</span>
       </div></div>
@@ -575,18 +585,18 @@
       <div class="face front"><div class="pg">
         <figure class="shot"><img src="img/spiele/spiderrex.jpg" alt="Screenshot: Spider-Rex" decoding="async"><span class="pic">🕷️</span></figure>
         <h4>Spider-Rex</h4>
-        <p class="tag">3D-Spiel · Three.js</p>
-        <p>Ein Dino im Spinnenanzug schwingt sich durch eine 3D-Stadt. Netzschwingen, Netz-Zip, Wände hochklettern, Gegner einwickeln und Objekte durch die Gegend schleudern.</p>
-        <p class="egg"><b>Geheimer Eingang:</b> Im Runner zum Spinnenfaden hochspringen und festhalten.</p>
+        <p class="tag" data-en="3D game · Three.js">3D-Spiel · Three.js</p>
+        <p data-en="A dino in a spider suit swings through a 3D city. Web-swinging, web-zipping, wall-climbing, wrapping up enemies and flinging objects around.">Ein Dino im Spinnenanzug schwingt sich durch eine 3D-Stadt. Netzschwingen, Netz-Zip, Wände hochklettern, Gegner einwickeln und Objekte durch die Gegend schleudern.</p>
+        <p class="egg" data-en="<b>Secret entrance:</b> In the runner, jump up to the spider thread and hold on."><b>Geheimer Eingang:</b> Im Runner zum Spinnenfaden hochspringen und festhalten.</p>
         <a class="btn primary" href="spiderDinoGame.html">Spielen →</a>
         <span class="pno">03</span>
       </div></div>
       <div class="face back"><div class="pg">
-        <figure class="shot"><img src="img/spiele/weitwurf.jpg" alt="Screenshot: Dino-Weitwurf" decoding="async"><span class="pic">🥚</span></figure>
-        <h4>Dino-Weitwurf</h4>
-        <p class="tag">Wurfspiel · Canvas 2D</p>
-        <p>Papa-Rex schleudert sein Baby so weit wie möglich. Pilze, Geysire und Flugsaurier helfen, Fresspflanzen nicht. Jeder Meter bringt Geld für Upgrades. Und ganz weit oben wartet etwas Dunkles …</p>
-        <p class="egg"><b>Geheimer Eingang:</b> Im Runner das Maul nicht überspringen.</p>
+        <figure class="shot"><img src="img/spiele/weitwurf.jpg" alt="Screenshot: Dino-Weitwurf" data-en-alt="Screenshot: Dino Toss" decoding="async"><span class="pic">🥚</span></figure>
+        <h4 data-en="Dino Toss">Dino-Weitwurf</h4>
+        <p class="tag" data-en="Throwing game · Canvas 2D">Wurfspiel · Canvas 2D</p>
+        <p data-en="Papa Rex flings his baby as far as he can. Mushrooms, geysers and pterosaurs help, man-eating plants don’t. Every metre earns money for upgrades. And high up, something dark is waiting …">Papa-Rex schleudert sein Baby so weit wie möglich. Pilze, Geysire und Flugsaurier helfen, Fresspflanzen nicht. Jeder Meter bringt Geld für Upgrades. Und ganz weit oben wartet etwas Dunkles …</p>
+        <p class="egg" data-en="<b>Secret entrance:</b> In the runner, don’t jump over the mouth."><b>Geheimer Eingang:</b> Im Runner das Maul nicht überspringen.</p>
         <a class="btn primary" href="dinoWeitwurf.html">Spielen →</a>
         <span class="pno">04</span>
       </div></div>
@@ -595,44 +605,44 @@
       <div class="face front"><div class="pg">
         <figure class="shot"><img src="img/spiele/mampfosaurus.jpg" alt="Screenshot: Mampfosaurus" decoding="async"><span class="pic">😋</span></figure>
         <h4>Mampfosaurus</h4>
-        <p class="tag">Fressspiel · Canvas 2D</p>
-        <p>Ein Dino-Kopf mit riesigem Maul verschlingt das Urzeit-Land: Eier, Höhlenmenschen, Hütten, Mammuts und am Ende vielleicht den Vulkan. Gegen fünf hungrige Gegner, zwei Minuten pro Runde.</p>
-        <p class="egg"><b>Geheimer Eingang:</b> Bei Dino-Weitwurf 1000 m hoch fliegen.</p>
+        <p class="tag" data-en="Eating game · Canvas 2D">Fressspiel · Canvas 2D</p>
+        <p data-en="A dino head with a giant mouth devours the prehistoric land: eggs, cavemen, huts, mammoths and maybe the volcano in the end. Against five hungry rivals, two minutes per round.">Ein Dino-Kopf mit riesigem Maul verschlingt das Urzeit-Land: Eier, Höhlenmenschen, Hütten, Mammuts und am Ende vielleicht den Vulkan. Gegen fünf hungrige Gegner, zwei Minuten pro Runde.</p>
+        <p class="egg" data-en="<b>Secret entrance:</b> Fly 1000 m high in Dino Toss."><b>Geheimer Eingang:</b> Bei Dino-Weitwurf 1000 m hoch fliegen.</p>
         <a class="btn primary" href="mampfosaurus.html">Spielen →</a>
         <span class="pno">05</span>
       </div></div>
       <div class="face back"><div class="pg">
-        <figure class="shot"><img src="img/spiele/rexbart.jpg" alt="Screenshot: Käpt'n Rexbart" decoding="async"><span class="pic">🏴‍☠️</span></figure>
-        <h4>Käpt'n Rexbart</h4>
-        <p class="tag">Piratenspiel · Canvas 2D</p>
-        <p>Ein T-Rex als Pirat: mit dem Wind segeln, Breitseiten feuern, im Säbelduell entern, Schatzkarten zusammensetzen. Nachts spuken Geisterschiffe, und auf hoher See warten zwei Bosse.</p>
-        <p class="egg"><b>Geheimer Eingang:</b> In Dinoangler die Schatztruhe aus dem Tiefseegraben holen.</p>
+        <figure class="shot"><img src="img/spiele/rexbart.jpg" alt="Screenshot: Käpt'n Rexbart" data-en-alt="Screenshot: Captain Rexbeard" decoding="async"><span class="pic">🏴‍☠️</span></figure>
+        <h4 data-en="Captain Rexbeard">Käpt'n Rexbart</h4>
+        <p class="tag" data-en="Pirate game · Canvas 2D">Piratenspiel · Canvas 2D</p>
+        <p data-en="A T-Rex as a pirate: sail with the wind, fire broadsides, board ships in sabre duels and piece together treasure maps. At night ghost ships haunt the sea, and two bosses wait out on the open water.">Ein T-Rex als Pirat: mit dem Wind segeln, Breitseiten feuern, im Säbelduell entern, Schatzkarten zusammensetzen. Nachts spuken Geisterschiffe, und auf hoher See warten zwei Bosse.</p>
+        <p class="egg" data-en="<b>Secret entrance:</b> Fish the treasure chest out of the deep-sea trench in Dino Angler."><b>Geheimer Eingang:</b> In Dinoangler die Schatztruhe aus dem Tiefseegraben holen.</p>
         <a class="btn primary" href="dinoPirat.html">Spielen →</a>
         <span class="pno">06</span>
       </div></div>
     </div>
     <div class="leaf">
       <div class="face front"><div class="pg">
-        <figure class="shot"><img src="img/spiele/runner.jpg" alt="Screenshot: Dino-Runner" decoding="async"><span class="pic">🌵</span></figure>
-        <h4>Dino-Runner</h4>
-        <p class="tag">Minispiel · hier auf der Seite</p>
-        <p>Der kleine Dino ganz unten auf dieser Seite: über Kakteen springen, so weit es geht. Wer genau hinschaut, findet dabei die Eingänge zu den anderen Spielen.</p>
-        <p class="egg"><b>Tipp:</b> Boot, Spinnenfaden und Maul tauchen ab dem 4. Hindernis auf.</p>
-        <a class="btn primary" href="#spiel" data-close>Spielen ↓</a>
+        <figure class="shot"><img src="img/spiele/runner.jpg" alt="Screenshot: Dino-Runner" data-en-alt="Screenshot: Dino Runner" decoding="async"><span class="pic">🌵</span></figure>
+        <h4 data-en="Dino Runner">Dino-Runner</h4>
+        <p class="tag" data-en="Mini game · right here on this page">Minispiel · hier auf der Seite</p>
+        <p data-en="The little dino at the very bottom of this page: jump over cacti and get as far as you can. If you look closely, you’ll find the entrances to the other games.">Der kleine Dino ganz unten auf dieser Seite: über Kakteen springen, so weit es geht. Wer genau hinschaut, findet dabei die Eingänge zu den anderen Spielen.</p>
+        <p class="egg" data-en="<b>Tip:</b> The boat, spider thread and mouth show up from the 4th obstacle on."><b>Tipp:</b> Boot, Spinnenfaden und Maul tauchen ab dem 4. Hindernis auf.</p>
+        <a class="btn primary" href="#spiel" data-close data-en="Play ↓">Spielen ↓</a>
         <span class="pno">07</span>
       </div></div>
       <div class="face back"><div class="pg">
-        <figure class="shot"><img src="img/spiele/geheimnisse.jpg" alt="Screenshot: Geheimnisse-Seite" decoding="async"><span class="pic">🗝️</span></figure>
-        <h4>Geheimnisse</h4>
-        <p class="tag">Für alle, die nicht weiterkommen</p>
-        <p>In Dinoangler sind sieben Geheimnisse versteckt. Wer alle finden will, ohne zu suchen, findet hier die Lösungen.</p>
-        <p class="egg"><b>Fortsetzung folgt …</b> Band Nº 02 ist schon in Arbeit.</p>
-        <a class="btn" href="geheimnisse.html">Lösungen →</a>
+        <figure class="shot"><img src="img/spiele/geheimnisse.jpg" alt="Screenshot: Geheimnisse-Seite" data-en-alt="Screenshot: secrets page" decoding="async"><span class="pic">🗝️</span></figure>
+        <h4 data-en="Secrets">Geheimnisse</h4>
+        <p class="tag" data-en="For anyone who’s stuck">Für alle, die nicht weiterkommen</p>
+        <p data-en="Seven secrets are hidden in Dino Angler. If you want to find them all without searching, the solutions are here.">In Dinoangler sind sieben Geheimnisse versteckt. Wer alle finden will, ohne zu suchen, findet hier die Lösungen.</p>
+        <p class="egg" data-en="<b>To be continued …</b> Volume Nº 02 is already in the works."><b>Fortsetzung folgt …</b> Band Nº 02 ist schon in Arbeit.</p>
+        <a class="btn" href="geheimnisse.html" data-en="Solutions →">Lösungen →</a>
         <span class="pno">08</span>
       </div></div>
     </div>
   </div></div></div>
-  <div class="bnav"><button type="button" data-step="-1" aria-label="Zurückblättern">◀</button><span id="bpos">Zum Aufschlagen klicken</span><button type="button" data-step="1" aria-label="Weiterblättern">▶</button></div>
+  <div class="bnav"><button type="button" data-step="-1" aria-label="Zurückblättern" data-en-aria-label="Previous page">◀</button><span id="bpos">Zum Aufschlagen klicken</span><button type="button" data-step="1" aria-label="Weiterblättern" data-en-aria-label="Next page">▶</button></div>
 </div>
 
 <div id="spwipe" aria-hidden="true"><div class="sbg"></div><svg viewBox="-100 -100 200 200" preserveAspectRatio="xMidYMid slice"></svg><div class="st"><b>SPIDER<i>-</i>REX</b></div></div>
@@ -641,29 +651,64 @@
 
 <script>
 'use strict';
+// ---------- Deutsch / Englisch: Texte mit data-en tauschen, Attribute mit data-en-<attribut> ----------
+{
+  const ATTR=['aria-label','alt','content'];
+  const titel={de:document.title,en:'Lukas Mörtendorfer · Developer'};
+  const setze=s=>{
+    const en=s==='en';
+    document.documentElement.lang=s;document.title=titel[s];
+    for(const el of document.querySelectorAll('[data-en]')){
+      if(el.dataset.de===undefined)el.dataset.de=el.innerHTML;
+      el.innerHTML=en?el.dataset.en:el.dataset.de;
+    }
+    for(const a of ATTR)for(const el of document.querySelectorAll('[data-en-'+a+']')){
+      if(!el.hasAttribute('data-de-'+a))el.setAttribute('data-de-'+a,el.getAttribute(a)||'');
+      el.setAttribute(a,el.getAttribute((en?'data-en-':'data-de-')+a));
+    }
+  };
+  if(document.documentElement.lang==='en')setze('en');
+  document.getElementById('lng').addEventListener('click',()=>{
+    const s=document.documentElement.lang==='en'?'de':'en';
+    try{localStorage.setItem('sprache',s);}catch(e){}
+    setze(s);dispatchEvent(new Event('sprache'));
+  });
+}
+</script>
+<script>
+'use strict';
 // ---------- Terminal im Hero: tippt sich selbst ----------
 {
-  const LINES=[
-    ['<span class="p">lukas@htl</span>:<span class="k">~</span>$ ','whoami'],
+  const P='<span class="p">lukas@htl</span>:<span class="k">~</span>$ ';
+  const json=(k,v)=>'{\n'+k.map((x,i)=>'  <span class="k">"'+x+'"</span>: <span class="s">'+v[i]+'</span>').join(',\n')+'\n}';
+  const lines=()=>[
+    [P,'whoami'],
     ['','lukas_moertendorfer'],
-    ['<span class="p">lukas@htl</span>:<span class="k">~</span>$ ','cat info.json'],
-    ['','{\n  <span class="k">"alter"</span>: <span class="s">19</span>,\n  <span class="k">"schule"</span>: <span class="s">"HTL Leonding – Informatik"</span>,\n  <span class="k">"klasse"</span>: <span class="s">5</span>,\n  <span class="k">"rolle"</span>: <span class="s">"Softwareentwickler"</span>,\n  <span class="k">"kaffee"</span>: <span class="s">true</span>\n}'],
-    ['<span class="p">lukas@htl</span>:<span class="k">~</span>$ ','ls skills/'],
+    [P,'cat info.json'],
+    ['',T(json(['alter','schule','klasse','rolle','kaffee'],['19','"HTL Leonding – Informatik"','5','"Softwareentwickler"','true']),
+          json(['age','school','year','role','coffee'],['19','"HTL Leonding – Computer Science"','5','"Software developer"','true']))],
+    [P,'ls skills/'],
     ['','java  csharp  python  javascript\nsql  git  linux  docker'],
-    ['<span class="p">lukas@htl</span>:<span class="k">~</span>$ ','<span class="c"># scroll runter, unten wartet ein Dino 🦖</span>']];
+    [P,T('<span class="c"># scroll runter, unten wartet ein Dino 🦖</span>','<span class="c"># scroll down, a dino is waiting 🦖</span>')]];
   const el=document.getElementById('term'),reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  let html='';
+  let html='',run=0;
   const cur='<span class="cursor"></span>';
-  if(reduce){el.innerHTML=LINES.map(l=>l[0]+l[1]).join('\n')+'\n'+cur;}
+  const all=()=>{run++;el.innerHTML=lines().map(l=>l[0]+l[1]).join('\n')+'\n'+cur;};
+  // Sprachwechsel: Terminal sofort fertig in der neuen Sprache zeigen
+  addEventListener('sprache',all);
+  if(reduce)all();
   else{
+    const LINES=lines(),me=++run;
     let i=0;
     const next=()=>{
+      if(run!==me)return;
       if(i>=LINES.length){el.innerHTML=html+cur;return;}
       const [pre,txt]=LINES[i++];
       if(!pre){html+=txt+'\n';el.innerHTML=html+cur;setTimeout(next,280);return;}
       // Befehl Zeichen für Zeichen tippen (HTML-Tags am Stück)
       const parts=txt.match(/<[^>]+>|&[^;]+;|[^<&]/g);let k=0,line=pre;
-      const step=()=>{if(k<parts.length){line+=parts[k++];el.innerHTML=html+line+cur;setTimeout(step,parts[k-1].length>1?0:38+Math.random()*50);}
+      const step=()=>{if(run!==me)return;
+        if(k<parts.length){line+=parts[k++];el.innerHTML=html+line+cur;setTimeout(step,parts[k-1].length>1?0:38+Math.random()*50);}
         else{html+=line+'\n';setTimeout(next,320);}};
       el.innerHTML=html+line+cur;setTimeout(step,500);
     };
@@ -1035,7 +1080,7 @@ function drawMawLabel(o){
   const h=o.x+MAW_HX;if(h<dino.x+DW)return;
   const bx=h-24,by=GY-84+Math.sin(t*5)*4;
   cx.font='800 13px "JetBrains Mono", monospace';cx.textAlign='center';
-  const txt='LASS DICH FRESSEN!',tw=cx.measureText(txt).width;
+  const txt=T('LASS DICH FRESSEN!','LET IT EAT YOU!'),tw=cx.measureText(txt).width;
   cx.save();cx.translate(bx,by);cx.rotate(-0.05);
   cx.fillStyle=INK;cx.fillRect(-tw/2-7,-18,tw+14,24);
   cx.fillStyle=PAPER;cx.fillText(txt,0,0);
@@ -1069,7 +1114,7 @@ function drawRopeLabel(o){
   if(o.x<dino.x+DW)return;
   const bx=o.x+ropeSway(o),by=ropeEnd(o)+44+Math.sin(t*5)*3;
   cx.font='800 13px "JetBrains Mono", monospace';cx.textAlign='center';
-  const txt='SPRING + GREIF ZU!',tw=cx.measureText(txt).width;
+  const txt=T('SPRING + GREIF ZU!','JUMP + GRAB IT!'),tw=cx.measureText(txt).width;
   cx.save();cx.translate(bx,by);cx.rotate(0.05);
   cx.fillStyle=RED;cx.beginPath();cx.moveTo(-7,-18);cx.lineTo(7,-18);cx.lineTo(0,-28);cx.fill();
   cx.fillStyle=INK;cx.fillRect(-tw/2-7,-18,tw+14,24);
@@ -1118,7 +1163,7 @@ function drawLabel(o){
   if(o.x+o.w/2<dino.x+DW)return;
   const bx=o.x+o.w/2,by=GY-74+Math.sin(t*5)*4;
   cx.font='800 15px "JetBrains Mono", monospace';cx.textAlign='center';
-  const txt='SPRING REIN!',tw=cx.measureText(txt).width;
+  const txt=T('SPRING REIN!','JUMP IN!'),tw=cx.measureText(txt).width;
   cx.save();cx.translate(bx,by);cx.rotate(-0.06);
   cx.fillStyle=INK;cx.fillRect(-tw/2-8,-20,tw+16,26);
   cx.fillStyle=PAPER;cx.fillText(txt,0,0);
@@ -1182,8 +1227,8 @@ function draw(){
   cx.fillStyle=RED;cx.fillText('HI '+String(hi).padStart(5,'0'),W-96,32);
 
   cx.textAlign='center';
-  if(st==='ready')banner('LEERTASTE ODER TIPPEN','ZUM STARTEN');
-  if(st==='dead')banner('AUTSCH!','NOCHMAL: LEERTASTE / TIPPEN');
+  if(st==='ready')banner(T('LEERTASTE ODER TIPPEN','PRESS SPACE OR TAP'),T('ZUM STARTEN','TO START'));
+  if(st==='dead')banner(T('AUTSCH!','OUCH!'),T('NOCHMAL: LEERTASTE / TIPPEN','AGAIN: SPACE / TAP'));
 }
 function banner(a,b){
   const y=H*0.36;
@@ -1225,9 +1270,10 @@ resize();requestAnimationFrame(loop);
   const label=()=>{
     const pad=n=>String(n).padStart(2,'0');
     bk.classList.toggle('closed',p===0);
-    pos.textContent=p===0?'Zum Aufschlagen klicken':p===1?'Seite 01':p===N?'Seite 08 · Ende':'Seite '+pad(2*p-2)+' / '+pad(2*p-1);
+    pos.textContent=p===0?T('Zum Aufschlagen klicken','Click to open'):p===1?T('Seite','Page')+' 01':p===N?T('Seite 08 · Ende','Page 08 · End'):T('Seite ','Pages ')+pad(2*p-2)+' / '+pad(2*p-1);
     prev.disabled=p===0;next.disabled=p===N;
   };
+  addEventListener('sprache',label);
   // Raschelgeräusch beim Umblättern (gefiltertes Rauschen)
   const rustle=()=>{
     try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
