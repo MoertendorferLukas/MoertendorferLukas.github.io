@@ -467,6 +467,13 @@ const T=(de,en)=>document.documentElement.lang==='en'?en:de;
   .bmem{display:flex;flex-direction:column;align-items:center;gap:8px}
   .bmemd{display:grid;place-items:center;width:84px;height:62px;background:#111;color:#3dff6e;font-family:var(--mono);font-weight:800;font-size:40px;border:3px solid var(--ink)}
   .bmemk{display:flex;gap:6px;min-height:52px}
+  .bsw{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .bswr{display:flex;gap:6px}.bswr div{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .bswr i{width:16px;height:16px;border-radius:50%;background:var(--k);border:2px solid var(--ink);box-shadow:0 0 8px var(--k)}
+  .bswr button{position:relative;width:34px;height:64px;background:#2a2f3a;border:3px solid var(--ink);border-radius:6px;padding:0}
+  .bswr button span{position:absolute;left:3px;right:3px;bottom:3px;height:26px;background:#f4f2ec;border:2px solid var(--ink);border-radius:3px;transition:bottom .12s}
+  .bswr button.oben span{bottom:29px}
+  .bkab{width:100%;max-width:250px}.bkab>g{cursor:pointer}.bkab g.cut .kb line{stroke-dasharray:52 20}
   .bmemk button{width:40px;height:52px;background:#f4f2ec;border:3px solid var(--ink);font-family:var(--mono);font-weight:800;font-size:22px}
   .bmems{display:flex;gap:5px}.bmems i{width:12px;height:12px;border:2px solid var(--ink);background:#333}.bmems i.an{background:#3dff6e}
   .hbw{font-family:var(--mono);font-size:13px;line-height:1.8;word-spacing:.4em}
