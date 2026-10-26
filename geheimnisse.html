@@ -109,5 +109,6 @@ const items=[...document.querySelectorAll('.s')];let n=0;
 for(const el of items)if(found[el.dataset.id]){el.classList.add('is-found');n++;}
 document.getElementById('prog').textContent=`Gefunden: ${n} / ${items.length}`;
 </script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
 </body>
 </html>
