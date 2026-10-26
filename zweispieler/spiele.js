@@ -476,13 +476,32 @@ const BOMBE_LEVEL=[
   {name:'Wortsalat',mods:['passwort','knopf','gedaechtnis'],zeit:240},
   {name:'Viererpack',mods:['draht','simon','passwort','gedaechtnis'],zeit:300},
   {name:'Turbo',mods:['draht','knopf','symbol','simon','passwort','gedaechtnis'],zeit:360,turbo:true},
-  {name:'Endgegner',mods:['draht','knopf','symbol','simon','passwort','gedaechtnis'],zeit:270,turbo:true,max:2}];
+  {name:'Endgegner',mods:['draht','knopf','symbol','simon','passwort','gedaechtnis'],zeit:270,turbo:true,max:2},
+  {name:'Schaltzentrale',mods:['schalter','draht','knopf'],zeit:240},
+  {name:'Kabelsalat',mods:['kabel','symbol','simon'],zeit:270},
+  {name:'Doppelpack',mods:['draht','draht','kabel','kabel','schalter'],zeit:300},
+  {name:'Sekundenschlaf',mods:['knopf','schalter','passwort'],zeit:120,max:2},
+  {name:'Achterbahn',mods:['draht','knopf','symbol','simon','passwort','gedaechtnis','schalter','kabel'],zeit:420,turbo:true},
+  {name:'Großmeister',mods:['draht','knopf','symbol','simon','passwort','gedaechtnis','schalter','kabel','kabel'],zeit:390,turbo:true,max:2}];
+// Kabelsalat: [Farbe][nichts, Stern, LED, Stern+LED] → S schneiden, N nicht, G gerade Endziffer, B 2+ Batterien
+const BOMBE_KABEL_F=['weiß','rot','blau','rotblau'];
+const BOMBE_KABEL={weiß:'SSNB',rot:'GSBB',blau:'GNBG',rotblau:'GBGN'};
+const BOMBE_KABEL_TXT={S:'Schneiden',N:'Nicht schneiden',G:'Schneiden, wenn die Seriennummer gerade endet',B:'Schneiden, wenn 2+ Batterien'};
+const BOMBE_SCHALTER_F=['rot','grün','blau','gelb','weiß'];
 function bombeDraht(d,serie,batt){
   const n=d.length,anz=f=>d.filter(x=>x===f).length,letzt=f=>d.lastIndexOf(f),gerade=+serie.slice(-1)%2===0,vokal=/[AEIOU]/.test(serie);
   if(n===3){if(!anz('blau'))return 1;if(d[2]==='rot')return 2;if(anz('weiß')>1)return d.indexOf('weiß');return 0}
   if(n===4){if(gerade&&anz('rot')>=2)return letzt('rot');if(d[0]==='gelb')return 2;if(anz('schwarz')===1)return d.indexOf('schwarz');return 1}
   if(n===5){if(!anz('gelb'))return 3;if(batt>=2&&d[4]==='weiß')return 0;if(anz('grün')===1)return d.indexOf('grün');return 4}
   if(vokal)return 2;if(!anz('rot'))return 4;if(anz('blau')>anz('gelb'))return letzt('blau');return 5;
+}
+function bombeKabel(k,serie,batt){
+  const c=BOMBE_KABEL[k.f][(k.s?1:0)+(k.l?2:0)];
+  return c==='S'||(c==='G'&&+serie.slice(-1)%2===0)||(c==='B'&&batt>=2);
+}
+// Zielstellung der Schalter (true = oben)
+function bombeSchalter(f,vokal,batt){
+  const z=[];f.forEach((x,i)=>z.push(x==='rot'?true:x==='grün'?false:x==='blau'?vokal:x==='gelb'?batt%2===0:(i?z[i-1]:true)));return z;
 }
 function bombeKnopfHalten(f,t,batt){
   if(f==='blau'&&t==='STOPP')return true;
@@ -513,7 +532,12 @@ ${['Seriennummer MIT Vokal','Seriennummer OHNE Vokal'].map((t,v)=>`<p><b>${t}</b
 <p><b>Stufe 1</b> · Display 1: Position 2 · 2: Position 2 · 3: Position 3 · 4: Position 4</p>
 <p><b>Stufe 2</b> · Display 1: Taste mit der Beschriftung „4“ · 2: gleiche Position wie in Stufe 1 · 3: Position 1 · 4: gleiche Position wie in Stufe 1</p>
 <p><b>Stufe 3</b> · Display 1: gleiche Beschriftung wie in Stufe 2 · 2: gleiche Beschriftung wie in Stufe 1 · 3: Position 3 · 4: Beschriftung „4“</p>
-<p><b>Stufe 4</b> · Display 1: gleiche Position wie in Stufe 1 · 2: Position 1 · 3: gleiche Position wie in Stufe 2 · 4: gleiche Position wie in Stufe 2</p></div>`};
+<p><b>Stufe 4</b> · Display 1: gleiche Position wie in Stufe 1 · 2: Position 1 · 3: gleiche Position wie in Stufe 2 · 4: gleiche Position wie in Stufe 2</p></div>`,
+  schalter:`<div class="hb"><h4>Schalter</h4><p>Fünf Kippschalter, über jedem leuchtet ein Lämpchen. Bring jeden Schalter in die richtige Stellung (von links nach rechts) und drück dann <b>PRÜFEN</b>. Ist auch nur einer falsch, gibt es einen Fehler.</p>
+<table class="hbt"><tr><th>Lämpchen</th><th>Schalter</th></tr><tr><td>Rot</td><td>oben</td></tr><tr><td>Grün</td><td>unten</td></tr><tr><td>Blau</td><td>oben, wenn die Seriennummer einen Vokal hat, sonst unten</td></tr><tr><td>Gelb</td><td>oben bei 0, 2 oder 4 Batterien, sonst unten</td></tr><tr><td>Weiß</td><td>so wie der Schalter links daneben (ganz links: oben)</td></tr></table></div>`,
+  kabel:`<div class="hb"><h4>Kabelsalat</h4><p>Senkrechte Kabel. Über manchen leuchtet eine <b>LED</b>, unter manchen steht ein <b>Stern ★</b>. Schau für jedes Kabel in der Tabelle nach, ob es geschnitten wird. Das Modul ist gelöst, wenn alle zu schneidenden Kabel durch sind. Ein falscher Schnitt ist ein Fehler.</p>
+<table class="hbt"><tr><th>Kabel</th><td>nichts</td><td>★</td><td>LED</td><td>★ + LED</td></tr>${BOMBE_KABEL_F.map(f=>`<tr><th>${{weiß:'Weiß',rot:'Rot',blau:'Blau',rotblau:'Rot-blau gestreift'}[f]}</th>${[...BOMBE_KABEL[f]].map(x=>`<td><b>${x}</b></td>`).join('')}</tr>`).join('')}</table>
+<p>${Object.entries(BOMBE_KABEL_TXT).map(([k,t])=>`<b>${k}</b> = ${t}`).join(' · ')}</p></div>`};
 // Module der Bombe: html (Entschärfer-Ansicht) und init(el) mit der Spiellogik.
 // a: {loesen, falsch, fehler(), aus(), ok(), rest(), on, every, serie, batt, vokal}
 const BOMBE_MOD={
@@ -588,11 +612,30 @@ const BOMBE_MOD={
         neu();
       }};
   }};
-const BOMBE_NAME={draht:'Drähte',knopf:'Knopf',symbol:'Symbole',simon:'Farbfolge',passwort:'Passwort',gedaechtnis:'Gedächtnis'};
+BOMBE_MOD.schalter=(r,a)=>{
+  let f,z,st;
+  for(;;){f=[0,1,2,3,4].map(()=>BOMBE_SCHALTER_F[ri(r,5)]);z=bombeSchalter(f,a.vokal,a.batt);st=z.map(()=>r()<.5);if(st.filter((x,i)=>x!==z[i]).length>=2)break}
+  return{html:`<div class="bsw"><div class="bswr">${f.map((x,i)=>`<div><i style="--k:${BOMBE_FH[x]}"></i><button type="button" data-i="${i}" class="${st[i]?'oben':''}" aria-label="Schalter ${i+1}"><span></span></button></div>`).join('')}</div><button type="button" class="bpwok">PRÜFEN</button></div>`,
+    init(m){a.on(m,'click',e=>{const b=e.target.closest('button');if(!b||a.aus()||a.ok())return;
+      if(b.dataset.i){const i=+b.dataset.i;st[i]=!st[i];b.classList.toggle('oben',st[i])}
+      else if(st.every((x,i)=>x===z[i]))a.loesen();else a.falsch()})}};
+};
+BOMBE_MOD.kabel=(r,a)=>{
+  let k,soll;
+  for(;;){const n=4+ri(r,3);k=[];for(let i=0;i<n;i++)k.push({f:BOMBE_KABEL_F[ri(r,4)],s:r()<.4,l:r()<.4});soll=k.map(x=>bombeKabel(x,a.serie,a.batt));if(soll.some(Boolean)&&!soll.every(Boolean))break}
+  const W=40,w=k.length*W+10;
+  return{html:`<svg class="bkab" viewBox="0 0 ${w} 190" style="max-width:${w*1.2}px">${k.map((x,i)=>{const cx=5+W*i+W/2,farbe=x.f==='rotblau'?BOMBE_FH.rot:BOMBE_FH[x.f];
+    return`<g data-i="${i}"><rect x="${cx-W/2}" y="0" width="${W}" height="190" fill="transparent"/><circle cx="${cx}" cy="14" r="8" fill="${x.l?'#ffd23d':'#2a2f3a'}" stroke="#000" stroke-width="2"/>
+<line x1="${cx}" y1="32" x2="${cx}" y2="156" stroke="#000" stroke-width="13" stroke-linecap="round"/><g class="kb"><line x1="${cx}" y1="32" x2="${cx}" y2="156" stroke="${farbe}" stroke-width="9" stroke-linecap="round"/>${x.f==='rotblau'?`<line x1="${cx}" y1="36" x2="${cx}" y2="152" stroke="${BOMBE_FH.blau}" stroke-width="9" stroke-dasharray="10 10"/>`:''}</g>
+<text x="${cx}" y="182" text-anchor="middle" font-size="20" fill="#111">${x.s?'★':''}</text></g>`}).join('')}</svg>`,
+    init(m){a.on(m,'click',e=>{const g=e.target.closest('g[data-i]');if(!g||a.aus()||a.ok()||g.classList.contains('cut'))return;const i=+g.dataset.i;g.classList.add('cut');
+      if(!soll[i]){a.falsch();return}if(soll.every((s,j)=>!s||m.querySelector(`g[data-i="${j}"]`).classList.contains('cut')))a.loesen()})}};
+};
+const BOMBE_NAME={draht:'Drähte',knopf:'Knopf',symbol:'Symbole',simon:'Farbfolge',passwort:'Passwort',gedaechtnis:'Gedächtnis',schalter:'Schalter',kabel:'Kabelsalat'};
 
 SPIELE.push({id:'bombe',name:'Bombe entschärfen',emoji:'💣',mode:'coop',
-  desc:'Einer sieht die Bombe, der andere das Handbuch. 7 Level, von der Übungsbombe bis zum Endgegner.',
-  how:'Einer ist <b>Entschärfer</b> und sieht die Bombe, der andere ist <b>Experte</b> und hat das Handbuch. Der Entschärfer beschreibt, was er sieht, der Experte sagt, was zu tun ist. Redet über den Chat rechts (oder ruft euch an). Löst alle Module, bevor die Zeit abläuft. Zu viele Fehler und es macht BUMM. Es gibt <b>7 Level</b> mit immer mehr Modulen (Drähte, Knopf, Symbole, Farbfolge, Passwort, Gedächtnis). Ab Level 6 läuft der Timer mit jedem Fehler schneller. Nach jeder Bombe tauscht ihr die Rollen.',
+  desc:'Einer sieht die Bombe, der andere das Handbuch. 13 Level, von der Übungsbombe bis zum Endgegner.',
+  how:'Einer ist <b>Entschärfer</b> und sieht die Bombe, der andere ist <b>Experte</b> und hat das Handbuch. Der Entschärfer beschreibt, was er sieht, der Experte sagt, was zu tun ist. Redet über den Chat rechts (oder ruft euch an). Löst alle Module, bevor die Zeit abläuft. Zu viele Fehler und es macht BUMM. Es gibt <b>13 Level</b> mit immer mehr Modulen (Drähte, Knopf, Symbole, Farbfolge, Passwort, Gedächtnis, Schalter, Kabelsalat). Bei Turbo-Bomben läuft der Timer mit jedem Fehler schneller. Nach jeder Bombe tauscht ihr die Rollen.',
   create(c){
     const MAXLV=BOMBE_LEVEL.length;
     let best=0;try{best=+localStorage.getItem('lm2p-bombe-lv')||0}catch(_){}
@@ -610,7 +653,7 @@ SPIELE.push({id:'bombe',name:'Bombe entschärfen',emoji:'💣',mode:'coop',
     }
     function ergebnis(win,text){
       if(win&&lv+1>best){best=lv+1;try{localStorage.setItem('lm2p-bombe-lv',best)}catch(_){}}
-      if(win&&lv===MAXLV-1){c.end({coop:true,win:true,text:'Alle 7 Bomben entschärft! '+text,delay:1600});return}
+      if(win&&lv===MAXLV-1){c.end({coop:true,win:true,text:`Alle ${MAXLV} Bomben entschärft! `+text,delay:1600});return}
       const box=document.createElement('div');box.className='bres '+(win?'gut':'schlecht');
       box.innerHTML=`<h4>${win?'Entschärft! 🎉':'BUMM! 💥'}</h4><p>${esc(text)}</p><div>${win?`<button type="button" class="btn primary" data-l="${lv+1}">Weiter: Level ${lv+2} →</button>`:`<button type="button" class="btn primary" data-l="${lv}">↻ Nochmal versuchen</button>`}<button type="button" class="btn" data-m="1">Level wählen</button></div>`;
       c.el.prepend(box);
@@ -1451,8 +1494,8 @@ const SPIELE_EN={
     'Press ← and → (or A and D) <b>alternately</b>, on a phone the two big buttons alternately. Every correct switch is a pull on the rope. Pull the marker all the way to your side! After 30 seconds whoever is ahead wins.'],
   kaestchen:['Dots and Boxes','Draw lines, close boxes, collect points. Close one and you go again.',
     'Take turns drawing a line between two neighbouring dots. Whoever draws the fourth line around a box gets it and goes again. At the end, whoever has more boxes wins.'],
-  bombe:['Defuse the Bomb','One sees the bomb, the other the manual. 7 levels, from the practice bomb to the final boss.',
-    'One of you is the <b>defuser</b> and sees the bomb, the other is the <b>expert</b> with the manual. The defuser describes what they see, the expert says what to do. Talk in the chat (or call each other). Solve all modules before time runs out. Too many mistakes and it goes BOOM. There are <b>7 levels</b> with more and more modules (wires, button, symbols, colour sequence, password, memory). From level 6 the timer speeds up with every mistake. After each bomb you swap roles. The bomb and manual texts are in German.'],
+  bombe:['Defuse the Bomb','One sees the bomb, the other the manual. 13 levels, from the practice bomb to the final boss.',
+    'One of you is the <b>defuser</b> and sees the bomb, the other is the <b>expert</b> with the manual. The defuser describes what they see, the expert says what to do. Talk in the chat (or call each other). Solve all modules before time runs out. Too many mistakes and it goes BOOM. There are <b>13 levels</b> with more and more modules (wires, button, symbols, colour sequence, password, memory, switches, tangled wires). On turbo bombs the timer speeds up with every mistake. After each bomb you swap roles. The bomb and manual texts are in German.'],
   labyrinth:['Blind Maze','One walks blind through the maze, the other guides them past the traps.',
     'The <b>runner</b> sees no walls, only the ones they’ve already bumped into. The <b>guide</b> sees the whole maze, the goal and the traps and gives directions in the chat (“3 down, then right!”). If the runner steps into a trap, they go back to the start. After each level you swap roles. Beat all 3 levels as fast as you can!'],
   gedanken:['Mind Reader','Say the same word at the same time. Sounds easy? It isn’t.',
